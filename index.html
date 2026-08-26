@@ -24,6 +24,9 @@
   .legend b{color:var(--deep);}
   .legend .row{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;}
   .legend .row span{display:inline-flex;align-items:center;gap:6px;}
+  /* les phrases restent hors des .row : dans un conteneur flex, chaque <b> devient
+     un element separe et la phrase se retrouve hachee par le gap */
+  .legend .lg-p{margin:9px 0 0;line-height:1.5;}
   .chip{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;}
   .chip.inc{background:#e7f5ef;color:#1d7a5f;border:1px solid #b9e2d4;}
   .chip.no{background:#fdeef0;color:#a23350;border:1px solid #f2cad3;}
@@ -67,10 +70,37 @@
   .dur::before{content:"⏱ ";}
   .stop-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px;font-size:12.5px;color:#3d5163;}
   .stop-note{font-size:13px;color:#3d5163;margin-top:8px;}
+  .stop-note.editable{border-radius:5px;}
+  .stop-note.editable:hover{background:#fffdf7;box-shadow:0 0 0 4px #fffdf7,0 0 0 5px #f0dcc0;}
+  .eat-desc.editable{border-radius:5px;cursor:pointer;}
+  .eat-desc.editable:hover{background:#fff6e8;box-shadow:0 0 0 4px #fff6e8,0 0 0 5px #e8d5b5;}
+  .add-desc{margin-top:8px;font:600 11.5px/1 'Inter',sans-serif;color:#6b8299;background:transparent;
+            border:1px dashed #c3cfdc;border-radius:20px;padding:5px 12px;cursor:pointer;align-self:flex-start;}
+  .add-desc:hover{color:var(--deep);border-color:var(--steel);background:#f7f9fc;}
+  @media print{.add-desc{display:none;}}
   .go::before{content:"🚶 ";} .metro::before{content:"🚇 ";} .path::before{content:"🚆 ";}
   .vtc::before{content:"🚕 ";} .ferry::before{content:"⛴️ ";} .van::before{content:"🚐 ";}
   .move{color:#3d5163;}
 
+  /* ---- Blocs transport, ajoutes entre deux etapes depuis la page ---- */
+  li.trans{display:flex;align-items:flex-start;gap:11px;background:#eef4fa;border:1px solid #d3e0ec;
+           border-left:3px solid var(--steel);border-radius:9px;padding:10px 14px;margin-top:10px;
+           font-size:13px;color:#2b4257;}
+  li.trans .tr-ico{font-size:16px;line-height:1.35;flex:0 0 auto;}
+  li.trans .tr-body{flex:1 1 auto;min-width:0;}
+  li.trans .tr-top{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap;}
+  li.trans .tr-name{font-weight:600;color:var(--deep);}
+  li.trans .tr-note{margin-top:4px;font-size:12.5px;color:#4a6076;}
+  li.trans .tr-edit,li.trans .del{opacity:0;font:700 14px/1 'Inter',sans-serif;color:#8fa0b0;
+       background:none;border:0;cursor:pointer;padding:2px 4px;flex:0 0 auto;}
+  li.trans:hover .tr-edit,li.trans:hover .del{opacity:1;}
+  li.trans .tr-edit:hover{color:var(--deep);}
+  li.trans .del:hover{color:#a23350;}
+  li.trans-gap{display:flex;justify-content:center;margin-top:6px;}
+  .add-trans{font:600 11.5px/1 'Inter',sans-serif;color:#6b8299;background:transparent;
+             border:1px dashed #c3cfdc;border-radius:20px;padding:5px 13px;cursor:pointer;}
+  .add-trans:hover{color:var(--deep);border-color:var(--steel);background:#f2f6fa;}
+  @media print{li.trans-gap{display:none;} li.trans .tr-edit,li.trans .del{display:none;}}
   /* ---- Suggestions d'activites ---- */
   .sugg{margin-top:48px;padding-top:6px;border-top:3px double var(--line);}
   .sugg-intro{font-size:13.5px;color:var(--steel);margin:10px 0 14px;}
@@ -124,7 +154,7 @@
   .ph.ph-cover{height:280px;margin-top:22px;border-radius:12px;}
 
   li.stop, li.free, li.eat{display:flex;align-items:stretch;padding:0;overflow:hidden;}
-  li.stop > .ph, li.free > .ph, li.eat > .ph{flex:0 0 196px;margin:0;border-radius:0;min-height:162px;}
+  li.stop > .ph, li.free > .ph, li.eat > .ph{flex:0 0 196px;margin:0;border-radius:0;min-height:118px;}
   li.stop > .ph img, li.free > .ph img, li.eat > .ph img{position:absolute;top:0;left:0;width:100%;height:100%;}
   .cbody{flex:1 1 auto;min-width:0;padding:13px 16px;}
   li.eat .cbody{padding:12px 15px;}
@@ -192,7 +222,7 @@
                     background:var(--gold);border-radius:20px;padding:2px 8px;vertical-align:1px;}
   .tabbar .tb-count.done{background:#2fa07d;color:#fff;}
   .tabbar .tb-group{display:flex;gap:4px;}
-  .tabbar .tb-link{margin-left:auto;display:flex;align-items:center;gap:6px;text-decoration:none;
+  .tabbar .tb-link{display:flex;align-items:center;gap:6px;text-decoration:none;
                    font:600 14px/1 'Inter',sans-serif;color:#a9bdd0;
                    border-bottom:3px solid transparent;padding:15px 18px 12px;}
   .tabbar .tb-link:hover{color:#fff;border-bottom-color:rgba(255,255,255,.35);}
@@ -265,6 +295,10 @@
   .me-pill{display:inline-flex;align-items:center;gap:7px;font:600 12px/1 'Inter',sans-serif;color:#16263a;
            background:#fff;border:0;border-radius:20px;padding:5px 12px 5px 5px;cursor:pointer;}
   .me-pill:hover{background:#f0f4f8;}
+  .tabbar .me-pill{margin-left:auto;margin-right:4px;align-self:center;
+                   background:rgba(255,255,255,.13);color:#fff;padding:4px 12px 4px 4px;}
+  .tabbar .me-pill:hover{background:rgba(255,255,255,.24);}
+  @media (max-width:560px){.tabbar .me-pill{padding:4px;} .tabbar .me-pill span:last-child{display:none;}}
   .av{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;
       font:700 10px/1 'Inter',sans-serif;color:#fff;background:var(--steel);flex:0 0 22px;}
   .av.lg{width:30px;height:30px;font-size:12px;flex-basis:30px;}
@@ -284,7 +318,9 @@
 
   li.citem{flex-wrap:wrap;}
   li.citem .body{flex:1 1 260px;min-width:0;}
-  li.citem.mode-each .box{display:none;}
+  /* pas de case a cocher sur les lignes « chacun » : on garde quand meme la
+     gouttiere pour que tous les intitules soient alignes (case 20 + gap 11) */
+  li.citem.mode-each .body{margin-left:31px;}
   .who-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
   .pp{display:inline-flex;align-items:center;gap:5px;font:600 11.5px/1 'Inter',sans-serif;color:#4a6076;
       background:#f2f6fa;border:1px solid #dde5ee;border-radius:20px;padding:4px 10px 4px 4px;cursor:pointer;}
@@ -356,6 +392,7 @@
     <button type="button" role="tab" id="tab-prog"  aria-controls="view-prog"  aria-selected="true">Programme</button>
     <button type="button" role="tab" id="tab-check" aria-controls="view-check" aria-selected="false">Check-list<span class="tb-count" data-ck-count>0/0</span></button>
   </div>
+  <button type="button" class="me-pill tb-me" data-ck-me title="Changer de profil"><span class="av">?</span><span>Qui suis-je&nbsp;?</span></button>
   <!-- ===== Lien Google Drive : coller l'URL du dossier partage dans le href ci-dessous ===== -->
   <a class="tb-link" id="tab-docs" target="_blank" rel="noopener"
      title="Ouvrir le dossier Google Drive dans un nouvel onglet"
@@ -369,8 +406,8 @@
 
   <div class="legend">
     <b>Comment lire le programme</b>
-    <div class="row" style="margin-top:10px;">
-      <span>En haut à droite de chaque étape : la <b>durée</b>, et en dessous ce que ça coûte —</span>
+    <p class="lg-p">En haut à droite de chaque étape : la <b>durée</b>, et juste en dessous ce qu'elle coûte.</p>
+    <div class="row">
       <span><b class="cost inc">inclus Go City</b></span>
       <span><b class="cost free">gratuit</b></span>
       <span><b class="cost no">à part</b> ou le prix</span>
@@ -379,7 +416,7 @@
     <div class="row">
       <span>🚶 à pied</span><span>🚇 métro</span><span>🚆 PATH</span><span>🚕 VTC</span><span>⛴️ ferry</span><span>🚐 van</span><span>🍴 manger</span><span>🎈 temps libre</span>
     </div>
-    <div class="row"><span>Tout ce qui se fait <b>à pied</b> reste sous ~20 min de marche. Au-delà : métro/PATH.</span></div>
+    <p class="lg-p">Tout ce qui se fait <b>à pied</b> reste sous ~20 min de marche. Au-delà : métro ou PATH.</p>
   </div>
 
   <div class="tip">
@@ -387,11 +424,11 @@
 
   <div class="sugg-top">
     <button type="button" class="sugg-add" data-sg-add>💡 Suggérer une activité</button>
-    <a class="sugg-jump" href="#suggestions">Voir les suggestions (<span data-sg-count>—</span>) ↓</a>
+    <a class="sugg-jump" href="#suggestions"><span data-sg-jump>Voir les suggestions</span> ↓</a>
   </div>
 
   <!-- JOUR 1 -->
-  <div class="day">
+  <div class="day" data-day="1">
     <div class="day-head"><div class="day-num">01</div><div class="day-title">Lun. 19 — Arrivée</div><div class="day-tot">soirée</div></div>
         <div class="ph ph-band" data-photo="Lun. 19 — Arrivée"><img src="png/jfk aeroport.jpg" alt="Lun. 19 — Arrivée" loading="lazy"><span class="ph-lbl">🖼️ Photo — Lun. 19 — Arrivée</span></div>
     <div class="getin"><span>✈️</span><div><b>Vol :</b> atterrissage <b>22h40 à JFK</b>. <b>JFK → logement (Liberty Ave)</b> en <b>van / 2 UberXL</b> (~50-70 min). Au logement vers 00h30-01h.</div></div>
@@ -405,7 +442,7 @@
   </div>
 
   <!-- JOUR 2 -->
-  <div class="day">
+  <div class="day" data-day="2">
     <div class="day-head"><div class="day-num">02</div><div class="day-title">Mar. 20 — Midtown, Times Square &amp; Broadway 🎭</div><div class="day-tot">~8 h + spectacle</div></div>
         <div class="ph ph-band" data-photo="Mar. 20 — Midtown, Times Square &amp; Broadway 🎭"><img src="png/midtown.jpg" alt="Grand Central Terminal" loading="lazy"><span class="ph-lbl">🖼️ Photo — Mar. 20 — Midtown, Times Square &amp; Broadway 🎭</span></div>
     <div class="getin"><span>🚆</span><div><b>Aller au 1<sup>er</sup> spot :</b> Liberty Ave → <b>Journal Square</b> (bus/VTC ~8 min) → <b>PATH ligne 33rd Street</b> (~20 min), 2 blocs à pied. Total ~40-45 min.</div></div>
@@ -478,7 +515,7 @@
   </div>
 
   <!-- JOUR 3 -->
-  <div class="day">
+  <div class="day" data-day="3">
     <div class="day-head"><div class="day-num">03</div><div class="day-title">Mer. 21 — Brooklyn Bridge &amp; Nets 🏀</div><div class="day-tot">~6 h + match</div></div>
         <div class="ph ph-band" data-photo="Mer. 21 — Brooklyn Bridge &amp; Nets 🏀"><img src="png/pont-de-brooklyn.webp" alt="Mer. 21 — Brooklyn Bridge &amp; Nets 🏀" loading="lazy"><span class="ph-lbl">🖼️ Photo — Mer. 21 — Brooklyn Bridge &amp; Nets 🏀</span></div>
     <div class="getin"><span>🚆</span><div><b>Aller au 1<sup>er</sup> spot :</b> Journal Square → <b>PATH ligne World Trade Center</b> (~13 min), puis ~10 min à pied vers l'entrée du pont (City Hall). Total ~40 min.</div></div>
@@ -522,7 +559,7 @@
   </div>
 
   <!-- JOUR 4 -->
-  <div class="day">
+  <div class="day" data-day="4">
     <div class="day-head"><div class="day-num">04</div><div class="day-title">Jeu. 22 — Central Park, The Met &amp; temps libre</div><div class="day-tot">~5-6 h + libre</div></div>
         <div class="ph ph-band" data-photo="Jeu. 22 — Central Park, The Met &amp; temps libre"><img src="png/Central_Park_during_Autumn,_NYC.jpg" alt="Jeu. 22 — Central Park, The Met &amp; temps libre" loading="lazy"><span class="ph-lbl">🖼️ Photo — Jeu. 22 — Central Park, The Met &amp; temps libre</span></div>
     <div class="getin"><span>🚆</span><div><b>Aller au 1<sup>er</sup> spot :</b> Journal Square → <b>PATH ligne 33rd St</b> (~20 min), puis <b>métro</b> vers le nord (C jusqu'à la 72<sup>e</sup>, ou 6 jusqu'à la 86<sup>e</sup>). Total ~55 min.</div></div>
@@ -570,7 +607,7 @@
   </div>
 
   <!-- JOUR 5 -->
-  <div class="day">
+  <div class="day" data-day="5">
     <div class="day-head"><div class="day-num">05</div><div class="day-title">Ven. 23 — Statue de la Liberté &amp; Downtown</div><div class="day-tot">~7-8 h</div></div>
         <div class="ph ph-band" data-photo="Ven. 23 — Statue de la Liberté &amp; Downtown"><img src="png/Central_Railroad_of_New_Jersey_Terminal_-_22_Sept._2012.jpg" alt="Ven. 23 — Statue de la Liberté &amp; Downtown" loading="lazy"><span class="ph-lbl">🖼️ Photo — Ven. 23 — Statue de la Liberté &amp; Downtown</span></div>
     <div class="getin"><span>🚕</span><div><b>Aller au 1<sup>er</sup> spot :</b> Liberty Ave → <b>embarcadère de Liberty State Park</b> en <b>VTC ~10 min</b> (ou Light Rail). Ferry côté Jersey City = moins de queue.</div></div>
@@ -620,7 +657,7 @@
   </div>
 
   <!-- JOUR 6 -->
-  <div class="day">
+  <div class="day" data-day="6">
     <div class="day-head"><div class="day-num">06</div><div class="day-title">Sam. 24 — High Line, Village &amp; SoHo</div><div class="day-tot">~6-7 h</div></div>
         <div class="ph ph-band" data-photo="Sam. 24 — High Line, Village &amp; SoHo"><img src="png/Greenwich_Village_(27483343909).jpg" alt="Sam. 24 — High Line, Village &amp; SoHo" loading="lazy"><span class="ph-lbl">🖼️ Photo — Sam. 24 — High Line, Village &amp; SoHo</span></div>
     <div class="getin"><span>🚆</span><div><b>Aller au 1<sup>er</sup> spot :</b> Journal Square → <b>PATH ligne 33rd St</b>, puis ~12 min à pied (ou 1 station ligne 7) jusqu'à Hudson Yards / entrée nord de la High Line.</div></div>
@@ -672,7 +709,7 @@
   </div>
 
   <!-- JOUR 7 -->
-  <div class="day">
+  <div class="day" data-day="7">
     <div class="day-head"><div class="day-num">07</div><div class="day-title">Dim. 25 — Football : Jets vs Dolphins 🏈</div><div class="day-tot">demi-journée</div></div>
         <div class="ph ph-band" data-photo="Dim. 25 — Football : Jets vs Dolphins 🏈"><img src="png/Metlife_stadium_(Aerial_view).jpg" alt="Dim. 25 — Football : Jets vs Dolphins 🏈" loading="lazy"><span class="ph-lbl">🖼️ Photo — Dim. 25 — Football : Jets vs Dolphins 🏈</span></div>
     <div class="getin"><span>🚐</span><div><b>Aller au stade :</b> Liberty Ave → <b>MetLife Stadium</b> en <b>van / 2 UberXL</b> (~20-30 min). Coup d'envoi 13h → partez vers 11h-11h30 pour l'avant-match.</div></div>
@@ -706,7 +743,7 @@
   </div>
 
   <!-- JOUR 8 -->
-  <div class="day">
+  <div class="day" data-day="8">
     <div class="day-head"><div class="day-num">08</div><div class="day-title">Lun. 26 — Dernière journée &amp; départ</div><div class="day-tot">journée libre</div></div>
         <div class="ph ph-band" data-photo="Lun. 26 — Dernière journée &amp; départ"><img src="png/Lower_Manhattan_from_Jersey_City_November_2014_panorama_2.jpg" alt="Lun. 26 — Dernière journée &amp; départ" loading="lazy"><span class="ph-lbl">🖼️ Photo — Lun. 26 — Dernière journée &amp; départ</span></div>
     <div class="getin"><span>✈️</span><div><b>Vol :</b> départ <b>23h55 de JFK</b> → à l'aéroport vers 20h30-21h, donc <b>départ du logement ~19h30-20h</b> en van. Checkout ~11h : laissez les bagages en consigne.</div></div>
@@ -765,7 +802,6 @@
   <div class="check-wrap">
     <div class="check-head">
       <div class="topline">
-        <button type="button" class="me-pill" data-ck-me><span class="av">?</span><span>Qui suis-je&nbsp;?</span></button>
         <span class="sync-pill" data-ck-sync><span class="dot"></span><span>Local</span></span>
       </div>
       <h2>Avant le départ</h2>
@@ -838,7 +874,9 @@
     var legend = box.querySelector('[data-legend]');
     var pts = [];
 
-    Array.prototype.forEach.call(day.querySelectorAll('ul.stops > li'), function(li, i){
+    /* :not(.trans) — les blocs transport ajoutés depuis la page ne doivent pas
+       décaler la numérotation des étapes ni les points de la carte */
+    Array.prototype.forEach.call(day.querySelectorAll('ul.stops > li:not(.trans):not(.trans-gap)'), function(li, i){
       var num = i + 1, k = kind(li), name = label(li), has = !!coords[num];
       var anchor = li.querySelector('.stop-name') || li.querySelector('.lbl');
       if (anchor) anchor.parentNode.insertBefore(badge(num, k, !has), anchor);
@@ -871,9 +909,11 @@
     if (m.done || typeof L === 'undefined') return;
     m.done = true;
     var map = L.map('map-d' + m.id, {scrollWheelZoom: false});
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19, subdomains: 'abcd',
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    /* CARTO exige desormais une cle : ses tuiles reviennent barrees de
+       « API KEY REQUIRED ». On passe sur les tuiles OpenStreetMap, libres. */
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
     var all = [];
@@ -963,10 +1003,12 @@ window.TRIP_SYNC = {
   var $ = function(s){ return document.querySelector(s); };
   var listEl  = $('[data-ck-list]'),  barEl  = $('[data-ck-bar]'),   lblEl  = $('[data-ck-lbl]');
   var cntEl   = $('[data-ck-count]'), lastEl = $('[data-ck-last]'),  warnEl = $('[data-ck-warn]');
-  var meEl    = $('[data-ck-me]'),    syncEl = $('[data-ck-sync]'),  sumEl  = $('[data-ck-people]');
+  var meEls   = document.querySelectorAll('[data-ck-me]');
+  var syncEl  = $('[data-ck-sync]'),  sumEl  = $('[data-ck-people]');
   var sgBody   = $('[data-sg-body]');
   var sgCounts = document.querySelectorAll('[data-sg-count]');   /* en haut ET en bas */
   var sgAdds   = document.querySelectorAll('[data-sg-add]');
+  var sgJump   = $('[data-sg-jump]');
 
   /* ---------------------------------------------------------------- outils */
   function ls(k, v){
@@ -991,23 +1033,31 @@ window.TRIP_SYNC = {
     return 'il y a ' + Math.round(d / 86400) + ' j';
   }
   function esc(s){ var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+  /* on prefixe les valeurs par un tilde : on retire celui que l'auteur aurait deja tape */
+  function approx(v){ return String(v == null ? '' : v).replace(/^\s*(?:~|≈|environ)\s*/i, ''); }
 
   /* ------------------------------------------------------------ identite */
   var ME = ls(MEKEY);
   if (ME && !P(ME)) ME = null;
   function paintMe(){
-    meEl.innerHTML = '';
-    meEl.appendChild(avatar(ME));
-    var t = document.createElement('span');
-    t.textContent = ME ? P(ME).n : 'Qui suis-je ?';
-    meEl.appendChild(t);
+    for (var i = 0; i < meEls.length; i++){
+      var e = meEls[i];
+      e.innerHTML = '';
+      e.appendChild(avatar(ME));
+      var t = document.createElement('span');
+      t.textContent = ME ? P(ME).n : 'Qui suis-je ?';
+      e.appendChild(t);
+    }
   }
+  var meOpen = false;
   function askMe(force, cb){
+    if (meOpen) return;              /* jamais deux fois la même fenêtre */
+    meOpen = true;
     var ov = document.createElement('div');
     ov.className = 'modal';
     var card = document.createElement('div');
     card.className = 'card';
-    card.innerHTML = '<h3>Qui êtes-vous ?</h3><p>Pour savoir qui a fait quoi. Vous pourrez en changer à tout moment en cliquant sur votre nom en haut.</p>';
+    card.innerHTML = '<h3>Qui êtes-vous ?</h3><p>Pour savoir qui a fait quoi : les coches de la check-list, les +1 sur les suggestions. Vous pourrez en changer à tout moment avec le bouton en haut à droite.</p>';
     var g = document.createElement('div');
     g.className = 'grid';
     PEOPLE.forEach(function(p){
@@ -1016,27 +1066,32 @@ window.TRIP_SYNC = {
       b.appendChild(avatar(p.k));
       var s = document.createElement('span'); s.textContent = p.n; b.appendChild(s);
       b.addEventListener('click', function(){
-        ME = p.k; ls(MEKEY, p.k); paintMe(); document.body.removeChild(ov); render();
+        ME = p.k; ls(MEKEY, p.k); paintMe(); closeMe(); render();
         if (typeof cb === 'function') cb();
       });
       g.appendChild(b);
     });
     card.appendChild(g);
+    function closeMe(){
+      if (ov.parentNode) ov.parentNode.removeChild(ov);
+      meOpen = false;
+    }
     if (force !== true){
       var c = document.createElement('button');
-      c.type = 'button'; c.className = 'btn close'; c.textContent = 'Plus tard';
-      c.addEventListener('click', function(){ document.body.removeChild(ov); });
+      c.type = 'button'; c.className = 'btn close';
+      c.textContent = ME ? 'Annuler' : 'Je regarde juste';
+      c.addEventListener('click', closeMe);
       card.appendChild(c);
     }
     ov.appendChild(card);
-    ov.addEventListener('click', function(e){ if (e.target === ov && force !== true) document.body.removeChild(ov); });
+    ov.addEventListener('click', function(e){ if (e.target === ov && force !== true) closeMe(); });
     document.body.appendChild(ov);
   }
-  meEl.addEventListener('click', function(){ askMe(); });
+  for (var mi = 0; mi < meEls.length; mi++) meEls[mi].addEventListener('click', function(){ askMe(); });
   paintMe();
 
   /* ------------------------------------------------- base de donnees */
-  var DB = {s:{}, i:{}, g:{}}, CLOUD = false, ROOT = null, ready = false;
+  var DB = {s:{}, i:{}, g:{}, t:{}, d:{}}, CLOUD = false, ROOT = null, ready = false;
 
   function defaults(){
     var d = {s:{}, i:{}};
@@ -1248,9 +1303,20 @@ window.TRIP_SYNC = {
       var wrap = document.createElement('label');
       wrap.className = 'field';
       var lb = document.createElement('span'); lb.textContent = f.label;
-      var el = document.createElement(f.multi ? 'textarea' : 'input');
-      if (f.multi) el.rows = 2; else el.type = 'text';
-      el.placeholder = f.ph || '';
+      var el;
+      if (f.options){
+        el = document.createElement('select');
+        f.options.forEach(function(o){
+          var op = document.createElement('option');
+          op.value = o; op.textContent = o; el.appendChild(op);
+        });
+        if (f.value) el.value = f.value;
+      } else {
+        el = document.createElement(f.multi ? 'textarea' : 'input');
+        if (f.multi) el.rows = 2; else el.type = 'text';
+        el.placeholder = f.ph || '';
+        if (f.value) el.value = f.value;
+      }
       wrap.appendChild(lb); wrap.appendChild(el);
       card.appendChild(wrap);
       inputs.push(el);
@@ -1268,12 +1334,13 @@ window.TRIP_SYNC = {
     }
     function valid(){
       var v = inputs.map(function(el){ return el.value.trim(); });
-      if (!v[0]){ inputs[0].focus(); return; }
+      if (!v[0] && !fields[0].allowEmpty){ inputs[0].focus(); return; }
       close(); cb(v);
     }
     function onKey(e){
       if (e.key === 'Escape' || e.keyCode === 27) close();
-      else if ((e.key === 'Enter' || e.keyCode === 13) && e.target.tagName !== 'TEXTAREA'){ e.preventDefault(); valid(); }
+      else if ((e.key === 'Enter' || e.keyCode === 13) && e.target.tagName !== 'TEXTAREA'
+               && e.target.tagName !== 'SELECT'){ e.preventDefault(); valid(); }
     }
     no.addEventListener('click', close);
     yes.addEventListener('click', valid);
@@ -1439,6 +1506,8 @@ window.TRIP_SYNC = {
     });
     paintTotals();
     renderSugg();
+    renderTrans();
+    renderDescs();
   }
 
   /* ------------------------------------------- suggestions d'activités
@@ -1464,6 +1533,11 @@ window.TRIP_SYNC = {
       ? list.length + (list.length > 1 ? ' propositions' : ' proposition')
       : "aucune pour l'instant";
     for (var c = 0; c < sgCounts.length; c++) sgCounts[c].textContent = lbl;
+    if (sgJump){
+      sgJump.textContent = list.length
+        ? 'Voir les ' + lbl
+        : 'Voir les suggestions';
+    }
 
     sgBody.innerHTML = '';
     if (!list.length){
@@ -1485,12 +1559,12 @@ window.TRIP_SYNC = {
         var meta = document.createElement('span'); meta.className = 'sg-meta';
         if (g.p){
           var pp = document.createElement('span'); pp.className = 'sg-pill';
-          pp.textContent = '💵 ≈ ' + g.p; pp.title = 'Prix approximatif par personne';
+          pp.textContent = '💵 ≈ ' + approx(g.p); pp.title = 'Prix approximatif par personne';
           meta.appendChild(pp);
         }
         if (g.h){
           var hh = document.createElement('span'); hh.className = 'sg-pill';
-          hh.textContent = '⏱ ≈ ' + g.h; hh.title = 'Durée approximative';
+          hh.textContent = '⏱ ≈ ' + approx(g.h); hh.title = 'Durée approximative';
           meta.appendChild(hh);
         }
         c1.appendChild(meta);
@@ -1572,6 +1646,236 @@ window.TRIP_SYNC = {
     });
   }
 
+  /* ------------------------------------------------ blocs « transport »
+     Ajoutés entre deux étapes du programme, depuis la page, par le profil ADMIN.
+     Chaque bloc retient son point d'ancrage « jour:position » : position 0 =
+     avant la 1re étape du jour, n = après la n-ième. */
+  var MOYENS = ['🚶 À pied', '🚇 Métro', '🚆 PATH', '🚌 Bus',
+                '🚕 Uber / VTC', '🚐 Van privé', '🚗 Voiture de location',
+                '⛴️ Ferry', '🚈 Train', '🚡 Téléphérique', '🧭 Autre'];
+
+  function transAt(anchor){
+    return Object.keys(DB.t || {})
+      .filter(function(k){ return DB.t[k] && DB.t[k].a === anchor; })
+      .map(function(k){ return {id:k, d:DB.t[k]}; })
+      .sort(function(a, b){ return (a.d.o || 0) - (b.d.o || 0); });
+  }
+
+  function transBlock(id, tr){
+    var li = document.createElement('li');
+    li.className = 'trans';
+
+    var ico = document.createElement('span');
+    ico.className = 'tr-ico';
+    ico.textContent = (tr.m || '🧭').split(' ')[0];
+    li.appendChild(ico);
+
+    var body = document.createElement('div'); body.className = 'tr-body';
+    var top  = document.createElement('div'); top.className = 'tr-top';
+    var nm   = document.createElement('span'); nm.className = 'tr-name';
+    nm.textContent = (tr.m || '').replace(/^\S+\s*/, '') + (tr.l ? ' — ' + tr.l : '');
+    top.appendChild(nm);
+
+    if (tr.d || tr.p){
+      var right = document.createElement('span'); right.className = 'stop-tr';
+      if (tr.d){
+        var du = document.createElement('span'); du.className = 'dur'; du.textContent = tr.d;
+        right.appendChild(du);
+      }
+      if (tr.p){
+        var co = document.createElement('span'); co.className = 'cost no';
+        co.textContent = '≈ ' + approx(tr.p);
+        right.appendChild(co);
+      }
+      top.appendChild(right);
+    }
+    body.appendChild(top);
+
+    if (tr.n){
+      var nt = document.createElement('div'); nt.className = 'tr-note'; nt.textContent = tr.n;
+      body.appendChild(nt);
+    }
+    li.appendChild(body);
+
+    if (canEdit()){
+      var mod = document.createElement('button');
+      mod.type = 'button'; mod.className = 'tr-edit'; mod.title = 'Modifier ce transport';
+      mod.textContent = '✎';
+      mod.addEventListener('click', function(){ transForm(tr.a, id, tr); });
+      li.appendChild(mod);
+
+      var del = document.createElement('button');
+      del.type = 'button'; del.className = 'del'; del.title = 'Supprimer ce transport';
+      del.textContent = '×';
+      del.addEventListener('click', function(){
+        askConfirm('Supprimer ce transport ?',
+          'Vous allez supprimer <b>« ' + esc(nm.textContent || 'ce trajet') + ' »</b>'
+          + (CLOUD ? ' pour <b>tout le monde</b>.' : '.') + " C'est définitif.",
+          'Supprimer', function(){ drop('t/' + id); });
+      });
+      li.appendChild(del);
+    }
+    return li;
+  }
+
+  function transForm(anchor, id, cur){
+    cur = cur || {};
+    askText(id ? 'Modifier le transport' : 'Ajouter un transport',
+      'Durée et prix sont <b>approximatifs</b>. Laissez vide ce que vous ne savez pas encore.',
+      [
+        {label:'Moyen de transport', options:MOYENS, value:cur.m},
+        {label:'Ligne, direction, arrêt… (facultatif)', ph:'Ex. Ligne 7 → Flushing, arrêt 42 St', value:cur.l},
+        {label:'Durée à peu près (facultatif)', ph:'Ex. 25 min', value:cur.d},
+        {label:'Prix à peu près (facultatif)', ph:'Ex. 2,90 $/pers., 45 $ le van…', value:cur.p},
+        {label:'Remarque (facultatif)', ph:'Tickets, correspondance, accès PMR…', multi:true, value:cur.n}
+      ],
+      id ? 'Enregistrer' : 'Ajouter', function(v){
+        var o = {a:anchor, m:v[0], l:v[1], d:v[2], p:v[3], n:v[4]};
+        if (id){ o.o = cur.o || 0; put('t/' + id, o); }
+        else {
+          o.o = Date.now();
+          put('t/x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), o);
+        }
+      });
+  }
+
+  function gapBtn(anchor){
+    var li = document.createElement('li');
+    li.className = 'trans-gap';
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'add-trans';
+    b.textContent = '＋ Transport ici';
+    b.addEventListener('click', function(){ transForm(anchor, null, null); });
+    li.appendChild(b);
+    return li;
+  }
+
+  function renderTrans(){
+    Array.prototype.forEach.call(document.querySelectorAll('.day[data-day]'), function(day){
+      var dayId = day.getAttribute('data-day');
+      var ul = day.querySelector('ul.stops');
+      if (!ul) return;
+
+      /* on repart de la liste d'origine : on retire ce qu'on avait injecté */
+      Array.prototype.slice.call(ul.children).forEach(function(li){
+        if (li.classList.contains('trans') || li.classList.contains('trans-gap')) ul.removeChild(li);
+      });
+
+      var stops = Array.prototype.slice.call(ul.children);
+      for (var gap = stops.length; gap >= 0; gap--){
+        var anchor = dayId + ':' + gap;
+        var frag = document.createDocumentFragment();
+        transAt(anchor).forEach(function(x){ frag.appendChild(transBlock(x.id, x.d)); });
+        if (canEdit()) frag.appendChild(gapBtn(anchor));
+        if (frag.childNodes.length) ul.insertBefore(frag, stops[gap] || null);
+      }
+    });
+  }
+  /* --------------------------------- descriptions réécrites des étapes
+     Le texte d'origine est dans le HTML. Le profil ADMIN peut le remplacer :
+     la réécriture est stockée dans la branche « d », sous la clé « jour#numéro »
+     (2#1 = 1re étape du jour 2). Vider le champ restaure le texte d'origine. */
+  function stopsOf(day){
+    return Array.prototype.slice.call(
+      day.querySelectorAll('ul.stops > li:not(.trans):not(.trans-gap)'));
+  }
+
+  /* Dans un encadré repas, le texte libre suit un <br> sans balise à lui :
+     on l'enveloppe une fois pour tout dans un <span> qu'on saura remplacer. */
+  function eatDesc(cbody){
+    var d = cbody.querySelector('.eat-desc');
+    if (d) return d;
+    var br = cbody.querySelector('br');
+    if (!br) return null;
+    d = document.createElement('span');
+    d.className = 'eat-desc';
+    var n = br.nextSibling;
+    while (n){ var nx = n.nextSibling; d.appendChild(n); n = nx; }
+    cbody.appendChild(d);
+    d.setAttribute('data-orig', d.innerHTML);
+    return d;
+  }
+
+  function descForm(key, current, name){
+    askText('Description de l\u2019étape',
+      'Vous réécrivez la description de <b>« ' + esc(name) + ' »</b> pour tout le monde.'
+      + ' Videz le champ et enregistrez pour revenir au texte d\u2019origine.',
+      [{label:'Description', ph:'Ce qu\u2019il faut savoir sur cette étape…', multi:true,
+        value:current, allowEmpty:true}],
+      'Enregistrer', function(v){
+        if (v[0]) put('d/' + key, v[0]); else drop('d/' + key);
+      });
+  }
+
+  function renderDescs(){
+    Array.prototype.forEach.call(document.querySelectorAll('.day[data-day]'), function(day){
+      var dayId = day.getAttribute('data-day');
+      stopsOf(day).forEach(function(li, i){
+        var cbody = li.querySelector('.cbody');
+        if (!cbody) return;
+
+        var key  = dayId + '#' + (i + 1);
+        var over = (DB.d || {})[key];
+        var eat  = li.classList.contains('eat');
+        var note, name;
+
+        if (eat){
+          var lb = li.querySelector('.lbl'), hd = li.querySelector('.hood');
+          name = (lb ? lb.textContent.trim() : 'ce repas')
+               + (hd ? ' \u2014 ' + hd.textContent.trim() : '');
+          note = eatDesc(cbody);
+          if (!note) return;
+          if (over) note.textContent = over;
+          else note.innerHTML = note.getAttribute('data-orig') || '';
+        } else {
+          note = cbody.querySelector('.stop-note');
+          name = li.querySelector('.stop-name');
+          name = name ? name.textContent.trim() : 'cette étape';
+
+          /* on garde le texte du HTML pour pouvoir y revenir */
+          if (note && note.getAttribute('data-orig') === null){
+            note.setAttribute('data-orig', note.innerHTML);
+          }
+
+          if (over){
+            if (!note){
+              note = document.createElement('div');
+              note.className = 'stop-note';
+              note.setAttribute('data-orig', '');
+              cbody.appendChild(note);
+            }
+            note.textContent = over;
+          } else if (note){
+            var orig = note.getAttribute('data-orig');
+            if (orig) note.innerHTML = orig;
+            else { cbody.removeChild(note); note = null; }
+          }
+        }
+
+        /* bouton d'ajout laissé au tour précédent */
+        var old = cbody.querySelector('.add-desc');
+        if (old) cbody.removeChild(old);
+
+        if (note){
+          note.classList.toggle('editable', canEdit());
+          note.title = canEdit() ? 'Cliquez pour modifier la description' : '';
+          if (canEdit() && !note.__wired){
+            note.__wired = true;
+            note.addEventListener('click', function(){
+              if (!canEdit()) return;   /* l'ecouteur survit a un changement de profil */
+              descForm(key, (DB.d || {})[key] || note.textContent.trim(), name);
+            });
+          }
+        } else if (canEdit() && !eat){
+          var b = document.createElement('button');
+          b.type = 'button'; b.className = 'add-desc';
+          b.textContent = '＋ Description';
+          b.addEventListener('click', function(){ descForm(key, '', name); });
+          cbody.appendChild(b);
+        }
+      });
+    });
+  }
   function paintTotals(){
     var x = totals(), d = x[0], t = x[1];
     barEl.style.width = t ? (100 * d / t).toFixed(1) + '%' : '0%';
@@ -1639,7 +1943,9 @@ window.TRIP_SYNC = {
         : 'Vos ajouts et vos coches seront perdus.',
       'Réinitialiser', function(){
         var d = defaults();
-        d.g = DB.g || {};   /* les suggestions ne font pas partie de la check-list */
+        d.g = DB.g || {};   /* ni les suggestions ni les transports ne font */
+        d.t = DB.t || {};   /* partie de la check-list : on les conserve      */
+        d.d = DB.d || {};   /* idem pour les descriptions réécrites          */
         if (CLOUD) ROOT.set(d); else { DB = d; saveLocal(); render(); }
       });
   });
@@ -1660,6 +1966,8 @@ window.TRIP_SYNC = {
     try{ DB = raw ? JSON.parse(raw) : defaults(); }catch(e){ DB = defaults(); }
     if (!DB.i || !Object.keys(DB.i).length) DB = defaults();
     if (!DB.g) DB.g = {};
+    if (!DB.t) DB.t = {};
+    if (!DB.d) DB.d = {};
     if (ls(LKEY, JSON.stringify(DB)) === null){
       warnEl.innerHTML = '<div class="stor-warn">Ce navigateur n\'autorise pas l\'enregistrement local : vos coches dispara\u00eetront à la fermeture.</div>';
     }
@@ -1686,7 +1994,7 @@ window.TRIP_SYNC = {
           });
           ROOT.on('value', function(snap){
             var v = snap.val() || {};
-            DB = {s: v.s || {}, i: v.i || {}, g: v.g || {}};
+            DB = {s: v.s || {}, i: v.i || {}, g: v.g || {}, t: v.t || {}, d: v.d || {}};
             if (!Object.keys(DB.i).length && !ready){ ROOT.set(defaults()); return; }
             repairTitles();
             ready = true; render();
@@ -1715,6 +2023,12 @@ window.TRIP_SYNC = {
   tabs.prog.addEventListener('click', function(){ show('prog'); });
   tabs.check.addEventListener('click', function(){ show('check'); });
   if (ls('nyc2026:tab') === 'check') show('check');
+
+  /* L'identité sert maintenant partout (coches, +1 sur les suggestions, droit de
+     correction), plus seulement dans la check-list : on la demande dès l'arrivée.
+     Non bloquant — « Je regarde juste » ferme, et la question revient à la première
+     action qui a besoin de savoir qui vous êtes. */
+  if (!ME) setTimeout(function(){ if (!ME) askMe(); }, 500);
 })();
 </script>
 </body>

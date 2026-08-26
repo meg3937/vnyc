@@ -1126,17 +1126,29 @@ window.TRIP_SYNC = {
     for (var i = 0; i < ks.length - 1; i++){ if (typeof cur[ks[i]] !== 'object' || !cur[ks[i]]) cur[ks[i]] = {}; cur = cur[ks[i]]; }
     if (val === null) delete cur[ks[ks.length - 1]]; else cur[ks[ks.length - 1]] = val;
   }
+  /* Une ecriture Firebase qui echoue levait une exception avalee par le
+     gestionnaire de clic : rien ne se passait, sans le moindre message.
+     On l'attrape et on l'affiche dans la pastille de synchro. */
+  function writeFail(e, path){
+    if (window.console) console.error('Echec ecriture', path, e);
+    setSync('off', 'Enregistrement refuse');
+    setTimeout(function(){ if (CLOUD) setSync('on', 'Partage \u2014 a jour'); }, 4000);
+  }
+  function cloud(path, fn){
+    try { fn(ROOT.child(path)); }
+    catch (e){ writeFail(e, path); }
+  }
   function patch(base, obj){
-    if (CLOUD){ ROOT.child(base).update(obj); return; }
+    if (CLOUD){ cloud(base, function(r){ r.update(obj); }); return; }
     Object.keys(obj).forEach(function(k){ applyPath(DB, base + '/' + k, obj[k]); });
     saveLocal(); render();
   }
   function drop(path){
-    if (CLOUD){ ROOT.child(path).remove(); return; }
+    if (CLOUD){ cloud(path, function(r){ r.remove(); }); return; }
     applyPath(DB, path, null); saveLocal(); render();
   }
   function put(path, val){
-    if (CLOUD){ ROOT.child(path).set(val); return; }
+    if (CLOUD){ cloud(path, function(r){ r.set(val); }); return; }
     applyPath(DB, path, val); saveLocal(); render();
   }
 
@@ -1814,7 +1826,7 @@ window.TRIP_SYNC = {
         var cbody = li.querySelector('.cbody');
         if (!cbody) return;
 
-        var key  = dayId + '#' + (i + 1);
+        var key  = dayId + '-' + (i + 1);   /* pas de # : interdit par Firebase */
         var over = (DB.d || {})[key];
         var eat  = li.classList.contains('eat');
         var note, name;

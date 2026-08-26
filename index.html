@@ -148,7 +148,15 @@
   .tabbar .tb-count{display:inline-block;margin-left:7px;font-size:11.5px;font-weight:700;color:var(--deep);
                     background:var(--gold);border-radius:20px;padding:2px 8px;vertical-align:1px;}
   .tabbar .tb-count.done{background:#2fa07d;color:#fff;}
-  @media (max-width:560px){.tabbar{padding:0 10px;} .tabbar button{padding:13px 12px 10px;font-size:13px;}}
+  .tabbar .tb-group{display:flex;gap:4px;}
+  .tabbar .tb-link{margin-left:auto;display:flex;align-items:center;gap:6px;text-decoration:none;
+                   font:600 14px/1 'Inter',sans-serif;color:#a9bdd0;
+                   border-bottom:3px solid transparent;padding:15px 18px 12px;}
+  .tabbar .tb-link:hover{color:#fff;border-bottom-color:rgba(255,255,255,.35);}
+  .tabbar .tb-ext{font-size:11px;opacity:.7;}
+  @media (max-width:560px){.tabbar{padding:0 10px;}
+    .tabbar button,.tabbar .tb-link{padding:13px 12px 10px;font-size:13px;}
+    .tabbar .tb-link{gap:4px;}}
 
   /* ---- Checklist ---- */
   .check-wrap{max-width:860px;margin:0 auto;padding:26px 24px 70px;}
@@ -289,9 +297,15 @@
   <p>Du lundi 19 au lundi 26 octobre. Base à Jersey City (Liberty Ave). Quartier, transport, durée, inclusion Go City et adresses resto pour chaque étape. <b>Rien n'est encore réservé</b> : c'est une première trame, on cale tout ensemble.</p>
 </div>
 
-<nav class="tabbar" role="tablist">
-  <button type="button" role="tab" id="tab-prog"  aria-controls="view-prog"  aria-selected="true">Programme</button>
-  <button type="button" role="tab" id="tab-check" aria-controls="view-check" aria-selected="false">Check-list<span class="tb-count" data-ck-count>0/0</span></button>
+<nav class="tabbar">
+  <div class="tb-group" role="tablist">
+    <button type="button" role="tab" id="tab-prog"  aria-controls="view-prog"  aria-selected="true">Programme</button>
+    <button type="button" role="tab" id="tab-check" aria-controls="view-check" aria-selected="false">Check-list<span class="tb-count" data-ck-count>0/0</span></button>
+  </div>
+  <!-- ===== Lien Google Drive : coller l'URL du dossier partage dans le href ci-dessous ===== -->
+  <a class="tb-link" id="tab-docs" target="_blank" rel="noopener"
+     title="Ouvrir le dossier Google Drive dans un nouvel onglet"
+     href="https://drive.google.com/drive/folders/15nKrZ5Hx0t2RhsyFc6wdbwoIH6BUz0pT?usp=sharing">Documents<span class="tb-ext">&#8599;</span></a>
 </nav>
 
 <div id="view-prog" class="tabview" role="tabpanel" aria-labelledby="tab-prog">
@@ -310,7 +324,7 @@
     <div class="row">
       <span>🚶 à pied</span><span>🚇 métro</span><span>🚆 PATH</span><span>🚕 VTC</span><span>⛴️ ferry</span><span>🚐 van</span><span>🍴 manger</span><span>🎈 temps libre</span>
     </div>
-    <div class="row"><span>Tout ce qui se fait <b>à pied</b> reste sous ~20-25 min de marche. Au-delà : métro/PATH.</span></div>
+    <div class="row"><span>Tout ce qui se fait <b>à pied</b> reste sous ~20 min de marche. Au-delà : métro/PATH.</span></div>
   </div>
 
   <div class="tip">

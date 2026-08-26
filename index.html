@@ -262,6 +262,15 @@
                       background:#f7f9fc;border:1px solid var(--line);border-radius:10px;padding:11px 12px;cursor:pointer;text-align:left;}
   .modal .grid button:hover{background:#eef2f7;border-color:#b6c2ce;}
   .modal .close{margin-top:14px;width:100%;}
+  .modal .actions{display:flex;gap:8px;margin-top:20px;}
+  .modal .actions button{flex:1 1 0;font:600 13.5px/1 'Inter',sans-serif;border-radius:10px;
+                         padding:12px 10px;cursor:pointer;border:1px solid var(--line);}
+  .modal .actions .cancel{background:#f7f9fc;color:#3d5163;}
+  .modal .actions .cancel:hover{background:#eef2f7;color:var(--deep);border-color:#b6c2ce;}
+  .modal .actions .danger{background:#c0374f;border-color:#a72f45;color:#fff;}
+  .modal .actions .danger:hover{background:#a72f45;}
+  .modal .actions button:focus-visible{outline:2px solid var(--deep);outline-offset:2px;}
+  .modal .card.ask p b{color:var(--deep);}
   .setup{background:#fbf3e6;border:1px solid #f0dcc0;border-left:4px solid var(--gold);border-radius:10px;
          padding:14px 18px;margin-top:16px;font-size:12.5px;color:#4a3a17;line-height:1.55;}
   .setup b{color:#3f2f0c;}
@@ -1026,6 +1035,34 @@ window.TRIP_SYNC = {
     return row;
   }
 
+  /* Confirmation avant une suppression : reprend le style des autres modales
+     (Echap ou clic hors de la carte = annuler ; le focus part sur Annuler). */
+  function askConfirm(title, msgHtml, okLabel, cb){
+    var ov = document.createElement('div');
+    ov.className = 'modal';
+    var card = document.createElement('div');
+    card.className = 'card ask';
+    card.innerHTML = '<h3>' + esc(title) + '</h3><p>' + msgHtml + '</p>';
+    var row = document.createElement('div'); row.className = 'actions';
+    var no = document.createElement('button');
+    no.type = 'button'; no.className = 'cancel'; no.textContent = 'Annuler';
+    var yes = document.createElement('button');
+    yes.type = 'button'; yes.className = 'danger'; yes.textContent = okLabel;
+    row.appendChild(no); row.appendChild(yes);
+    card.appendChild(row); ov.appendChild(card);
+    function close(){
+      if (ov.parentNode) ov.parentNode.removeChild(ov);
+      document.removeEventListener('keydown', onKey);
+    }
+    function onKey(e){ if (e.key === 'Escape' || e.keyCode === 27) close(); }
+    no.addEventListener('click', close);
+    yes.addEventListener('click', function(){ close(); cb(); });
+    ov.addEventListener('click', function(e){ if (e.target === ov) close(); });
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(ov);
+    no.focus();
+  }
+
   function pickPerson(anchorText, cb){
     var ov = document.createElement('div');
     ov.className = 'modal';
@@ -1147,8 +1184,10 @@ window.TRIP_SYNC = {
     var del = document.createElement('button');
     del.type = 'button'; del.className = 'del'; del.title = 'Supprimer'; del.textContent = '×';
     del.addEventListener('click', function(){
-      if (!confirm('Supprimer « ' + (it.t || 'cette ligne') + ' » pour tout le monde ?')) return;
-      drop('i/' + id);
+      askConfirm('Supprimer cette ligne ?',
+        'Vous allez supprimer <b>« ' + esc(it.t || 'cette ligne') + ' »</b>'
+        + (CLOUD ? ' pour <b>tout le monde</b>.' : '.') + " C'est définitif.",
+        'Supprimer', function(){ drop('i/' + id); });
     });
     li.appendChild(del);
     return li;
@@ -1180,9 +1219,14 @@ window.TRIP_SYNC = {
       var dsec = document.createElement('button');
       dsec.type = 'button'; dsec.className = 'del-sec'; dsec.title = 'Supprimer la catégorie'; dsec.textContent = '×';
       dsec.addEventListener('click', function(){
-        if (!confirm('Supprimer « ' + s.t +' » et ses ' + its.length + ' lignes, pour tout le monde ?')) return;
-        its.forEach(function(x){ drop('i/' + x.id); });
-        drop('s/' + s.id);
+        askConfirm('Supprimer cette catégorie ?',
+          'Vous allez supprimer <b>« ' + esc(s.t) + ' »</b> et ses <b>' + its.length
+          + ' ligne' + (its.length > 1 ? 's' : '') + '</b>'
+          + (CLOUD ? ', pour <b>tout le monde</b>.' : '.') + " C'est définitif.",
+          'Tout supprimer', function(){
+            its.forEach(function(x){ drop('i/' + x.id); });
+            drop('s/' + s.id);
+          });
       });
       head.appendChild(h3); head.appendChild(cnt); head.appendChild(dsec);
 
@@ -1269,11 +1313,14 @@ window.TRIP_SYNC = {
     put('s/' + id, {t:'Nouvelle catégorie', o:mx + 10});
   });
   $('[data-ck-reset]').addEventListener('click', function(){
-    if (!confirm(CLOUD
-      ? "Remettre la liste d'origine POUR TOUT LE MONDE ? Les ajouts et les coches de chacun seront perdus."
-      : "Revenir à la liste d'origine ? Vos ajouts et vos coches seront perdus.")) return;
-    var d = defaults();
-    if (CLOUD) ROOT.set(d); else { DB = d; saveLocal(); render(); }
+    askConfirm("Revenir à la liste d'origine ?",
+      CLOUD
+        ? 'La liste sera remise à zéro <b>pour tout le monde</b> : les ajouts et les coches de chacun seront perdus.'
+        : 'Vos ajouts et vos coches seront perdus.',
+      'Réinitialiser', function(){
+        var d = defaults();
+        if (CLOUD) ROOT.set(d); else { DB = d; saveLocal(); render(); }
+      });
   });
 
   /* ------------------------------------------------------------ synchro */

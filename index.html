@@ -78,6 +78,11 @@
             border:1px dashed #c3cfdc;border-radius:20px;padding:5px 12px;cursor:pointer;align-self:flex-start;}
   .add-desc:hover{color:var(--deep);border-color:var(--steel);background:#f7f9fc;}
   @media print{.add-desc{display:none;}}
+  .rm-stop{margin-top:8px;margin-left:6px;font:600 11.5px/1 'Inter',sans-serif;color:#a23350;background:transparent;
+           border:1px dashed #f2cad3;border-radius:20px;padding:5px 12px;cursor:pointer;}
+  .rm-stop:hover{background:#fdeef0;border-color:#e8a9b8;}
+  @media print{.rm-stop{display:none;}}
+  .pin-ok{font-size:12px;opacity:.55;margin-left:2px;}
   .go::before{content:"🚶 ";} .metro::before{content:"🚇 ";} .path::before{content:"🚆 ";}
   .vtc::before{content:"🚕 ";} .ferry::before{content:"⛴️ ";} .van::before{content:"🚐 ";}
   .move{color:#3d5163;}
@@ -96,11 +101,23 @@
   li.trans:hover .tr-edit,li.trans:hover .del{opacity:1;}
   li.trans .tr-edit:hover{color:var(--deep);}
   li.trans .del:hover{color:#a23350;}
-  li.trans-gap{display:flex;justify-content:center;margin-top:6px;}
+  li.trans-gap{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:6px;}
   .add-trans{font:600 11.5px/1 'Inter',sans-serif;color:#6b8299;background:transparent;
              border:1px dashed #c3cfdc;border-radius:20px;padding:5px 13px;cursor:pointer;}
   .add-trans:hover{color:var(--deep);border-color:var(--steel);background:#f2f6fa;}
+  .add-act:hover{color:#12604a;border-color:#9fd0bb;background:#eaf6f0;}
   @media print{li.trans-gap{display:none;} li.trans .tr-edit,li.trans .del{display:none;}}
+  /* ---- Activites ajoutees depuis la page (memes classes visuelles qu'une etape normale) ---- */
+  li.actv{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:13px 16px;
+          margin-top:10px;position:relative;}
+  li.actv .act-edit,li.actv .del{opacity:0;position:absolute;top:10px;font:700 14px/1 'Inter',sans-serif;
+       color:#8fa0b0;background:none;border:0;cursor:pointer;padding:2px 4px;}
+  li.actv .del{right:6px;}
+  li.actv .act-edit{right:28px;}
+  li.actv:hover .act-edit,li.actv:hover .del{opacity:1;}
+  li.actv .act-edit:hover{color:var(--deep);}
+  li.actv .del:hover{color:#a23350;}
+  @media print{li.actv .act-edit,li.actv .del{display:none;}}
   /* ---- Suggestions d'activites ---- */
   .sugg{margin-top:48px;padding-top:6px;border-top:3px double var(--line);}
   .sugg-intro{font-size:13.5px;color:var(--steel);margin:10px 0 14px;}
@@ -154,6 +171,7 @@
   .ph.ph-cover{height:280px;margin-top:22px;border-radius:12px;}
 
   li.stop, li.free, li.eat{display:flex;align-items:stretch;padding:0;overflow:hidden;}
+  li.stop[hidden], li.free[hidden], li.eat[hidden]{display:none;}
   li.stop > .ph, li.free > .ph, li.eat > .ph{flex:0 0 196px;margin:0;border-radius:0;min-height:118px;}
   li.stop > .ph img, li.free > .ph img, li.eat > .ph img{position:absolute;top:0;left:0;width:100%;height:100%;}
   .cbody{flex:1 1 auto;min-width:0;padding:13px 16px;}
@@ -199,11 +217,13 @@
   .map-legend .pin-badge{margin-right:0;}
   .pin-badge.eat{background:var(--gold);} .pin-badge.ev{background:var(--sport);}
   .pin-badge.opt{background:var(--steel);} .pin-badge.free{background:#3a6ea5;}
+  .pin-badge.actv{background:#7b52a1;}
   .pin-badge.off{background:#fff;color:var(--steel);border:1px dashed #9fb0c2;}
   li.eat .pin-badge{margin-right:5px;}
   .mk{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;font:700 12px/1 'Inter',sans-serif;color:#fff;background:var(--deep);border:2px solid #fff;box-shadow:0 1px 4px rgba(10,25,45,.45);}
   .mk.eat{background:var(--gold);} .mk.ev{background:var(--sport);}
   .mk.opt{background:var(--steel);} .mk.free{background:#3a6ea5;}
+  .mk.actv{background:#7b52a1;}
   .mk-ref{width:12px;height:12px;border-radius:50%;background:#8fa3b6;border:2px solid #fff;box-shadow:0 1px 3px rgba(10,25,45,.4);}
   .leaflet-container{font-family:'Inter',sans-serif;font-size:12px;}
   .leaflet-popup-content{margin:9px 12px;font-size:12.5px;line-height:1.4;}
@@ -861,6 +881,67 @@
     return s;
   }
 
+  /* Les etapes supprimees et les activites ajoutees avec une adresse ne sont
+     connues que du DEUXIEME script (celui qui gere la synchro). On les lit
+     ici via ce pont global, mis a jour apres chaque rendu de la check-list. */
+  function curDel(){ return (window.__nycDB && window.__nycDB.del) || {}; }
+
+  function paintLegend(m){
+    var del = curDel();
+    m.legendEl.innerHTML = '';
+    m.rows.forEach(function(r){
+      if (del[r.skey]) return;
+      var lg = document.createElement('span');
+      lg.className = 'lg';
+      lg.appendChild(badge(r.n, r.k, !r.has));
+      lg.appendChild(document.createTextNode(' ' + r.name));
+      m.legendEl.appendChild(lg);
+    });
+    (m.extra || []).forEach(function(e, idx){
+      var lg = document.createElement('span');
+      lg.className = 'lg';
+      lg.appendChild(badge(String.fromCharCode(65 + idx), 'actv', false));
+      lg.appendChild(document.createTextNode(' ' + e.name));
+      m.legendEl.appendChild(lg);
+    });
+  }
+
+  function mapPts(m){
+    var del = curDel();
+    var pts = m.rows.filter(function(r){ return r.has && !del[r.skey]; })
+                    .map(function(r){ return {n: r.n, k: r.k, name: r.name, ll: r.ll}; });
+    (m.extra || []).forEach(function(e, idx){
+      pts.push({n: String.fromCharCode(65 + idx), k: 'actv', name: e.name, ll: e.ll});
+    });
+    return pts;
+  }
+
+  function paintMarkers(m){
+    if (!m.map) return;
+    if (m.layer) m.layer.clearLayers(); else m.layer = L.layerGroup().addTo(m.map);
+
+    var pts = mapPts(m), all = [];
+    if (pts.length > 1){
+      L.polyline(pts.map(function(p){ return p.ll; }),
+        {color: '#4a6076', weight: 2, opacity: .65, dashArray: '5,7'}).addTo(m.layer);
+    }
+    pts.forEach(function(p){
+      all.push(p.ll);
+      L.marker(p.ll, {icon: L.divIcon({className: '', iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -14],
+        html: '<div class="mk ' + p.k + '">' + p.n + '</div>'})})
+       .addTo(m.layer)
+       .bindPopup('<b>' + p.n + '. ' + p.name + '</b><br><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' + p.ll[0] + ',' + p.ll[1] + '">Ouvrir dans Google Maps &#8599;</a>');
+    });
+    m.refs.forEach(function(r){
+      all.push([r[0], r[1]]);
+      L.marker([r[0], r[1]], {icon: L.divIcon({className: '', iconSize: [12, 12], iconAnchor: [6, 6], popupAnchor: [0, -8],
+        html: '<div class="mk-ref"></div>'})}).addTo(m.layer).bindPopup(r[2]);
+    });
+    if (all.length > 1) m.map.fitBounds(L.latLngBounds(all).pad(0.18));
+    else if (all.length === 1) m.map.setView(all[0], 15);
+    else m.map.setView([40.75, -73.99], 12);
+  }
+
   var maps = [];
 
   Array.prototype.forEach.call(document.querySelectorAll('.day'), function(day){
@@ -872,22 +953,16 @@
     d.pins.forEach(function(p){ coords[p[0]] = [p[1], p[2]]; });
 
     var legend = box.querySelector('[data-legend]');
-    var pts = [];
+    var rows = [];
 
-    /* :not(.trans) — les blocs transport ajoutés depuis la page ne doivent pas
-       décaler la numérotation des étapes ni les points de la carte */
-    Array.prototype.forEach.call(day.querySelectorAll('ul.stops > li:not(.trans):not(.trans-gap)'), function(li, i){
+    /* :not(.trans):not(.actv) — les blocs transport et les activités ajoutés
+       depuis la page ne doivent pas décaler la numérotation des étapes
+       d'origine ni les points de la carte */
+    Array.prototype.forEach.call(day.querySelectorAll('ul.stops > li:not(.trans):not(.trans-gap):not(.actv)'), function(li, i){
       var num = i + 1, k = kind(li), name = label(li), has = !!coords[num];
       var anchor = li.querySelector('.stop-name') || li.querySelector('.lbl');
       if (anchor) anchor.parentNode.insertBefore(badge(num, k, !has), anchor);
-
-      var lg = document.createElement('span');
-      lg.className = 'lg';
-      lg.appendChild(badge(num, k, !has));
-      lg.appendChild(document.createTextNode(' ' + name));
-      legend.appendChild(lg);
-
-      if (has) pts.push({n: num, k: k, name: name, ll: coords[num]});
+      rows.push({n: num, k: k, name: name, has: has, ll: has ? coords[num] : null, skey: id + '-' + num});
     });
 
     var extra = UNLOC[id];
@@ -900,7 +975,8 @@
       box.insertBefore(note, legend);
     }
 
-    var m = {box: box, id: id, pts: pts, refs: d.refs || []};
+    var m = {box: box, id: id, rows: rows, refs: d.refs || [], extra: [], legendEl: legend};
+    paintLegend(m);
     box.__m = m;
     maps.push(m);
   });
@@ -915,28 +991,8 @@
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
-
-    var all = [];
-    if (m.pts.length > 1){
-      L.polyline(m.pts.map(function(p){ return p.ll; }),
-        {color: '#4a6076', weight: 2, opacity: .65, dashArray: '5,7'}).addTo(map);
-    }
-    m.pts.forEach(function(p){
-      all.push(p.ll);
-      L.marker(p.ll, {icon: L.divIcon({className: '', iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -14],
-        html: '<div class="mk ' + p.k + '">' + p.n + '</div>'})})
-       .addTo(map)
-       .bindPopup('<b>' + p.n + '. ' + p.name + '</b><br><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' + p.ll[0] + ',' + p.ll[1] + '">Ouvrir dans Google Maps \u2197</a>');
-    });
-    m.refs.forEach(function(r){
-      all.push([r[0], r[1]]);
-      L.marker([r[0], r[1]], {icon: L.divIcon({className: '', iconSize: [12, 12], iconAnchor: [6, 6], popupAnchor: [0, -8],
-        html: '<div class="mk-ref"></div>'})}).addTo(map).bindPopup(r[2]);
-    });
-    if (all.length > 1) map.fitBounds(L.latLngBounds(all).pad(0.18));
-    else if (all.length === 1) map.setView(all[0], 15);
-    else map.setView([40.75, -73.99], 12);
     m.map = map;
+    paintMarkers(m);
     setTimeout(function(){ map.invalidateSize(); }, 60);
   }
 
@@ -957,6 +1013,9 @@
   }
   window.__nycRefreshMaps = function(){
     maps.forEach(function(m){ if (!m.done) buildMap(m); else if (m.map) m.map.invalidateSize(); });
+  };
+  window.__nycRepaintMaps = function(){
+    maps.forEach(function(m){ paintLegend(m); if (m.map) paintMarkers(m); });
   };
   if (document.readyState === 'complete') start(); else window.addEventListener('load', start);
 
@@ -1091,7 +1150,7 @@ window.TRIP_SYNC = {
   paintMe();
 
   /* ------------------------------------------------- base de donnees */
-  var DB = {s:{}, i:{}, g:{}, t:{}, d:{}}, CLOUD = false, ROOT = null, ready = false;
+  var DB = {s:{}, i:{}, g:{}, t:{}, d:{}, a:{}, del:{}}, CLOUD = false, ROOT = null, ready = false;
 
   function defaults(){
     var d = {s:{}, i:{}};
@@ -1464,6 +1523,7 @@ window.TRIP_SYNC = {
 
   function render(){
     if (editing){ pending = true; return; }   /* ne pas rafraîchir sous les doigts */
+    window.__nycDB = DB;   /* pont lu par le script des cartes (étapes supprimées, activités localisées) */
     listEl.innerHTML = '';
     secs().forEach(function(s){
       var its = items(s.id), shown = its.filter(function(x){ return match(x.d); });
@@ -1518,8 +1578,30 @@ window.TRIP_SYNC = {
     });
     paintTotals();
     renderSugg();
-    renderTrans();
+    renderExtras();
     renderDescs();
+    renderStopTools();
+    syncMapExtras();
+    if (window.__nycRepaintMaps) window.__nycRepaintMaps();
+  }
+
+  /* Donne au script des cartes les activités ajoutées qui ont une adresse
+     déjà localisée (branche DB.a, champs lat/lng posés par geocode()). */
+  function syncMapExtras(){
+    Array.prototype.forEach.call(document.querySelectorAll('.daymap'), function(box){
+      var m = box.__m;
+      if (!m) return;
+      var prefix = m.id + ':';
+      var list = [];
+      Object.keys(DB.a || {}).forEach(function(k){
+        var act = DB.a[k];
+        if (act && typeof act.a === 'string' && act.a.indexOf(prefix) === 0
+            && typeof act.lat === 'number' && typeof act.lng === 'number'){
+          list.push({name: act.t || 'Activité', ll: [act.lat, act.lng]});
+        }
+      });
+      m.extra = list;
+    });
   }
 
   /* ------------------------------------------- suggestions d'activités
@@ -1666,11 +1748,130 @@ window.TRIP_SYNC = {
                 '🚕 Uber / VTC', '🚐 Van privé', '🚗 Voiture de location',
                 '⛴️ Ferry', '🚈 Train', '🚡 Téléphérique', '🧭 Autre'];
 
-  function transAt(anchor){
-    return Object.keys(DB.t || {})
-      .filter(function(k){ return DB.t[k] && DB.t[k].a === anchor; })
-      .map(function(k){ return {id:k, d:DB.t[k]}; })
-      .sort(function(a, b){ return (a.d.o || 0) - (b.d.o || 0); });
+  /* ------------------------------------------------ blocs « activité »
+     Ajoutées entre deux étapes du programme, comme les transports ci-dessus,
+     par le profil ADMIN. Même ancrage « jour:position ». */
+  var COSTS = ['Gratuit', 'Inclus Go City', 'À part / prix'];
+  function costLabel(c){ return c === 'inc' ? 'Inclus Go City' : c === 'free' ? 'Gratuit' : 'À part / prix'; }
+  function costCode(l){ return l === 'Inclus Go City' ? 'inc' : l === 'Gratuit' ? 'free' : 'no'; }
+
+  function activityBlock(id, act){
+    var li = document.createElement('li');
+    li.className = 'actv';
+    var cbody = document.createElement('div'); cbody.className = 'cbody';
+
+    var top = document.createElement('div'); top.className = 'stop-top';
+    var nm = document.createElement('span'); nm.className = 'stop-name'; nm.textContent = act.t || '';
+    top.appendChild(nm);
+
+    var right = document.createElement('span'); right.className = 'stop-tr';
+    if (act.d){
+      var du = document.createElement('span'); du.className = 'dur'; du.textContent = act.d;
+      right.appendChild(du);
+    }
+    var co = document.createElement('span'); co.className = 'cost ' + (act.c || 'no');
+    co.textContent = act.c === 'inc' ? 'inclus Go City' : act.c === 'free' ? 'gratuit' : (act.cp || 'à part');
+    right.appendChild(co);
+    if (act.addr){
+      var pin = document.createElement('span'); pin.className = 'pin-ok';
+      pin.textContent = '📍';
+      pin.title = (typeof act.lat === 'number')
+        ? 'Repérée sur la carte du jour (' + act.addr + ')'
+        : 'Adresse enregistrée, recherche de la position en cours…';
+      right.appendChild(pin);
+    }
+    top.appendChild(right);
+    cbody.appendChild(top);
+
+    if (act.h || act.mv){
+      var meta = document.createElement('div'); meta.className = 'stop-meta';
+      if (act.h){ var hd = document.createElement('span'); hd.className = 'hood'; hd.textContent = act.h; meta.appendChild(hd); }
+      if (act.mv){ var mv = document.createElement('span'); mv.className = 'move'; mv.textContent = act.mv; meta.appendChild(mv); }
+      cbody.appendChild(meta);
+    }
+    if (act.n){
+      var note = document.createElement('div'); note.className = 'stop-note'; note.textContent = act.n;
+      cbody.appendChild(note);
+    }
+    li.appendChild(cbody);
+
+    if (canEdit()){
+      var mod = document.createElement('button');
+      mod.type = 'button'; mod.className = 'act-edit'; mod.title = 'Modifier cette activité';
+      mod.textContent = '✎';
+      mod.addEventListener('click', function(){ activityForm(act.a, id, act); });
+      li.appendChild(mod);
+
+      var del = document.createElement('button');
+      del.type = 'button'; del.className = 'del'; del.title = 'Supprimer cette activité';
+      del.textContent = '×';
+      del.addEventListener('click', function(){
+        askConfirm('Supprimer cette activité ?',
+          'Vous allez supprimer <b>« ' + esc(act.t || 'cette activité') + ' »</b>'
+          + (CLOUD ? ' pour <b>tout le monde</b>.' : '.') + " C'est définitif.",
+          'Supprimer', function(){ drop('a/' + id); });
+      });
+      li.appendChild(del);
+    }
+    return li;
+  }
+
+  /* Geolocalisation par adresse (API Nominatim/OpenStreetMap, gratuite, sans
+     clé). Utilisée pour poser automatiquement un point sur la carte du jour
+     quand on ajoute une activité avec son adresse. */
+  function geocode(q, cb){
+    try{
+      fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(q))
+        .then(function(r){ return r.json(); })
+        .then(function(arr){
+          cb((arr && arr.length) ? {lat: parseFloat(arr[0].lat), lng: parseFloat(arr[0].lon)} : null);
+        })
+        .catch(function(){ cb(null); });
+    }catch(e){ cb(null); }
+  }
+
+  function activityForm(anchor, id, cur){
+    cur = cur || {};
+    askText(id ? 'Modifier l’activité' : 'Ajouter une activité',
+      'Durée et prix sont <b>approximatifs</b>. L’adresse est utilisée pour placer'
+      + ' automatiquement un point sur la carte du jour — soyez aussi précis·e que possible'
+      + ' (numéro, rue, ville). Laissez vide ce que vous ne savez pas encore.',
+      [
+        {label:'Nom de l’activité', ph:'Ex. Balade à Central Park', value:cur.t},
+        {label:'Adresse (facultatif, pour la carte)', ph:'Ex. 20 W 34th St, New York, NY 10001', value:cur.addr},
+        {label:'Quartier (facultatif)', ph:'Ex. Upper West Side', value:cur.h},
+        {label:'Durée à peu près (facultatif)', ph:'Ex. 1 h 30', value:cur.d},
+        {label:'Coût', options:COSTS, value:costLabel(cur.c)},
+        {label:'Prix ou précision sur le coût (facultatif)', ph:'Ex. 25 $, réservation conseillée…', value:cur.cp},
+        {label:'Comment y aller (facultatif)', ph:'Ex. à pied (~10 min), métro ligne 6…', value:cur.mv},
+        {label:'Remarque (facultatif)', ph:'Ce qu’il faut savoir…', multi:true, value:cur.n, allowEmpty:true}
+      ],
+      id ? 'Enregistrer' : 'Ajouter', function(v){
+        var addr = (v[1] || '').trim();
+        var o = {a:anchor, t:v[0], addr:addr, h:v[2], d:v[3], c:costCode(v[4]), cp:v[5], mv:v[6], n:v[7]};
+        o.o = id ? (cur.o || 0) : Date.now();
+        var pid = id || ('x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5));
+
+        if (!addr){ o.lat = null; o.lng = null; put('a/' + pid, o); return; }
+        if (addr === cur.addr && typeof cur.lat === 'number'){
+          o.lat = cur.lat; o.lng = cur.lng; put('a/' + pid, o); return;
+        }
+        /* adresse neuve, changée, ou jamais localisée : on enregistre tout de
+           suite, puis on complète les coordonnées dès qu'on les a */
+        put('a/' + pid, o);
+        geocode(addr, function(loc){ if (loc) patch('a/' + pid, {lat: loc.lat, lng: loc.lng}); });
+      });
+  }
+
+  function extrasAt(anchor){
+    var out = [];
+    Object.keys(DB.t || {}).forEach(function(k){
+      if (DB.t[k] && DB.t[k].a === anchor) out.push({id:k, d:DB.t[k], kind:'t'});
+    });
+    Object.keys(DB.a || {}).forEach(function(k){
+      if (DB.a[k] && DB.a[k].a === anchor) out.push({id:k, d:DB.a[k], kind:'a'});
+    });
+    return out.sort(function(x, y){ return (x.d.o || 0) - (y.d.o || 0); });
   }
 
   function transBlock(id, tr){
@@ -1754,15 +1955,21 @@ window.TRIP_SYNC = {
   function gapBtn(anchor){
     var li = document.createElement('li');
     li.className = 'trans-gap';
-    var b = document.createElement('button');
-    b.type = 'button'; b.className = 'add-trans';
-    b.textContent = '＋ Transport ici';
-    b.addEventListener('click', function(){ transForm(anchor, null, null); });
-    li.appendChild(b);
+    var b1 = document.createElement('button');
+    b1.type = 'button'; b1.className = 'add-trans';
+    b1.textContent = '＋ Transport ici';
+    b1.addEventListener('click', function(){ transForm(anchor, null, null); });
+    li.appendChild(b1);
+
+    var b2 = document.createElement('button');
+    b2.type = 'button'; b2.className = 'add-trans add-act';
+    b2.textContent = '＋ Activité ici';
+    b2.addEventListener('click', function(){ activityForm(anchor, null, null); });
+    li.appendChild(b2);
     return li;
   }
 
-  function renderTrans(){
+  function renderExtras(){
     Array.prototype.forEach.call(document.querySelectorAll('.day[data-day]'), function(day){
       var dayId = day.getAttribute('data-day');
       var ul = day.querySelector('ul.stops');
@@ -1770,14 +1977,16 @@ window.TRIP_SYNC = {
 
       /* on repart de la liste d'origine : on retire ce qu'on avait injecté */
       Array.prototype.slice.call(ul.children).forEach(function(li){
-        if (li.classList.contains('trans') || li.classList.contains('trans-gap')) ul.removeChild(li);
+        if (li.classList.contains('trans') || li.classList.contains('actv') || li.classList.contains('trans-gap')) ul.removeChild(li);
       });
 
-      var stops = Array.prototype.slice.call(ul.children);
+      var stops = stopsOf(day);
       for (var gap = stops.length; gap >= 0; gap--){
         var anchor = dayId + ':' + gap;
         var frag = document.createDocumentFragment();
-        transAt(anchor).forEach(function(x){ frag.appendChild(transBlock(x.id, x.d)); });
+        extrasAt(anchor).forEach(function(x){
+          frag.appendChild(x.kind === 't' ? transBlock(x.id, x.d) : activityBlock(x.id, x.d));
+        });
         if (canEdit()) frag.appendChild(gapBtn(anchor));
         if (frag.childNodes.length) ul.insertBefore(frag, stops[gap] || null);
       }
@@ -1789,7 +1998,49 @@ window.TRIP_SYNC = {
      (2#1 = 1re étape du jour 2). Vider le champ restaure le texte d'origine. */
   function stopsOf(day){
     return Array.prototype.slice.call(
-      day.querySelectorAll('ul.stops > li:not(.trans):not(.trans-gap)'));
+      day.querySelectorAll('ul.stops > li:not(.trans):not(.trans-gap):not(.actv)'));
+  }
+
+  /* --------------------------------- suppression des étapes d'origine
+     Chaque étape du HTML garde son texte tel quel : on la cache seulement
+     (clé "jour-position", comme les descriptions réécrites juste au-dessus)
+     et on lui ajoute un petit bouton de suppression pour le profil ADMIN. */
+  function stopLabel(li){
+    var n = li.querySelector('.stop-name');
+    if (n){
+      var c = n.cloneNode(true), t = c.querySelector('.opttag');
+      if (t) t.parentNode.removeChild(t);
+      return c.textContent.replace(/\s+/g, ' ').trim();
+    }
+    var l = li.querySelector('.lbl'), hd = li.querySelector('.hood');
+    return l ? (l.textContent.trim() + (hd ? ' — ' + hd.textContent.trim() : '')) : 'cette étape';
+  }
+
+  function renderStopTools(){
+    Array.prototype.forEach.call(document.querySelectorAll('.day[data-day]'), function(day){
+      var dayId = day.getAttribute('data-day');
+      stopsOf(day).forEach(function(li, i){
+        var key = dayId + '-' + (i + 1);
+        li.hidden = !!(DB.del || {})[key];
+
+        var cbody = li.querySelector('.cbody');
+        if (!cbody) return;
+        var old = cbody.querySelector('.rm-stop');
+        if (old) cbody.removeChild(old);
+        if (canEdit()){
+          var name = stopLabel(li);
+          var b = document.createElement('button');
+          b.type = 'button'; b.className = 'rm-stop'; b.textContent = '× Supprimer cette étape';
+          b.addEventListener('click', function(){
+            askConfirm('Supprimer cette étape ?',
+              'Vous allez supprimer <b>« ' + esc(name) + ' »</b>'
+              + (CLOUD ? ' pour <b>tout le monde</b>.' : '.') + " C'est définitif.",
+              'Supprimer', function(){ put('del/' + key, true); });
+          });
+          cbody.appendChild(b);
+        }
+      });
+    });
   }
 
   /* Dans un encadré repas, le texte libre suit un <br> sans balise à lui :
@@ -1955,9 +2206,11 @@ window.TRIP_SYNC = {
         : 'Vos ajouts et vos coches seront perdus.',
       'Réinitialiser', function(){
         var d = defaults();
-        d.g = DB.g || {};   /* ni les suggestions ni les transports ne font */
-        d.t = DB.t || {};   /* partie de la check-list : on les conserve      */
-        d.d = DB.d || {};   /* idem pour les descriptions réécrites          */
+        d.g = DB.g || {};     /* ni les suggestions, transports, activités */
+        d.t = DB.t || {};     /* ajoutées, descriptions réécrites ou      */
+        d.d = DB.d || {};     /* étapes supprimées ne font partie de la   */
+        d.a = DB.a || {};     /* check-list : on les conserve             */
+        d.del = DB.del || {};
         if (CLOUD) ROOT.set(d); else { DB = d; saveLocal(); render(); }
       });
   });
@@ -1980,6 +2233,8 @@ window.TRIP_SYNC = {
     if (!DB.g) DB.g = {};
     if (!DB.t) DB.t = {};
     if (!DB.d) DB.d = {};
+    if (!DB.a) DB.a = {};
+    if (!DB.del) DB.del = {};
     if (ls(LKEY, JSON.stringify(DB)) === null){
       warnEl.innerHTML = '<div class="stor-warn">Ce navigateur n\'autorise pas l\'enregistrement local : vos coches dispara\u00eetront à la fermeture.</div>';
     }
@@ -2006,7 +2261,7 @@ window.TRIP_SYNC = {
           });
           ROOT.on('value', function(snap){
             var v = snap.val() || {};
-            DB = {s: v.s || {}, i: v.i || {}, g: v.g || {}, t: v.t || {}, d: v.d || {}};
+            DB = {s: v.s || {}, i: v.i || {}, g: v.g || {}, t: v.t || {}, d: v.d || {}, a: v.a || {}, del: v.del || {}};
             if (!Object.keys(DB.i).length && !ready){ ROOT.set(defaults()); return; }
             repairTitles();
             ready = true; render();

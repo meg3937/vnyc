@@ -2140,7 +2140,11 @@ window.TRIP_SYNC = {
         if (li.classList.contains('trans') || li.classList.contains('actv') || li.classList.contains('trans-gap')) ul.removeChild(li);
       });
 
-      var stops = stopsOf(day);
+      /* les étapes supprimées ne comptent pas comme repère : sinon leur
+         emplacement (invisible, display:none) crée un « trou » avec deux
+         rangées de boutons ＋ qui se retrouvent visuellement collées */
+      var del = DB.del || {};
+      var stops = stopsOf(day).filter(function(li){ return !del[li.getAttribute('data-sid')]; });
       var validKeys = {'0': true};
       stops.forEach(function(li){ validKeys[li.getAttribute('data-sid')] = true; });
 
@@ -2308,6 +2312,7 @@ window.TRIP_SYNC = {
     li.addEventListener('dragleave', function(){ li.classList.remove('drag-over'); });
     li.addEventListener('drop', function(e){
       e.preventDefault();
+      e.stopPropagation();   /* empêche le <ul> du jour de traiter le même dépôt en double */
       li.classList.remove('drag-over');
       var srcSid = e.dataTransfer.getData('text/plain');
       var dstSid = li.getAttribute('data-sid');
@@ -2340,6 +2345,31 @@ window.TRIP_SYNC = {
     });
   }
 
+  /* Déposer directement sur le <ul> (pas sur une étape précise) : sert
+     surtout pour un jour vide comme « À caler », où il n'y a encore aucune
+     carte-étape sur laquelle lâcher le glisser-déposer. */
+  function wireDayDrop(ul){
+    if (ul.__dragWired) return;
+    ul.__dragWired = true;
+    ul.addEventListener('dragover', function(e){ e.preventDefault(); });
+    ul.addEventListener('drop', function(e){
+      if (e.target !== ul) return;   /* une étape a déjà géré ce dépôt (stopPropagation) */
+      e.preventDefault();
+      var srcSid = e.dataTransfer.getData('text/plain');
+      if (!srcSid) return;
+      var srcLi = document.querySelector('li[data-sid="' + srcSid + '"]');
+      if (!srcLi) return;
+      var dstDay = ul.closest('.day');
+      if (!dstDay) return;
+      var srcDay = srcLi.closest('.day');
+      var dstDayId = dstDay.getAttribute('data-day');
+      var srcDayId = srcDay ? srcDay.getAttribute('data-day') : null;
+      if (srcDayId === dstDayId) return;
+      ul.appendChild(srcLi);
+      commitMove(srcSid, srcDayId, dstDayId, srcDay, dstDay);
+    });
+  }
+
   /* --------------------------------- suppression des étapes d'origine
      Chaque étape du HTML garde son texte tel quel : on la cache seulement
      (même data-sid que ci-dessus) et on lui ajoute une petite barre d'outils
@@ -2369,6 +2399,8 @@ window.TRIP_SYNC = {
     var days = dayOptions();
     Array.prototype.forEach.call(document.querySelectorAll('.day[data-day]'), function(day){
       var dayId = day.getAttribute('data-day');
+      var dayUl = day.querySelector('ul.stops');
+      if (canEdit() && dayUl) wireDayDrop(dayUl);
       stopsOf(day).forEach(function(li, i){
         var key = sidOf(li, dayId, i);
         li.hidden = !!(DB.del || {})[key];

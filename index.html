@@ -78,11 +78,22 @@
             border:1px dashed #c3cfdc;border-radius:20px;padding:5px 12px;cursor:pointer;align-self:flex-start;}
   .add-desc:hover{color:var(--deep);border-color:var(--steel);background:#f7f9fc;}
   @media print{.add-desc{display:none;}}
-  .rm-stop{margin-top:8px;margin-left:6px;font:600 11.5px/1 'Inter',sans-serif;color:#a23350;background:transparent;
-           border:1px dashed #f2cad3;border-radius:20px;padding:5px 12px;cursor:pointer;}
+  .rm-stop{font:600 11.5px/1 'Inter',sans-serif;color:#a23350;background:transparent;
+           border:1px dashed #f2cad3;border-radius:20px;padding:5px 12px;cursor:pointer;margin-left:auto;}
   .rm-stop:hover{background:#fdeef0;border-color:#e8a9b8;}
   @media print{.rm-stop{display:none;}}
   .pin-ok{font-size:12px;opacity:.55;margin-left:2px;}
+  /* ---- Réordonnancement des étapes (glisser ou boutons monter/descendre) ---- */
+  .stop-tools{display:flex;align-items:center;gap:5px;margin-top:9px;flex-wrap:wrap;}
+  .drag-handle{cursor:grab;font-size:16px;line-height:1;color:#8fa0b0;padding:3px 5px;user-select:none;}
+  .drag-handle:hover{color:var(--deep);}
+  .drag-handle:active{cursor:grabbing;}
+  .ord-btn{font:700 12px/1 'Inter',sans-serif;color:#6b8299;background:transparent;
+           border:1px solid var(--line);border-radius:6px;padding:4px 8px;cursor:pointer;}
+  .ord-btn:hover{color:var(--deep);border-color:var(--steel);background:#f2f6fa;}
+  li.stop.dragging, li.free.dragging, li.eat.dragging{opacity:.4;}
+  li.stop.drag-over, li.free.drag-over, li.eat.drag-over{box-shadow:0 0 0 2px var(--gold) inset;}
+  @media print{.stop-tools{display:none;}}
   .go::before{content:"🚶 ";} .metro::before{content:"🚇 ";} .path::before{content:"🚆 ";}
   .vtc::before{content:"🚕 ";} .ferry::before{content:"⛴️ ";} .van::before{content:"🚐 ";}
   .move{color:#3d5163;}
@@ -963,6 +974,7 @@
       var num = i + 1, k = kind(li), name = label(li), has = !!coords[num];
       var anchor = li.querySelector('.stop-name') || li.querySelector('.lbl');
       if (anchor) anchor.parentNode.insertBefore(badge(num, k, !has), anchor);
+      li.setAttribute('data-sid', id + '-' + num);
       rows.push({n: num, k: k, name: name, has: has, ll: has ? coords[num] : null, skey: id + '-' + num});
     });
 
@@ -1151,7 +1163,7 @@ window.TRIP_SYNC = {
   paintMe();
 
   /* ------------------------------------------------- base de donnees */
-  var DB = {s:{}, i:{}, g:{}, t:{}, d:{}, a:{}, del:{}}, CLOUD = false, ROOT = null, ready = false;
+  var DB = {s:{}, i:{}, g:{}, t:{}, d:{}, a:{}, del:{}, ord:{}}, CLOUD = false, ROOT = null, ready = false;
 
   function defaults(){
     var d = {s:{}, i:{}};
@@ -1579,6 +1591,8 @@ window.TRIP_SYNC = {
     });
     paintTotals();
     renderSugg();
+    ensureSids();
+    applyOrder();
     renderExtras();
     renderDescs();
     renderStopTools();
@@ -2002,10 +2016,100 @@ window.TRIP_SYNC = {
       day.querySelectorAll('ul.stops > li:not(.trans):not(.trans-gap):not(.actv)'));
   }
 
+  /* --------------------------------- identifiant stable de chaque étape
+     Posé une seule fois par le script des cartes (data-sid, basé sur l'ordre
+     d'origine du HTML) : on le reprend tel quel ici pour que suppression,
+     description et réordonnancement pointent tous vers la même étape, même
+     après un glisser-déposer. Filet de secours si jamais l'attribut manque
+     (jour sans carte). */
+  function sidOf(li, dayId, i){
+    return li.getAttribute('data-sid') || (dayId + '-' + (i + 1));
+  }
+  function ensureSids(){
+    Array.prototype.forEach.call(document.querySelectorAll('.day[data-day]'), function(day){
+      var dayId = day.getAttribute('data-day');
+      stopsOf(day).forEach(function(li, i){
+        if (!li.getAttribute('data-sid')) li.setAttribute('data-sid', sidOf(li, dayId, i));
+      });
+    });
+  }
+
+  /* --------------------------------- ordre personnalisé des étapes
+     DB.ord[jour] retient la liste des data-sid dans l'ordre voulu. Une étape
+     jamais déplacée, ou une étape ajoutée après coup, se retrouve simplement
+     à la fin : rien à migrer. */
+  function applyOrder(){
+    Array.prototype.forEach.call(document.querySelectorAll('.day[data-day]'), function(day){
+      var dayId = day.getAttribute('data-day');
+      var ul = day.querySelector('ul.stops');
+      if (!ul) return;
+      var bySid = {};
+      stopsOf(day).forEach(function(li){ bySid[li.getAttribute('data-sid')] = li; });
+
+      var order = [];
+      ((DB.ord || {})[dayId] || []).forEach(function(sid){
+        if (bySid[sid]){ order.push(sid); delete bySid[sid]; }
+      });
+      stopsOf(day).forEach(function(li){
+        var sid = li.getAttribute('data-sid');
+        if (bySid[sid]){ order.push(sid); delete bySid[sid]; }
+      });
+
+      order.forEach(function(sid){
+        var li = ul.querySelector('li[data-sid="' + sid + '"]');
+        if (li) ul.appendChild(li);
+      });
+    });
+  }
+
+  function moveStop(li, dir){
+    var day = li.closest('.day');
+    if (!day) return;
+    var dayId = day.getAttribute('data-day');
+    var sids = stopsOf(day).map(function(x){ return x.getAttribute('data-sid'); });
+    var i = sids.indexOf(li.getAttribute('data-sid')), j = i + dir;
+    if (i < 0 || j < 0 || j >= sids.length) return;
+    var tmp = sids[i]; sids[i] = sids[j]; sids[j] = tmp;
+    put('ord/' + dayId, sids);
+  }
+
+  function wireDrag(li, handle){
+    handle.draggable = true;
+    handle.addEventListener('dragstart', function(e){
+      e.dataTransfer.setData('text/plain', li.getAttribute('data-sid'));
+      e.dataTransfer.effectAllowed = 'move';
+      li.classList.add('dragging');
+    });
+    handle.addEventListener('dragend', function(){ li.classList.remove('dragging'); });
+
+    if (li.__dragWired) return;
+    li.__dragWired = true;
+    li.addEventListener('dragover', function(e){ e.preventDefault(); li.classList.add('drag-over'); });
+    li.addEventListener('dragleave', function(){ li.classList.remove('drag-over'); });
+    li.addEventListener('drop', function(e){
+      e.preventDefault();
+      li.classList.remove('drag-over');
+      var srcSid = e.dataTransfer.getData('text/plain');
+      var dstSid = li.getAttribute('data-sid');
+      if (!srcSid || srcSid === dstSid) return;
+      var day = li.closest('.day');
+      if (!day) return;
+      var dayId = day.getAttribute('data-day');
+      var sids = stopsOf(day).map(function(x){ return x.getAttribute('data-sid'); });
+      var from = sids.indexOf(srcSid);
+      if (from < 0) return;
+      sids.splice(from, 1);
+      var to = sids.indexOf(dstSid);
+      if (to < 0) return;
+      sids.splice(to, 0, srcSid);
+      put('ord/' + dayId, sids);
+    });
+  }
+
   /* --------------------------------- suppression des étapes d'origine
      Chaque étape du HTML garde son texte tel quel : on la cache seulement
-     (clé "jour-position", comme les descriptions réécrites juste au-dessus)
-     et on lui ajoute un petit bouton de suppression pour le profil ADMIN. */
+     (même data-sid que ci-dessus) et on lui ajoute une petite barre d'outils
+     (glisser, monter, descendre, supprimer) pour le profil ADMIN. */
   function stopLabel(li){
     var n = li.querySelector('.stop-name');
     if (n){
@@ -2021,15 +2125,33 @@ window.TRIP_SYNC = {
     Array.prototype.forEach.call(document.querySelectorAll('.day[data-day]'), function(day){
       var dayId = day.getAttribute('data-day');
       stopsOf(day).forEach(function(li, i){
-        var key = dayId + '-' + (i + 1);
+        var key = sidOf(li, dayId, i);
         li.hidden = !!(DB.del || {})[key];
 
         var cbody = li.querySelector('.cbody');
         if (!cbody) return;
-        var old = cbody.querySelector('.rm-stop');
+        var old = cbody.querySelector('.stop-tools');
         if (old) cbody.removeChild(old);
         if (canEdit()){
           var name = stopLabel(li);
+          var tools = document.createElement('div'); tools.className = 'stop-tools';
+
+          var handle = document.createElement('span');
+          handle.className = 'drag-handle'; handle.title = 'Glisser pour réordonner';
+          handle.textContent = '⠿';
+          tools.appendChild(handle);
+          wireDrag(li, handle);
+
+          var up = document.createElement('button');
+          up.type = 'button'; up.className = 'ord-btn'; up.title = 'Monter'; up.textContent = '↑';
+          up.addEventListener('click', function(){ moveStop(li, -1); });
+          tools.appendChild(up);
+
+          var down = document.createElement('button');
+          down.type = 'button'; down.className = 'ord-btn'; down.title = 'Descendre'; down.textContent = '↓';
+          down.addEventListener('click', function(){ moveStop(li, 1); });
+          tools.appendChild(down);
+
           var b = document.createElement('button');
           b.type = 'button'; b.className = 'rm-stop'; b.textContent = '× Supprimer cette étape';
           b.addEventListener('click', function(){
@@ -2038,7 +2160,9 @@ window.TRIP_SYNC = {
               + (CLOUD ? ' pour <b>tout le monde</b>.' : '.') + " C'est définitif.",
               'Supprimer', function(){ put('del/' + key, true); });
           });
-          cbody.appendChild(b);
+          tools.appendChild(b);
+
+          cbody.appendChild(tools);
         }
       });
     });
@@ -2078,7 +2202,7 @@ window.TRIP_SYNC = {
         var cbody = li.querySelector('.cbody');
         if (!cbody) return;
 
-        var key  = dayId + '-' + (i + 1);   /* pas de # : interdit par Firebase */
+        var key  = sidOf(li, dayId, i);   /* pas de # : interdit par Firebase */
         var over = (DB.d || {})[key];
         var eat  = li.classList.contains('eat');
         var note, name;
@@ -2212,6 +2336,7 @@ window.TRIP_SYNC = {
         d.d = DB.d || {};     /* étapes supprimées ne font partie de la   */
         d.a = DB.a || {};     /* check-list : on les conserve             */
         d.del = DB.del || {};
+        d.ord = DB.ord || {};
         if (CLOUD) ROOT.set(d); else { DB = d; saveLocal(); render(); }
       });
   });
@@ -2236,6 +2361,7 @@ window.TRIP_SYNC = {
     if (!DB.d) DB.d = {};
     if (!DB.a) DB.a = {};
     if (!DB.del) DB.del = {};
+    if (!DB.ord) DB.ord = {};
     if (ls(LKEY, JSON.stringify(DB)) === null){
       warnEl.innerHTML = '<div class="stor-warn">Ce navigateur n\'autorise pas l\'enregistrement local : vos coches dispara\u00eetront à la fermeture.</div>';
     }
@@ -2262,7 +2388,7 @@ window.TRIP_SYNC = {
           });
           ROOT.on('value', function(snap){
             var v = snap.val() || {};
-            DB = {s: v.s || {}, i: v.i || {}, g: v.g || {}, t: v.t || {}, d: v.d || {}, a: v.a || {}, del: v.del || {}};
+            DB = {s: v.s || {}, i: v.i || {}, g: v.g || {}, t: v.t || {}, d: v.d || {}, a: v.a || {}, del: v.del || {}, ord: v.ord || {}};
             if (!Object.keys(DB.i).length && !ready){ ROOT.set(defaults()); return; }
             repairTitles();
             ready = true; render();

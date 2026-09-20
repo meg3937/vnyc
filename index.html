@@ -46,6 +46,8 @@
   .day-tot{font-size:12.5px;color:var(--steel);margin-left:auto;align-self:center;}
 
   .getin{display:flex;gap:10px;align-items:flex-start;background:#eaf2f0;border:1px solid #cfe4de;border-radius:9px;padding:11px 15px;margin:14px 0 6px;font-size:13.5px;color:#1f4a41;}
+  .getin .gi-text.editable{cursor:pointer;border-radius:5px;}
+  .getin .gi-text.editable:hover{background:#e0efe9;box-shadow:0 0 0 4px #e0efe9,0 0 0 5px #b9e2d4;}
 
   ul.stops{list-style:none;margin:0;padding:0;}
   li.stop{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:13px 16px;margin-top:10px;}
@@ -98,31 +100,44 @@
   .vtc::before{content:"🚕 ";} .ferry::before{content:"⛴️ ";} .van::before{content:"🚐 ";}
   .move{color:#3d5163;}
 
-  /* ---- Transports et activites ajoutes depuis la page, entre deux etapes.
-     Meme gabarit qu'une etape normale (photo + cbody) pour rester coherents
-     avec le reste du programme. */
-  li.trans, li.actv{background:var(--paper);border:1px solid var(--line);border-radius:10px;
-                     margin-top:10px;position:relative;}
-  li.trans{border-left:3px solid var(--steel);}
-  li.trans .cbody, li.actv .cbody{position:relative;}
-  li.trans .extra-edit, li.trans .del, li.actv .extra-edit, li.actv .del{
-       opacity:0;position:absolute;top:10px;font:700 14px/1 'Inter',sans-serif;color:#8fa0b0;
-       background:none;border:0;cursor:pointer;padding:2px 4px;}
-  li.trans .del, li.actv .del{right:6px;}
-  li.trans .extra-edit, li.actv .extra-edit{right:28px;}
-  li.trans:hover .extra-edit, li.trans:hover .del,
-  li.actv:hover .extra-edit, li.actv:hover .del{opacity:1;}
-  li.trans .extra-edit:hover, li.actv .extra-edit:hover{color:var(--deep);}
-  li.trans .del:hover, li.actv .del:hover{color:#a23350;}
+  /* ---- Blocs transport, ajoutes entre deux etapes depuis la page (design
+     d'origine : bandeau compact, pas de photo) ---- */
+  li.trans{display:flex;align-items:flex-start;gap:11px;background:#eef4fa;border:1px solid #d3e0ec;
+           border-left:3px solid var(--steel);border-radius:9px;padding:10px 14px;margin-top:10px;
+           font-size:13px;color:#2b4257;}
+  li.trans .tr-ico{font-size:16px;line-height:1.35;flex:0 0 auto;}
+  li.trans .tr-body{flex:1 1 auto;min-width:0;}
+  li.trans .tr-top{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap;}
+  li.trans .tr-name{font-weight:600;color:var(--deep);}
+  li.trans .tr-note{margin-top:4px;font-size:12.5px;color:#4a6076;}
+  li.trans .tr-edit,li.trans .del{opacity:0;font:700 14px/1 'Inter',sans-serif;color:#8fa0b0;
+       background:none;border:0;cursor:pointer;padding:2px 4px;flex:0 0 auto;}
+  li.trans:hover .tr-edit,li.trans:hover .del{opacity:1;}
+  li.trans .tr-edit:hover{color:var(--deep);}
+  li.trans .del:hover{color:#a23350;}
+  li.trans .stop-tools{margin-top:8px;}
   li.trans-gap{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:6px;}
   .add-trans{font:600 11.5px/1 'Inter',sans-serif;color:#6b8299;background:transparent;
              border:1px dashed #c3cfdc;border-radius:20px;padding:5px 13px;cursor:pointer;}
   .add-trans:hover{color:var(--deep);border-color:var(--steel);background:#f2f6fa;}
   .add-act:hover{color:#12604a;border-color:#9fd0bb;background:#eaf6f0;}
-  @media print{li.trans-gap{display:none;}
-    li.trans .extra-edit, li.trans .del, li.actv .extra-edit, li.actv .del{display:none;}}
+  @media print{li.trans-gap{display:none;} li.trans .tr-edit,li.trans .del{display:none;}}
+
+  /* ---- Activites ajoutees depuis la page (meme gabarit qu'une etape
+     normale : photo + cbody + numero) ---- */
+  li.actv{background:var(--paper);border:1px solid var(--line);border-radius:10px;
+          margin-top:10px;position:relative;}
+  li.actv .extra-edit, li.actv .del{
+       opacity:0;position:absolute;top:10px;font:700 14px/1 'Inter',sans-serif;color:#8fa0b0;
+       background:none;border:0;cursor:pointer;padding:2px 4px;}
+  li.actv .del{right:6px;}
+  li.actv .extra-edit{right:28px;}
+  li.actv:hover .extra-edit, li.actv:hover .del{opacity:1;}
+  li.actv .extra-edit:hover{color:var(--deep);}
+  li.actv .del:hover{color:#a23350;}
+  @media print{li.actv .extra-edit, li.actv .del{display:none;}}
   /* ---- Alternative : liseré de couleur pour signaler une option de rechange ---- */
-  li.actv.is-alt, li.trans.is-alt{border-left:4px solid var(--sport);}
+  li.actv.is-alt{border-left:4px solid var(--sport);}
   .alt-tag{display:inline-block;margin-top:6px;font-size:10.5px;font-weight:700;letter-spacing:.04em;
            text-transform:uppercase;color:var(--sport);background:#fbe9ee;border:1px solid #f2cad3;
            border-radius:20px;padding:2px 9px;}
@@ -182,10 +197,10 @@
   .ph.ph-band{height:210px;margin-top:14px;border-radius:10px;}
   .ph.ph-cover{height:280px;margin-top:22px;border-radius:12px;}
 
-  li.stop, li.free, li.eat, li.trans, li.actv{display:flex;align-items:stretch;padding:0;overflow:hidden;}
+  li.stop, li.free, li.eat, li.actv{display:flex;align-items:stretch;padding:0;overflow:hidden;}
   li.stop[hidden], li.free[hidden], li.eat[hidden]{display:none;}
-  li.stop > .ph, li.free > .ph, li.eat > .ph, li.trans > .ph, li.actv > .ph{flex:0 0 196px;margin:0;border-radius:0;min-height:118px;}
-  li.stop > .ph img, li.free > .ph img, li.eat > .ph img, li.trans > .ph img, li.actv > .ph img{position:absolute;top:0;left:0;width:100%;height:100%;}
+  li.stop > .ph, li.free > .ph, li.eat > .ph, li.actv > .ph{flex:0 0 196px;margin:0;border-radius:0;min-height:118px;}
+  li.stop > .ph img, li.free > .ph img, li.eat > .ph img, li.actv > .ph img{position:absolute;top:0;left:0;width:100%;height:100%;}
   .cbody{flex:1 1 auto;min-width:0;padding:13px 16px;}
   li.eat .cbody{padding:12px 15px;}
   li.eat > .ph{flex-basis:150px;min-height:120px;}
@@ -198,8 +213,8 @@
   .credits li{margin-bottom:3px;break-inside:avoid;}
   .credits a{color:#4a6076;}
   @media (max-width:620px){
-    li.stop, li.free, li.eat, li.trans, li.actv{flex-direction:column;}
-    li.stop > .ph, li.free > .ph, li.eat > .ph, li.trans > .ph, li.actv > .ph{flex:0 0 auto;width:100%;height:168px;min-height:0;}
+    li.stop, li.free, li.eat, li.actv{flex-direction:column;}
+    li.stop > .ph, li.free > .ph, li.eat > .ph, li.actv > .ph{flex:0 0 auto;width:100%;height:168px;min-height:0;}
     li.eat > .ph{height:132px;}
     .credits ul{columns:1;}
     .ph.ph-cover{height:190px;} .ph.ph-band{height:158px;}
@@ -910,14 +925,13 @@
      la carte-etape elle-meme, pour que les deux restent identiques. */
   function liveRows(m){
     var del = curDel();
-    var bySkey = {};
-    m.rows.forEach(function(r){ bySkey[r.skey] = r; });
-
     var out = [], n = 0;
     Array.prototype.forEach.call(
       m.day.querySelectorAll('ul.stops > li:not(.trans):not(.trans-gap):not(.actv)'),
       function(li){
-        var r = bySkey[li.getAttribute('data-sid')];
+        /* table GLOBALE (toutes les journées) : une étape déplacée d'un jour
+           à l'autre garde ses coordonnées et se fait quand même numéroter ici */
+        var r = GLOBAL_ROWS[li.getAttribute('data-sid')];
         if (!r || del[r.skey]) return;
         n++;
         var b = li.querySelector('.pin-badge');
@@ -979,6 +993,7 @@
   }
 
   var maps = [];
+  var GLOBAL_ROWS = {};   /* skey -> {k, name, has, ll}, toutes journées confondues */
 
   Array.prototype.forEach.call(document.querySelectorAll('.day'), function(day){
     var box = day.querySelector('.daymap');
@@ -999,7 +1014,9 @@
       var anchor = li.querySelector('.stop-name') || li.querySelector('.lbl');
       if (anchor) anchor.parentNode.insertBefore(badge(num, k, !has), anchor);
       li.setAttribute('data-sid', id + '-' + num);
-      rows.push({n: num, k: k, name: name, has: has, ll: has ? coords[num] : null, skey: id + '-' + num});
+      var row = {n: num, k: k, name: name, has: has, ll: has ? coords[num] : null, skey: id + '-' + num};
+      rows.push(row);
+      GLOBAL_ROWS[row.skey] = row;
     });
 
     var extra = UNLOC[id];
@@ -1626,6 +1643,7 @@ window.TRIP_SYNC = {
     applyOrder();
     renderExtras();
     renderDescs();
+    renderGetins();
     renderStopTools();
     syncMapExtras();
     if (window.__nycRepaintMaps) window.__nycRepaintMaps();
@@ -1993,57 +2011,45 @@ window.TRIP_SYNC = {
 
   function transBlock(id, tr){
     var li = document.createElement('li');
-    li.className = 'trans' + (tr.alt ? ' is-alt' : '');
+    li.className = 'trans';
 
-    var ph = document.createElement('div'); ph.className = 'ph';
-    if (tr.img){
-      var img = document.createElement('img'); img.src = tr.img; img.alt = tr.m || ''; img.loading = 'lazy';
-      ph.appendChild(img);
-    } else {
-      var lbl = document.createElement('span'); lbl.className = 'ph-lbl';
-      lbl.textContent = (tr.m || '🧭').split(' ')[0] + ' Transport';
-      ph.appendChild(lbl);
-    }
-    li.appendChild(ph);
+    var ico = document.createElement('span');
+    ico.className = 'tr-ico';
+    ico.textContent = (tr.m || '🧭').split(' ')[0];
+    li.appendChild(ico);
 
-    var cbody = document.createElement('div'); cbody.className = 'cbody';
-
-    var top = document.createElement('div'); top.className = 'stop-top';
-    var bnum = document.createElement('span'); bnum.className = 'pin-badge trans';
-    top.appendChild(bnum);
-    var nm = document.createElement('span'); nm.className = 'stop-name';
+    var body = document.createElement('div'); body.className = 'tr-body';
+    var top  = document.createElement('div'); top.className = 'tr-top';
+    var nm   = document.createElement('span'); nm.className = 'tr-name';
     nm.textContent = (tr.m || '').replace(/^\S+\s*/, '') + (tr.l ? ' — ' + tr.l : '');
     top.appendChild(nm);
 
-    var right = document.createElement('span'); right.className = 'stop-tr';
-    if (tr.d){
-      var du = document.createElement('span'); du.className = 'dur'; du.textContent = tr.d;
-      right.appendChild(du);
+    if (tr.d || tr.p){
+      var right = document.createElement('span'); right.className = 'stop-tr';
+      if (tr.d){
+        var du = document.createElement('span'); du.className = 'dur'; du.textContent = tr.d;
+        right.appendChild(du);
+      }
+      if (tr.p){
+        var co = document.createElement('span'); co.className = 'cost no';
+        co.textContent = '≈ ' + approx(tr.p);
+        right.appendChild(co);
+      }
+      top.appendChild(right);
     }
-    if (tr.p){
-      var co = document.createElement('span'); co.className = 'cost no';
-      co.textContent = '≈ ' + approx(tr.p);
-      right.appendChild(co);
-    }
-    top.appendChild(right);
-    cbody.appendChild(top);
-
-    if (tr.alt){
-      var altTag = document.createElement('span'); altTag.className = 'alt-tag'; altTag.textContent = 'Alternative';
-      cbody.appendChild(altTag);
-    }
+    body.appendChild(top);
 
     if (tr.n){
-      var note = document.createElement('div'); note.className = 'stop-note'; note.textContent = tr.n;
-      cbody.appendChild(note);
+      var nt = document.createElement('div'); nt.className = 'tr-note'; nt.textContent = tr.n;
+      body.appendChild(nt);
     }
 
-    if (canEdit()) cbody.appendChild(extraToolbar('t', id, tr.a));
-    li.appendChild(cbody);
+    if (canEdit()) body.appendChild(extraToolbar('t', id, tr.a));
+    li.appendChild(body);
 
     if (canEdit()){
       var mod = document.createElement('button');
-      mod.type = 'button'; mod.className = 'extra-edit'; mod.title = 'Modifier ce transport';
+      mod.type = 'button'; mod.className = 'tr-edit'; mod.title = 'Modifier ce transport';
       mod.textContent = '✎';
       mod.addEventListener('click', function(){ transForm(tr.a, id, tr); });
       li.appendChild(mod);
@@ -2071,12 +2077,10 @@ window.TRIP_SYNC = {
         {label:'Ligne, direction, arrêt… (facultatif)', ph:'Ex. Ligne 7 → Flushing, arrêt 42 St', value:cur.l},
         {label:'Durée à peu près (facultatif)', ph:'Ex. 25 min', value:cur.d},
         {label:'Prix à peu près (facultatif)', ph:'Ex. 2,90 $/pers., 45 $ le van…', value:cur.p},
-        {label:'URL d’une photo (facultatif)', ph:'https://…', value:cur.img},
-        {label:'Remarque (facultatif)', ph:'Tickets, correspondance, accès PMR…', multi:true, value:cur.n},
-        {label:'Alternative (option de rechange, pas le plan principal)', checkbox:true, value:cur.alt}
+        {label:'Remarque (facultatif)', ph:'Tickets, correspondance, accès PMR…', multi:true, value:cur.n}
       ],
       id ? 'Enregistrer' : 'Ajouter', function(v){
-        var o = {a:anchor, m:v[0], l:v[1], d:v[2], p:v[3], img:v[4], n:v[5], alt:v[6]};
+        var o = {a:anchor, m:v[0], l:v[1], d:v[2], p:v[3], n:v[4]};
         if (id){ o.o = cur.o || 0; put('t/' + id, o); }
         else {
           o.o = Date.now();
@@ -2132,7 +2136,7 @@ window.TRIP_SYNC = {
   function numberExtras(day){
     var n = 0;
     Array.prototype.forEach.call(
-      day.querySelectorAll('ul.stops > li.trans .pin-badge, ul.stops > li.actv .pin-badge'),
+      day.querySelectorAll('ul.stops > li.actv .pin-badge'),
       function(b){ n++; b.textContent = n; }
     );
   }
@@ -2468,6 +2472,51 @@ window.TRIP_SYNC = {
       });
     });
   }
+
+  /* --------------------------------- texte d'intro de chaque jour (le
+     bandeau vert « Aller au 1er spot : … »). Même mécanique que les
+     descriptions d'étape : réécriture stockée dans la branche « d », sous
+     une clé qui ne peut pas entrer en collision avec celles des étapes. */
+  function getinForm(dayId, current, dayTitle){
+    var key = 'gi-' + dayId;
+    askText('Texte d’introduction du jour',
+      'Vous réécrivez le texte d’introduction de <b>« ' + esc(dayTitle) + ' »</b> pour tout le monde.'
+      + ' Videz le champ et enregistrez pour revenir au texte d’origine.',
+      [{label:'Texte', ph:'Ex. Aller au 1er spot : …', multi:true, value:current, allowEmpty:true}],
+      'Enregistrer', function(v){
+        if (v[0]) put('d/' + key, v[0]); else drop('d/' + key);
+      });
+  }
+
+  function renderGetins(){
+    Array.prototype.forEach.call(document.querySelectorAll('.day[data-day]'), function(day){
+      var dayId = day.getAttribute('data-day');
+      var box = day.querySelector('.getin');
+      if (!box) return;
+      var textEl = box.children[1];
+      if (!textEl) return;
+      if (textEl.getAttribute('data-orig') === null) textEl.setAttribute('data-orig', textEl.innerHTML);
+
+      var key = 'gi-' + dayId;
+      var over = (DB.d || {})[key];
+      if (over) textEl.textContent = over;
+      else textEl.innerHTML = textEl.getAttribute('data-orig') || '';
+
+      textEl.classList.add('gi-text');
+      textEl.classList.toggle('editable', canEdit());
+      textEl.title = canEdit() ? 'Cliquez pour modifier ce texte' : '';
+      if (canEdit() && !textEl.__wired){
+        textEl.__wired = true;
+        textEl.addEventListener('click', function(){
+          if (!canEdit()) return;
+          var titleEl = day.querySelector('.day-title');
+          var name = titleEl ? titleEl.textContent.trim() : ('jour ' + dayId);
+          getinForm(dayId, (DB.d || {})[key] || textEl.textContent.trim(), name);
+        });
+      }
+    });
+  }
+
   function paintTotals(){
     var x = totals(), d = x[0], t = x[1];
     barEl.style.width = t ? (100 * d / t).toFixed(1) + '%' : '0%';

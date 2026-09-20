@@ -98,37 +98,38 @@
   .vtc::before{content:"🚕 ";} .ferry::before{content:"⛴️ ";} .van::before{content:"🚐 ";}
   .move{color:#3d5163;}
 
-  /* ---- Blocs transport, ajoutes entre deux etapes depuis la page ---- */
-  li.trans{display:flex;align-items:flex-start;gap:11px;background:#eef4fa;border:1px solid #d3e0ec;
-           border-left:3px solid var(--steel);border-radius:9px;padding:10px 14px;margin-top:10px;
-           font-size:13px;color:#2b4257;}
-  li.trans .tr-ico{font-size:16px;line-height:1.35;flex:0 0 auto;}
-  li.trans .tr-body{flex:1 1 auto;min-width:0;}
-  li.trans .tr-top{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap;}
-  li.trans .tr-name{font-weight:600;color:var(--deep);}
-  li.trans .tr-note{margin-top:4px;font-size:12.5px;color:#4a6076;}
-  li.trans .tr-edit,li.trans .del{opacity:0;font:700 14px/1 'Inter',sans-serif;color:#8fa0b0;
-       background:none;border:0;cursor:pointer;padding:2px 4px;flex:0 0 auto;}
-  li.trans:hover .tr-edit,li.trans:hover .del{opacity:1;}
-  li.trans .tr-edit:hover{color:var(--deep);}
-  li.trans .del:hover{color:#a23350;}
+  /* ---- Transports et activites ajoutes depuis la page, entre deux etapes.
+     Meme gabarit qu'une etape normale (photo + cbody) pour rester coherents
+     avec le reste du programme. */
+  li.trans, li.actv{background:var(--paper);border:1px solid var(--line);border-radius:10px;
+                     margin-top:10px;position:relative;}
+  li.trans{border-left:3px solid var(--steel);}
+  li.trans .cbody, li.actv .cbody{position:relative;}
+  li.trans .extra-edit, li.trans .del, li.actv .extra-edit, li.actv .del{
+       opacity:0;position:absolute;top:10px;font:700 14px/1 'Inter',sans-serif;color:#8fa0b0;
+       background:none;border:0;cursor:pointer;padding:2px 4px;}
+  li.trans .del, li.actv .del{right:6px;}
+  li.trans .extra-edit, li.actv .extra-edit{right:28px;}
+  li.trans:hover .extra-edit, li.trans:hover .del,
+  li.actv:hover .extra-edit, li.actv:hover .del{opacity:1;}
+  li.trans .extra-edit:hover, li.actv .extra-edit:hover{color:var(--deep);}
+  li.trans .del:hover, li.actv .del:hover{color:#a23350;}
   li.trans-gap{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:6px;}
   .add-trans{font:600 11.5px/1 'Inter',sans-serif;color:#6b8299;background:transparent;
              border:1px dashed #c3cfdc;border-radius:20px;padding:5px 13px;cursor:pointer;}
   .add-trans:hover{color:var(--deep);border-color:var(--steel);background:#f2f6fa;}
   .add-act:hover{color:#12604a;border-color:#9fd0bb;background:#eaf6f0;}
-  @media print{li.trans-gap{display:none;} li.trans .tr-edit,li.trans .del{display:none;}}
-  /* ---- Activites ajoutees depuis la page (memes classes visuelles qu'une etape normale) ---- */
-  li.actv{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:13px 16px;
-          margin-top:10px;position:relative;}
-  li.actv .act-edit,li.actv .del{opacity:0;position:absolute;top:10px;font:700 14px/1 'Inter',sans-serif;
-       color:#8fa0b0;background:none;border:0;cursor:pointer;padding:2px 4px;}
-  li.actv .del{right:6px;}
-  li.actv .act-edit{right:28px;}
-  li.actv:hover .act-edit,li.actv:hover .del{opacity:1;}
-  li.actv .act-edit:hover{color:var(--deep);}
-  li.actv .del:hover{color:#a23350;}
-  @media print{li.actv .act-edit,li.actv .del{display:none;}}
+  @media print{li.trans-gap{display:none;}
+    li.trans .extra-edit, li.trans .del, li.actv .extra-edit, li.actv .del{display:none;}}
+  /* ---- Alternative : liseré de couleur pour signaler une option de rechange ---- */
+  li.actv.is-alt, li.trans.is-alt{border-left:4px solid var(--sport);}
+  .alt-tag{display:inline-block;margin-top:6px;font-size:10.5px;font-weight:700;letter-spacing:.04em;
+           text-transform:uppercase;color:var(--sport);background:#fbe9ee;border:1px solid #f2cad3;
+           border-radius:20px;padding:2px 9px;}
+  /* ---- Barre d'outils (deplacer / changer de jour / supprimer) ---- */
+  .day-move{font:600 11.5px/1 'Inter',sans-serif;color:#6b8299;background:#fff;
+            border:1px solid var(--line);border-radius:6px;padding:4px 6px;cursor:pointer;max-width:150px;}
+  .day-move:hover{border-color:var(--steel);color:var(--deep);}
   /* ---- Suggestions d'activites ---- */
   .sugg{margin-top:48px;padding-top:6px;border-top:3px double var(--line);}
   .sugg-intro{font-size:13.5px;color:var(--steel);margin:10px 0 14px;}
@@ -181,10 +182,10 @@
   .ph.ph-band{height:210px;margin-top:14px;border-radius:10px;}
   .ph.ph-cover{height:280px;margin-top:22px;border-radius:12px;}
 
-  li.stop, li.free, li.eat{display:flex;align-items:stretch;padding:0;overflow:hidden;}
+  li.stop, li.free, li.eat, li.trans, li.actv{display:flex;align-items:stretch;padding:0;overflow:hidden;}
   li.stop[hidden], li.free[hidden], li.eat[hidden]{display:none;}
-  li.stop > .ph, li.free > .ph, li.eat > .ph{flex:0 0 196px;margin:0;border-radius:0;min-height:118px;}
-  li.stop > .ph img, li.free > .ph img, li.eat > .ph img{position:absolute;top:0;left:0;width:100%;height:100%;}
+  li.stop > .ph, li.free > .ph, li.eat > .ph, li.trans > .ph, li.actv > .ph{flex:0 0 196px;margin:0;border-radius:0;min-height:118px;}
+  li.stop > .ph img, li.free > .ph img, li.eat > .ph img, li.trans > .ph img, li.actv > .ph img{position:absolute;top:0;left:0;width:100%;height:100%;}
   .cbody{flex:1 1 auto;min-width:0;padding:13px 16px;}
   li.eat .cbody{padding:12px 15px;}
   li.eat > .ph{flex-basis:150px;min-height:120px;}
@@ -197,8 +198,8 @@
   .credits li{margin-bottom:3px;break-inside:avoid;}
   .credits a{color:#4a6076;}
   @media (max-width:620px){
-    li.stop, li.free, li.eat{flex-direction:column;}
-    li.stop > .ph, li.free > .ph, li.eat > .ph{flex:0 0 auto;width:100%;height:168px;min-height:0;}
+    li.stop, li.free, li.eat, li.trans, li.actv{flex-direction:column;}
+    li.stop > .ph, li.free > .ph, li.eat > .ph, li.trans > .ph, li.actv > .ph{flex:0 0 auto;width:100%;height:168px;min-height:0;}
     li.eat > .ph{height:132px;}
     .credits ul{columns:1;}
     .ph.ph-cover{height:190px;} .ph.ph-band{height:158px;}
@@ -229,6 +230,7 @@
   .pin-badge.eat{background:var(--gold);} .pin-badge.ev{background:var(--sport);}
   .pin-badge.opt{background:var(--steel);} .pin-badge.free{background:#3a6ea5;}
   .pin-badge.actv{background:#7b52a1;}
+  .pin-badge.trans{background:var(--steel);}
   .pin-badge.off{background:#fff;color:var(--steel);border:1px dashed #9fb0c2;}
   li.eat .pin-badge{margin-right:5px;}
   .mk{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;font:700 12px/1 'Inter',sans-serif;color:#fff;background:var(--deep);border:2px solid #fff;box-shadow:0 1px 4px rgba(10,25,45,.45);}
@@ -401,6 +403,9 @@
        font:400 14px/1.45 'Inter',sans-serif;color:var(--ink);background:#fff;
        border:1px solid var(--line);border-radius:9px;padding:10px 12px;}
   .modal .field input:focus,.modal .field textarea:focus{outline:0;border-color:var(--steel);box-shadow:0 0 0 3px #e7eef6;}
+  .modal .field-check{display:flex;align-items:center;gap:8px;}
+  .modal .field-check input{width:auto;flex:0 0 auto;}
+  .modal .field-check span{display:inline;margin-bottom:0;}
   .setup{background:#fbf3e6;border:1px solid #f0dcc0;border-left:4px solid var(--gold);border-radius:10px;
          padding:14px 18px;margin-top:16px;font-size:12.5px;color:#4a3a17;line-height:1.55;}
   .setup b{color:#3f2f0c;}
@@ -1182,7 +1187,7 @@ window.TRIP_SYNC = {
   paintMe();
 
   /* ------------------------------------------------- base de donnees */
-  var DB = {s:{}, i:{}, g:{}, t:{}, d:{}, a:{}, del:{}, ord:{}}, CLOUD = false, ROOT = null, ready = false;
+  var DB = {s:{}, i:{}, g:{}, t:{}, d:{}, a:{}, del:{}, ord:{}, loc:{}}, CLOUD = false, ROOT = null, ready = false;
 
   function defaults(){
     var d = {s:{}, i:{}};
@@ -1407,7 +1412,12 @@ window.TRIP_SYNC = {
       wrap.className = 'field';
       var lb = document.createElement('span'); lb.textContent = f.label;
       var el;
-      if (f.options){
+      if (f.checkbox){
+        wrap.className = 'field field-check';
+        el = document.createElement('input');
+        el.type = 'checkbox';
+        el.checked = !!f.value;
+      } else if (f.options){
         el = document.createElement('select');
         f.options.forEach(function(o){
           var op = document.createElement('option');
@@ -1420,7 +1430,8 @@ window.TRIP_SYNC = {
         el.placeholder = f.ph || '';
         if (f.value) el.value = f.value;
       }
-      wrap.appendChild(lb); wrap.appendChild(el);
+      if (f.checkbox){ wrap.appendChild(el); wrap.appendChild(lb); }
+      else { wrap.appendChild(lb); wrap.appendChild(el); }
       card.appendChild(wrap);
       inputs.push(el);
     });
@@ -1436,7 +1447,7 @@ window.TRIP_SYNC = {
       document.removeEventListener('keydown', onKey);
     }
     function valid(){
-      var v = inputs.map(function(el){ return el.value.trim(); });
+      var v = inputs.map(function(el){ return el.type === 'checkbox' ? el.checked : el.value.trim(); });
       if (!v[0] && !fields[0].allowEmpty){ inputs[0].focus(); return; }
       close(); cb(v);
     }
@@ -1611,6 +1622,7 @@ window.TRIP_SYNC = {
     paintTotals();
     renderSugg();
     ensureSids();
+    applyDayMoves();
     applyOrder();
     renderExtras();
     renderDescs();
@@ -1789,12 +1801,74 @@ window.TRIP_SYNC = {
   function costLabel(c){ return c === 'inc' ? 'Inclus Go City' : c === 'free' ? 'Gratuit' : 'À part / prix'; }
   function costCode(l){ return l === 'Inclus Go City' ? 'inc' : l === 'Gratuit' ? 'free' : 'no'; }
 
+  /* --------------------------------- barre d'outils commune aux blocs
+     transport / activité ajoutés depuis la page (monter/descendre d'un cran,
+     changer de jour). Le glisser-déposer sert pour les étapes d'origine ;
+     ici, plus simple : ces blocs sont ancrés « jour:position », donc on
+     déplace juste l'ancre. */
+  function extraToolbar(kind, id, anchor){
+    var tools = document.createElement('div'); tools.className = 'stop-tools';
+
+    var up = document.createElement('button');
+    up.type = 'button'; up.className = 'ord-btn'; up.title = 'Monter (avant l’étape précédente)'; up.textContent = '↑';
+    up.addEventListener('click', function(){ shiftExtraAnchor(kind, id, anchor, -1); });
+    tools.appendChild(up);
+
+    var down = document.createElement('button');
+    down.type = 'button'; down.className = 'ord-btn'; down.title = 'Descendre (après l’étape suivante)'; down.textContent = '↓';
+    down.addEventListener('click', function(){ shiftExtraAnchor(kind, id, anchor, 1); });
+    tools.appendChild(down);
+
+    var sel = document.createElement('select');
+    sel.className = 'day-move'; sel.title = 'Déplacer vers un autre jour';
+    dayOptions().forEach(function(d){
+      var op = document.createElement('option'); op.value = d.id; op.textContent = d.label;
+      sel.appendChild(op);
+    });
+    sel.value = anchor.split(':')[0];
+    sel.addEventListener('change', function(){ moveExtraToDay(kind, id, anchor, sel.value); });
+    tools.appendChild(sel);
+
+    return tools;
+  }
+
+  function shiftExtraAnchor(kind, id, curAnchor, dir){
+    var parts = curAnchor.split(':');
+    var dayId = parts[0], gap = parseInt(parts[1], 10) || 0;
+    var day = document.querySelector('.day[data-day="' + dayId + '"]');
+    var maxGap = day ? stopsOf(day).length : gap;
+    var newGap = Math.max(0, Math.min(maxGap, gap + dir));
+    if (newGap === gap) return;
+    put((kind === 't' ? 't/' : 'a/') + id + '/a', dayId + ':' + newGap);
+  }
+
+  function moveExtraToDay(kind, id, curAnchor, targetDayId){
+    var srcDayId = curAnchor.split(':')[0];
+    if (srcDayId === targetDayId) return;
+    var day = document.querySelector('.day[data-day="' + targetDayId + '"]');
+    var newGap = day ? stopsOf(day).length : 0;
+    put((kind === 't' ? 't/' : 'a/') + id + '/a', targetDayId + ':' + newGap);
+  }
+
   function activityBlock(id, act){
     var li = document.createElement('li');
-    li.className = 'actv';
+    li.className = 'actv' + (act.alt ? ' is-alt' : '');
+
+    var ph = document.createElement('div'); ph.className = 'ph';
+    if (act.img){
+      var img = document.createElement('img'); img.src = act.img; img.alt = act.t || ''; img.loading = 'lazy';
+      ph.appendChild(img);
+    } else {
+      var lbl = document.createElement('span'); lbl.className = 'ph-lbl'; lbl.textContent = '🖼️ Pas de photo';
+      ph.appendChild(lbl);
+    }
+    li.appendChild(ph);
+
     var cbody = document.createElement('div'); cbody.className = 'cbody';
 
     var top = document.createElement('div'); top.className = 'stop-top';
+    var bnum = document.createElement('span'); bnum.className = 'pin-badge actv';
+    top.appendChild(bnum);
     var nm = document.createElement('span'); nm.className = 'stop-name'; nm.textContent = act.t || '';
     top.appendChild(nm);
 
@@ -1817,6 +1891,11 @@ window.TRIP_SYNC = {
     top.appendChild(right);
     cbody.appendChild(top);
 
+    if (act.alt){
+      var altTag = document.createElement('span'); altTag.className = 'alt-tag'; altTag.textContent = 'Alternative';
+      cbody.appendChild(altTag);
+    }
+
     if (act.h || act.mv){
       var meta = document.createElement('div'); meta.className = 'stop-meta';
       if (act.h){ var hd = document.createElement('span'); hd.className = 'hood'; hd.textContent = act.h; meta.appendChild(hd); }
@@ -1827,11 +1906,13 @@ window.TRIP_SYNC = {
       var note = document.createElement('div'); note.className = 'stop-note'; note.textContent = act.n;
       cbody.appendChild(note);
     }
+
+    if (canEdit()) cbody.appendChild(extraToolbar('a', id, act.a));
     li.appendChild(cbody);
 
     if (canEdit()){
       var mod = document.createElement('button');
-      mod.type = 'button'; mod.className = 'act-edit'; mod.title = 'Modifier cette activité';
+      mod.type = 'button'; mod.className = 'extra-edit'; mod.title = 'Modifier cette activité';
       mod.textContent = '✎';
       mod.addEventListener('click', function(){ activityForm(act.a, id, act); });
       li.appendChild(mod);
@@ -1878,11 +1959,13 @@ window.TRIP_SYNC = {
         {label:'Coût', options:COSTS, value:costLabel(cur.c)},
         {label:'Prix ou précision sur le coût (facultatif)', ph:'Ex. 25 $, réservation conseillée…', value:cur.cp},
         {label:'Comment y aller (facultatif)', ph:'Ex. à pied (~10 min), métro ligne 6…', value:cur.mv},
-        {label:'Remarque (facultatif)', ph:'Ce qu’il faut savoir…', multi:true, value:cur.n, allowEmpty:true}
+        {label:'URL d’une photo (facultatif)', ph:'https://…', value:cur.img},
+        {label:'Remarque (facultatif)', ph:'Ce qu’il faut savoir…', multi:true, value:cur.n, allowEmpty:true},
+        {label:'Alternative (option de rechange, pas le plan principal)', checkbox:true, value:cur.alt}
       ],
       id ? 'Enregistrer' : 'Ajouter', function(v){
         var addr = (v[1] || '').trim();
-        var o = {a:anchor, t:v[0], addr:addr, h:v[2], d:v[3], c:costCode(v[4]), cp:v[5], mv:v[6], n:v[7]};
+        var o = {a:anchor, t:v[0], addr:addr, h:v[2], d:v[3], c:costCode(v[4]), cp:v[5], mv:v[6], img:v[7], n:v[8], alt:v[9]};
         o.o = id ? (cur.o || 0) : Date.now();
         var pid = id || ('x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5));
 
@@ -1910,43 +1993,57 @@ window.TRIP_SYNC = {
 
   function transBlock(id, tr){
     var li = document.createElement('li');
-    li.className = 'trans';
+    li.className = 'trans' + (tr.alt ? ' is-alt' : '');
 
-    var ico = document.createElement('span');
-    ico.className = 'tr-ico';
-    ico.textContent = (tr.m || '🧭').split(' ')[0];
-    li.appendChild(ico);
+    var ph = document.createElement('div'); ph.className = 'ph';
+    if (tr.img){
+      var img = document.createElement('img'); img.src = tr.img; img.alt = tr.m || ''; img.loading = 'lazy';
+      ph.appendChild(img);
+    } else {
+      var lbl = document.createElement('span'); lbl.className = 'ph-lbl';
+      lbl.textContent = (tr.m || '🧭').split(' ')[0] + ' Transport';
+      ph.appendChild(lbl);
+    }
+    li.appendChild(ph);
 
-    var body = document.createElement('div'); body.className = 'tr-body';
-    var top  = document.createElement('div'); top.className = 'tr-top';
-    var nm   = document.createElement('span'); nm.className = 'tr-name';
+    var cbody = document.createElement('div'); cbody.className = 'cbody';
+
+    var top = document.createElement('div'); top.className = 'stop-top';
+    var bnum = document.createElement('span'); bnum.className = 'pin-badge trans';
+    top.appendChild(bnum);
+    var nm = document.createElement('span'); nm.className = 'stop-name';
     nm.textContent = (tr.m || '').replace(/^\S+\s*/, '') + (tr.l ? ' — ' + tr.l : '');
     top.appendChild(nm);
 
-    if (tr.d || tr.p){
-      var right = document.createElement('span'); right.className = 'stop-tr';
-      if (tr.d){
-        var du = document.createElement('span'); du.className = 'dur'; du.textContent = tr.d;
-        right.appendChild(du);
-      }
-      if (tr.p){
-        var co = document.createElement('span'); co.className = 'cost no';
-        co.textContent = '≈ ' + approx(tr.p);
-        right.appendChild(co);
-      }
-      top.appendChild(right);
+    var right = document.createElement('span'); right.className = 'stop-tr';
+    if (tr.d){
+      var du = document.createElement('span'); du.className = 'dur'; du.textContent = tr.d;
+      right.appendChild(du);
     }
-    body.appendChild(top);
+    if (tr.p){
+      var co = document.createElement('span'); co.className = 'cost no';
+      co.textContent = '≈ ' + approx(tr.p);
+      right.appendChild(co);
+    }
+    top.appendChild(right);
+    cbody.appendChild(top);
+
+    if (tr.alt){
+      var altTag = document.createElement('span'); altTag.className = 'alt-tag'; altTag.textContent = 'Alternative';
+      cbody.appendChild(altTag);
+    }
 
     if (tr.n){
-      var nt = document.createElement('div'); nt.className = 'tr-note'; nt.textContent = tr.n;
-      body.appendChild(nt);
+      var note = document.createElement('div'); note.className = 'stop-note'; note.textContent = tr.n;
+      cbody.appendChild(note);
     }
-    li.appendChild(body);
+
+    if (canEdit()) cbody.appendChild(extraToolbar('t', id, tr.a));
+    li.appendChild(cbody);
 
     if (canEdit()){
       var mod = document.createElement('button');
-      mod.type = 'button'; mod.className = 'tr-edit'; mod.title = 'Modifier ce transport';
+      mod.type = 'button'; mod.className = 'extra-edit'; mod.title = 'Modifier ce transport';
       mod.textContent = '✎';
       mod.addEventListener('click', function(){ transForm(tr.a, id, tr); });
       li.appendChild(mod);
@@ -1974,10 +2071,12 @@ window.TRIP_SYNC = {
         {label:'Ligne, direction, arrêt… (facultatif)', ph:'Ex. Ligne 7 → Flushing, arrêt 42 St', value:cur.l},
         {label:'Durée à peu près (facultatif)', ph:'Ex. 25 min', value:cur.d},
         {label:'Prix à peu près (facultatif)', ph:'Ex. 2,90 $/pers., 45 $ le van…', value:cur.p},
-        {label:'Remarque (facultatif)', ph:'Tickets, correspondance, accès PMR…', multi:true, value:cur.n}
+        {label:'URL d’une photo (facultatif)', ph:'https://…', value:cur.img},
+        {label:'Remarque (facultatif)', ph:'Tickets, correspondance, accès PMR…', multi:true, value:cur.n},
+        {label:'Alternative (option de rechange, pas le plan principal)', checkbox:true, value:cur.alt}
       ],
       id ? 'Enregistrer' : 'Ajouter', function(v){
-        var o = {a:anchor, m:v[0], l:v[1], d:v[2], p:v[3], n:v[4]};
+        var o = {a:anchor, m:v[0], l:v[1], d:v[2], p:v[3], img:v[4], n:v[5], alt:v[6]};
         if (id){ o.o = cur.o || 0; put('t/' + id, o); }
         else {
           o.o = Date.now();
@@ -2024,7 +2123,18 @@ window.TRIP_SYNC = {
         if (canEdit()) frag.appendChild(gapBtn(anchor));
         if (frag.childNodes.length) ul.insertBefore(frag, stops[gap] || null);
       }
+      numberExtras(day);
     });
+  }
+
+  /* Numérote les blocs transport/activité ajoutés, dans leur ordre visuel
+     (les deux types partagent la même numérotation — badges violet/gris). */
+  function numberExtras(day){
+    var n = 0;
+    Array.prototype.forEach.call(
+      day.querySelectorAll('ul.stops > li.trans .pin-badge, ul.stops > li.actv .pin-badge'),
+      function(b){ n++; b.textContent = n; }
+    );
   }
   /* --------------------------------- descriptions réécrites des étapes
      Le texte d'origine est dans le HTML. Le profil ADMIN peut le remplacer :
@@ -2081,6 +2191,46 @@ window.TRIP_SYNC = {
     });
   }
 
+  /* --------------------------------- déplacer une étape vers un autre jour
+     DB.loc[sid] = jour d'accueil quand il diffère du jour d'origine (celui
+     lu dans le sid, ex. "2-3" -> jour "2"). Posé au début de render(), donc
+     avant applyOrder() : l'étape est physiquement rattachée à son nouveau
+     jour avant que ce jour ne calcule son propre ordre. */
+  function applyDayMoves(){
+    var loc = DB.loc || {};
+    Object.keys(loc).forEach(function(sid){
+      var targetDayId = loc[sid];
+      if (!targetDayId) return;
+      var li = document.querySelector('li[data-sid="' + sid + '"]');
+      if (!li) return;
+      var targetDay = document.querySelector('.day[data-day="' + targetDayId + '"]');
+      if (!targetDay) return;
+      var ul = targetDay.querySelector('ul.stops');
+      if (ul && li.parentNode !== ul) ul.appendChild(li);
+    });
+  }
+
+  function commitMove(sid, srcDayId, dstDayId, srcDay, dstDay){
+    if (srcDayId && srcDayId !== dstDayId){
+      put('ord/' + srcDayId, stopsOf(srcDay).map(function(x){ return x.getAttribute('data-sid'); }));
+    }
+    var origDayId = sid.split('-')[0];
+    put('loc/' + sid, (dstDayId === origDayId) ? null : dstDayId);
+    put('ord/' + dstDayId, stopsOf(dstDay).map(function(x){ return x.getAttribute('data-sid'); }));
+  }
+
+  function moveToDay(li, targetDayId){
+    var sid = li.getAttribute('data-sid');
+    var srcDay = li.closest('.day');
+    var srcDayId = srcDay ? srcDay.getAttribute('data-day') : null;
+    if (!sid || !targetDayId || targetDayId === srcDayId) return;
+    var targetDay = document.querySelector('.day[data-day="' + targetDayId + '"]');
+    if (!targetDay) return;
+    var ul = targetDay.querySelector('ul.stops');
+    if (ul) ul.appendChild(li);
+    commitMove(sid, srcDayId, targetDayId, srcDay, targetDay);
+  }
+
   function moveStop(li, dir){
     var day = li.closest('.day');
     if (!day) return;
@@ -2111,17 +2261,31 @@ window.TRIP_SYNC = {
       var srcSid = e.dataTransfer.getData('text/plain');
       var dstSid = li.getAttribute('data-sid');
       if (!srcSid || srcSid === dstSid) return;
-      var day = li.closest('.day');
-      if (!day) return;
-      var dayId = day.getAttribute('data-day');
-      var sids = stopsOf(day).map(function(x){ return x.getAttribute('data-sid'); });
+      var srcLi = document.querySelector('li[data-sid="' + srcSid + '"]');
+      if (!srcLi) return;
+      var dstDay = li.closest('.day');
+      if (!dstDay) return;
+      var srcDay = srcLi.closest('.day');
+      var dstDayId = dstDay.getAttribute('data-day');
+      var srcDayId = srcDay ? srcDay.getAttribute('data-day') : null;
+
+      if (srcDayId !== dstDayId){
+        /* déposé sur une étape d'un AUTRE jour : on la déplace physiquement
+           juste avant, puis on enregistre le nouvel ordre des deux jours */
+        var dstUl = dstDay.querySelector('ul.stops');
+        if (dstUl) dstUl.insertBefore(srcLi, li);
+        commitMove(srcSid, srcDayId, dstDayId, srcDay, dstDay);
+        return;
+      }
+
+      var sids = stopsOf(dstDay).map(function(x){ return x.getAttribute('data-sid'); });
       var from = sids.indexOf(srcSid);
       if (from < 0) return;
       sids.splice(from, 1);
       var to = sids.indexOf(dstSid);
       if (to < 0) return;
       sids.splice(to, 0, srcSid);
-      put('ord/' + dayId, sids);
+      put('ord/' + dstDayId, sids);
     });
   }
 
@@ -2140,7 +2304,18 @@ window.TRIP_SYNC = {
     return l ? (l.textContent.trim() + (hd ? ' — ' + hd.textContent.trim() : '')) : 'cette étape';
   }
 
+  function dayOptions(){
+    return Array.prototype.map.call(document.querySelectorAll('.day[data-day]'), function(d){
+      var num = d.querySelector('.day-num'), title = d.querySelector('.day-title');
+      return {
+        id: d.getAttribute('data-day'),
+        label: (num ? num.textContent.trim() : d.getAttribute('data-day')) + ' — ' + (title ? title.textContent.trim() : '')
+      };
+    });
+  }
+
   function renderStopTools(){
+    var days = dayOptions();
     Array.prototype.forEach.call(document.querySelectorAll('.day[data-day]'), function(day){
       var dayId = day.getAttribute('data-day');
       stopsOf(day).forEach(function(li, i){
@@ -2170,6 +2345,16 @@ window.TRIP_SYNC = {
           down.type = 'button'; down.className = 'ord-btn'; down.title = 'Descendre'; down.textContent = '↓';
           down.addEventListener('click', function(){ moveStop(li, 1); });
           tools.appendChild(down);
+
+          var sel = document.createElement('select');
+          sel.className = 'day-move'; sel.title = 'Déplacer vers un autre jour';
+          days.forEach(function(d){
+            var op = document.createElement('option'); op.value = d.id; op.textContent = d.label;
+            sel.appendChild(op);
+          });
+          sel.value = dayId;
+          sel.addEventListener('change', function(){ moveToDay(li, sel.value); });
+          tools.appendChild(sel);
 
           var b = document.createElement('button');
           b.type = 'button'; b.className = 'rm-stop'; b.textContent = '× Supprimer cette étape';
@@ -2356,6 +2541,7 @@ window.TRIP_SYNC = {
         d.a = DB.a || {};     /* check-list : on les conserve             */
         d.del = DB.del || {};
         d.ord = DB.ord || {};
+        d.loc = DB.loc || {};
         if (CLOUD) ROOT.set(d); else { DB = d; saveLocal(); render(); }
       });
   });
@@ -2381,6 +2567,7 @@ window.TRIP_SYNC = {
     if (!DB.a) DB.a = {};
     if (!DB.del) DB.del = {};
     if (!DB.ord) DB.ord = {};
+    if (!DB.loc) DB.loc = {};
     if (ls(LKEY, JSON.stringify(DB)) === null){
       warnEl.innerHTML = '<div class="stor-warn">Ce navigateur n\'autorise pas l\'enregistrement local : vos coches dispara\u00eetront à la fermeture.</div>';
     }
@@ -2407,7 +2594,7 @@ window.TRIP_SYNC = {
           });
           ROOT.on('value', function(snap){
             var v = snap.val() || {};
-            DB = {s: v.s || {}, i: v.i || {}, g: v.g || {}, t: v.t || {}, d: v.d || {}, a: v.a || {}, del: v.del || {}, ord: v.ord || {}};
+            DB = {s: v.s || {}, i: v.i || {}, g: v.g || {}, t: v.t || {}, d: v.d || {}, a: v.a || {}, del: v.del || {}, ord: v.ord || {}, loc: v.loc || {}};
             if (!Object.keys(DB.i).length && !ready){ ROOT.set(defaults()); return; }
             repairTitles();
             ready = true; render();

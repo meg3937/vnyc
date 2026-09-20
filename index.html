@@ -898,11 +898,36 @@
      ici via ce pont global, mis a jour apres chaque rendu de la check-list. */
   function curDel(){ return (window.__nycDB && window.__nycDB.del) || {}; }
 
-  function paintLegend(m){
+  /* Recalcule le numero de chaque etape a partir de l'ORDRE ACTUEL du DOM
+     (donc apres un glisser-deposer ou un clic sur monter/descendre, deja
+     applique a ce stade par le script de la check-list) plutot que depuis
+     l'ordre d'origine du HTML. Met aussi a jour le petit numero affiche sur
+     la carte-etape elle-meme, pour que les deux restent identiques. */
+  function liveRows(m){
     var del = curDel();
+    var bySkey = {};
+    m.rows.forEach(function(r){ bySkey[r.skey] = r; });
+
+    var out = [], n = 0;
+    Array.prototype.forEach.call(
+      m.day.querySelectorAll('ul.stops > li:not(.trans):not(.trans-gap):not(.actv)'),
+      function(li){
+        var r = bySkey[li.getAttribute('data-sid')];
+        if (!r || del[r.skey]) return;
+        n++;
+        var b = li.querySelector('.pin-badge');
+        if (b) b.textContent = n;
+        out.push({n: n, k: r.k, name: r.name, has: r.has, ll: r.ll});
+      }
+    );
+    return out;
+  }
+
+  function paintMap(m){
+    var rows = liveRows(m);
+
     m.legendEl.innerHTML = '';
-    m.rows.forEach(function(r){
-      if (del[r.skey]) return;
+    rows.forEach(function(r){
       var lg = document.createElement('span');
       lg.className = 'lg';
       lg.appendChild(badge(r.n, r.k, !r.has));
@@ -916,23 +941,17 @@
       lg.appendChild(document.createTextNode(' ' + e.name));
       m.legendEl.appendChild(lg);
     });
-  }
 
-  function mapPts(m){
-    var del = curDel();
-    var pts = m.rows.filter(function(r){ return r.has && !del[r.skey]; })
-                    .map(function(r){ return {n: r.n, k: r.k, name: r.name, ll: r.ll}; });
-    (m.extra || []).forEach(function(e, idx){
-      pts.push({n: String.fromCharCode(65 + idx), k: 'actv', name: e.name, ll: e.ll});
-    });
-    return pts;
-  }
-
-  function paintMarkers(m){
     if (!m.map) return;
     if (m.layer) m.layer.clearLayers(); else m.layer = L.layerGroup().addTo(m.map);
 
-    var pts = mapPts(m), all = [];
+    var pts = rows.filter(function(r){ return r.has; })
+                  .map(function(r){ return {n: r.n, k: r.k, name: r.name, ll: r.ll}; });
+    (m.extra || []).forEach(function(e, idx){
+      pts.push({n: String.fromCharCode(65 + idx), k: 'actv', name: e.name, ll: e.ll});
+    });
+
+    var all = [];
     if (pts.length > 1){
       L.polyline(pts.map(function(p){ return p.ll; }),
         {color: '#4a6076', weight: 2, opacity: .65, dashArray: '5,7'}).addTo(m.layer);
@@ -988,8 +1007,8 @@
       box.insertBefore(note, legend);
     }
 
-    var m = {box: box, id: id, rows: rows, refs: d.refs || [], extra: [], legendEl: legend};
-    paintLegend(m);
+    var m = {box: box, day: day, id: id, rows: rows, refs: d.refs || [], extra: [], legendEl: legend};
+    paintMap(m);
     box.__m = m;
     maps.push(m);
   });
@@ -1005,7 +1024,7 @@
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
     m.map = map;
-    paintMarkers(m);
+    paintMap(m);
     setTimeout(function(){ map.invalidateSize(); }, 60);
   }
 
@@ -1028,7 +1047,7 @@
     maps.forEach(function(m){ if (!m.done) buildMap(m); else if (m.map) m.map.invalidateSize(); });
   };
   window.__nycRepaintMaps = function(){
-    maps.forEach(function(m){ paintLegend(m); if (m.map) paintMarkers(m); });
+    maps.forEach(function(m){ paintMap(m); });
   };
   if (document.readyState === 'complete') start(); else window.addEventListener('load', start);
 

@@ -40,6 +40,10 @@
   .tip b{color:#3f2f0c;}
 
   .day{margin-top:40px;}
+  .day-holding{border:2px dashed #c3cfdc;border-radius:14px;padding:18px 20px 22px;background:#fafbfc;}
+  .day-holding .day-head{border-bottom-color:#c3cfdc;}
+  .day-holding .day-num{color:var(--steel);}
+  .holding-intro{font-size:13px;color:var(--steel);margin:8px 0 2px;}
   .day-head{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--ink);padding-bottom:9px;margin-bottom:6px;flex-wrap:wrap;}
   .day-num{font-family:'Fraunces',serif;font-weight:700;font-size:30px;color:var(--gold);line-height:1;}
   .day-title{font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--deep);}
@@ -822,6 +826,13 @@
         <div class="stop-meta"><span class="hood">Jersey City → JFK</span><span class="move van">van (réservé la veille)</span></div></div>
       </li>
     </ul>
+  </div>
+
+  <!-- À CALER : activités décidées mais pas encore rattachées à un jour précis -->
+  <div class="day day-holding" data-day="caler">
+    <div class="day-head"><div class="day-num">★</div><div class="day-title">À caler</div><div class="day-tot">pas encore placées</div></div>
+    <p class="holding-intro">Le coin où poser une activité qu'on veut vraiment faire, sans avoir encore décidé du jour. Ajoutez-la avec « ＋ Activité ici » ci-dessous, puis envoyez-la vers le bon jour avec le menu qui apparaît sur son bloc, quand c'est décidé.</p>
+    <ul class="stops"></ul>
   </div>
 
   <section class="sugg" id="suggestions">
@@ -1824,6 +1835,14 @@ window.TRIP_SYNC = {
      changer de jour). Le glisser-déposer sert pour les étapes d'origine ;
      ici, plus simple : ces blocs sont ancrés « jour:position », donc on
      déplace juste l'ancre. */
+  /* L'ancre d'un bloc ajouté est « jour:repère », où repère vaut soit "0"
+     (tout au début du jour) soit le data-sid d'une étape (« juste après elle »).
+     On utilise l'identifiant stable des étapes plutôt qu'une position
+     numérique : sinon, réordonner les étapes d'origine faisait « sauter »
+     les blocs ajoutés vers un autre voisinage sans que ce soit voulu. */
+  function extraDayId(anchor){ return anchor.split(':')[0]; }
+  function extraAfterKey(anchor){ return anchor.slice(anchor.indexOf(':') + 1); }
+
   function extraToolbar(kind, id, anchor){
     var tools = document.createElement('div'); tools.className = 'stop-tools';
 
@@ -1843,7 +1862,7 @@ window.TRIP_SYNC = {
       var op = document.createElement('option'); op.value = d.id; op.textContent = d.label;
       sel.appendChild(op);
     });
-    sel.value = anchor.split(':')[0];
+    sel.value = extraDayId(anchor);
     sel.addEventListener('change', function(){ moveExtraToDay(kind, id, anchor, sel.value); });
     tools.appendChild(sel);
 
@@ -1851,21 +1870,25 @@ window.TRIP_SYNC = {
   }
 
   function shiftExtraAnchor(kind, id, curAnchor, dir){
-    var parts = curAnchor.split(':');
-    var dayId = parts[0], gap = parseInt(parts[1], 10) || 0;
+    var dayId = extraDayId(curAnchor), afterKey = extraAfterKey(curAnchor);
     var day = document.querySelector('.day[data-day="' + dayId + '"]');
-    var maxGap = day ? stopsOf(day).length : gap;
-    var newGap = Math.max(0, Math.min(maxGap, gap + dir));
-    if (newGap === gap) return;
-    put((kind === 't' ? 't/' : 'a/') + id + '/a', dayId + ':' + newGap);
+    if (!day) return;
+    var sids = stopsOf(day).map(function(li){ return li.getAttribute('data-sid'); });
+    var pos = (afterKey === '0') ? 0 : (sids.indexOf(afterKey) + 1);
+    if (pos < 0) pos = 0;   /* étape de repère introuvable (supprimée ?) : on repart du début */
+    var newPos = Math.max(0, Math.min(sids.length, pos + dir));
+    if (newPos === pos) return;
+    var newAfterKey = (newPos === 0) ? '0' : sids[newPos - 1];
+    put((kind === 't' ? 't/' : 'a/') + id + '/a', dayId + ':' + newAfterKey);
   }
 
   function moveExtraToDay(kind, id, curAnchor, targetDayId){
-    var srcDayId = curAnchor.split(':')[0];
+    var srcDayId = extraDayId(curAnchor);
     if (srcDayId === targetDayId) return;
     var day = document.querySelector('.day[data-day="' + targetDayId + '"]');
-    var newGap = day ? stopsOf(day).length : 0;
-    put((kind === 't' ? 't/' : 'a/') + id + '/a', targetDayId + ':' + newGap);
+    var stops = day ? stopsOf(day) : [];
+    var afterKey = stops.length ? stops[stops.length - 1].getAttribute('data-sid') : '0';
+    put((kind === 't' ? 't/' : 'a/') + id + '/a', targetDayId + ':' + afterKey);
   }
 
   function activityBlock(id, act){
@@ -2118,15 +2141,39 @@ window.TRIP_SYNC = {
       });
 
       var stops = stopsOf(day);
-      for (var gap = stops.length; gap >= 0; gap--){
-        var anchor = dayId + ':' + gap;
+      var validKeys = {'0': true};
+      stops.forEach(function(li){ validKeys[li.getAttribute('data-sid')] = true; });
+
+      for (var i = stops.length; i >= 0; i--){
+        var afterKey = (i === 0) ? '0' : stops[i - 1].getAttribute('data-sid');
+        var anchor = dayId + ':' + afterKey;
         var frag = document.createDocumentFragment();
         extrasAt(anchor).forEach(function(x){
           frag.appendChild(x.kind === 't' ? transBlock(x.id, x.d) : activityBlock(x.id, x.d));
         });
         if (canEdit()) frag.appendChild(gapBtn(anchor));
-        if (frag.childNodes.length) ul.insertBefore(frag, stops[gap] || null);
+        if (frag.childNodes.length) ul.insertBefore(frag, stops[i] || null);
       }
+
+      /* filet de secours : un bloc dont le repère (étape) a disparu de ce
+         jour — déplacée ailleurs, jour vidé… — réapparaît en fin de journée
+         plutôt que de se perdre silencieusement. */
+      var orphans = [];
+      Object.keys(DB.t || {}).forEach(function(k){
+        var o = DB.t[k];
+        if (o && o.a && extraDayId(o.a) === dayId && !validKeys[extraAfterKey(o.a)]) orphans.push({id:k, d:o, kind:'t'});
+      });
+      Object.keys(DB.a || {}).forEach(function(k){
+        var o = DB.a[k];
+        if (o && o.a && extraDayId(o.a) === dayId && !validKeys[extraAfterKey(o.a)]) orphans.push({id:k, d:o, kind:'a'});
+      });
+      if (orphans.length){
+        orphans.sort(function(x, y){ return (x.d.o || 0) - (y.d.o || 0); });
+        var frag2 = document.createDocumentFragment();
+        orphans.forEach(function(x){ frag2.appendChild(x.kind === 't' ? transBlock(x.id, x.d) : activityBlock(x.id, x.d)); });
+        ul.appendChild(frag2);
+      }
+
       numberExtras(day);
     });
   }

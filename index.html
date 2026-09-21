@@ -27,12 +27,6 @@
   /* les phrases restent hors des .row : dans un conteneur flex, chaque <b> devient
      un element separe et la phrase se retrouve hachee par le gap */
   .legend .lg-p{margin:9px 0 0;line-height:1.5;}
-  .chip{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;}
-  .chip.inc{background:#e7f5ef;color:#1d7a5f;border:1px solid #b9e2d4;}
-  .chip.no{background:#fdeef0;color:#a23350;border:1px solid #f2cad3;}
-  .chip.free{background:#eef2f7;color:#4a6076;border:1px solid #d3deea;}
-  .chip.fixed{background:var(--green);color:#fff;border:1px solid var(--green);}
-  .chip.fixed::before{content:"✓ ";}
   .hood{display:inline-block;font-size:11.5px;font-weight:600;color:#3d5163;background:#eef2f7;border:1px solid #d3deea;border-radius:20px;padding:2px 8px;white-space:nowrap;}
   .hood::before{content:"📍 ";}
 
@@ -163,7 +157,6 @@
   table.sugg-table td{padding:12px 14px;border-top:1px solid #f0f4f8;vertical-align:top;color:var(--ink);}
   table.sugg-table tr:hover td{background:#fafcfe;}
   table.sugg-table .sg-t{font-weight:600;color:var(--deep);}
-  table.sugg-table .sg-n{display:block;font-size:12.5px;color:var(--steel);margin-top:3px;}
   table.sugg-table .sg-by{display:flex;align-items:center;gap:7px;white-space:nowrap;}
   table.sugg-table .sg-when{display:block;font-size:11.5px;color:#b6c2ce;margin-top:2px;}
   table.sugg-table .sg-none{color:var(--steel);font-style:italic;text-align:center;padding:26px 14px;}
@@ -332,10 +325,9 @@
   .add-item{margin:2px 12px 10px;font:600 12.5px/1 'Inter',sans-serif;color:#4a6076;background:none;border:0;
             border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left;}
   .add-item:hover{background:#eef2f7;color:var(--deep);}
-  .add-sec{margin-top:16px;width:100%;}
   .stor-warn{background:#fdeef0;border:1px solid #f2cad3;color:#a23350;border-radius:9px;padding:11px 15px;
              font-size:12.5px;margin-top:16px;}
-  @media print{.tabbar{display:none;} .add-item,.add-sec,.check-tools,li.citem .del,.csec-head .del-sec{display:none;}
+  @media print{.tabbar{display:none;} .add-item,.check-tools,li.citem .del,.csec-head .del-sec{display:none;}
                .csec{break-inside:avoid;} .check-head{background:#16263a !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
 
   /* ---- Check-list partagee : personnes, filtres, synchro ---- */

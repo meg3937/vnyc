@@ -1861,17 +1861,53 @@ window.TRIP_SYNC = {
     return tools;
   }
 
+  /* Ordre visuel complet d'un jour : étapes d'origine ET blocs ajoutés
+     (transport/activité), dans l'ordre exact où renderExtras() les affiche.
+     Sert de base à shiftExtraAnchor ci-dessous : sans ça, monter/descendre
+     ne « voyait » que les étapes d'origine et sautait par-dessus tous les
+     blocs ajoutés voisins d'un coup, au lieu d'échanger avec le voisin
+     immédiat (visuellement, ça ne bougeait presque jamais comme attendu). */
+  function fullSlots(day, dayId){
+    var del = DB.del || {};
+    var stops = stopsOf(day).filter(function(li){ return !del[li.getAttribute('data-sid')]; });
+    var out = [];
+    for (var i = 0; i <= stops.length; i++){
+      var afterKey = (i === 0) ? '0' : stops[i - 1].getAttribute('data-sid');
+      extrasAt(dayId + ':' + afterKey).forEach(function(x){ out.push({kind: x.kind, id: x.id}); });
+      if (i < stops.length) out.push({sid: stops[i].getAttribute('data-sid')});
+    }
+    return out;
+  }
+
+  /* Réaffecte repère + ordre de tous les blocs ajoutés du jour d'après une
+     liste de slots (étapes + blocs) déjà dans l'ordre visuel voulu. */
+  function commitSlotOrder(dayId, slots){
+    var updT = {}, updA = {}, counters = {}, afterKey = '0';
+    slots.forEach(function(s){
+      if (s.sid){ afterKey = s.sid; return; }
+      var anchor = dayId + ':' + afterKey;
+      var o = (counters[anchor] = (counters[anchor] || 0) + 10);
+      (s.kind === 't' ? updT : updA)[s.id + '/a'] = anchor;
+      (s.kind === 't' ? updT : updA)[s.id + '/o'] = o;
+    });
+    if (Object.keys(updT).length) patch('t', updT);
+    if (Object.keys(updA).length) patch('a', updA);
+  }
+
   function shiftExtraAnchor(kind, id, curAnchor, dir){
-    var dayId = extraDayId(curAnchor), afterKey = extraAfterKey(curAnchor);
+    var dayId = extraDayId(curAnchor);
     var day = document.querySelector('.day[data-day="' + dayId + '"]');
     if (!day) return;
-    var sids = stopsOf(day).map(function(li){ return li.getAttribute('data-sid'); });
-    var pos = (afterKey === '0') ? 0 : (sids.indexOf(afterKey) + 1);
-    if (pos < 0) pos = 0;   /* étape de repère introuvable (supprimée ?) : on repart du début */
-    var newPos = Math.max(0, Math.min(sids.length, pos + dir));
-    if (newPos === pos) return;
-    var newAfterKey = (newPos === 0) ? '0' : sids[newPos - 1];
-    put((kind === 't' ? 't/' : 'a/') + id + '/a', dayId + ':' + newAfterKey);
+    var slots = fullSlots(day, dayId);
+    var idx = -1;
+    for (var k = 0; k < slots.length; k++){
+      if (slots[k].kind === kind && slots[k].id === id){ idx = k; break; }
+    }
+    if (idx < 0) return;
+    var newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= slots.length) return;
+    var tmp = slots[idx]; slots[idx] = slots[newIdx]; slots[newIdx] = tmp;
+    commitSlotOrder(dayId, slots);
   }
 
   function moveExtraToDay(kind, id, curAnchor, targetDayId){

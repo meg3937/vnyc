@@ -4,426 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>New York — Programme jour par jour</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
-  :root{
-    --bg:#eef1f5; --ink:#14202e; --deep:#16263a; --steel:#4a6076;
-    --gold:#d99125; --sport:#b23b5b; --paper:#fff; --line:#dbe2ea; --green:#1d7a5f;
-  }
-  *{box-sizing:border-box;}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;line-height:1.5;}
-  .cover{background:linear-gradient(155deg,#1d3a54,#16263a 55%,#0c1723);color:#fff;padding:52px 40px 44px;position:relative;overflow:hidden;}
-  .cover::after{content:"";position:absolute;right:-70px;top:-70px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(217,145,37,.38),transparent 70%);}
-  .cover .eyebrow{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:12px;}
-  .cover h1{font-family:'Fraunces',serif;font-weight:700;font-size:44px;margin:0 0 10px;line-height:1.03;}
-  .cover p{font-size:16px;color:#c8d5e0;max-width:600px;margin:0;}
-
-  main{max-width:860px;margin:0 auto;padding:0 24px 70px;}
-
-  .legend{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin-top:28px;font-size:13.5px;color:#33475a;}
-  .legend b{color:var(--deep);}
-  .legend .row{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;}
-  .legend .row span{display:inline-flex;align-items:center;gap:6px;}
-  /* les phrases restent hors des .row : dans un conteneur flex, chaque <b> devient
-     un element separe et la phrase se retrouve hachee par le gap */
-  .legend .lg-p{margin:9px 0 0;line-height:1.5;}
-  .hood{display:inline-block;font-size:11.5px;font-weight:600;color:#3d5163;background:#eef2f7;border:1px solid #d3deea;border-radius:20px;padding:2px 8px;white-space:nowrap;}
-  .hood::before{content:"📍 ";}
-
-  .tip{background:#fbf3e6;border:1px solid #f0dcc0;border-left:4px solid var(--gold);border-radius:10px;padding:16px 20px;margin-top:16px;font-size:13.5px;color:#5a4415;}
-  .tip b{color:#3f2f0c;}
-
-  .day{margin-top:40px;}
-  .day-holding{border:2px dashed #c3cfdc;border-radius:14px;padding:18px 20px 22px;background:#fafbfc;}
-  .day-holding .day-head{border-bottom-color:#c3cfdc;}
-  .day-holding .day-num{color:var(--steel);}
-  .holding-intro{font-size:13px;color:var(--steel);margin:8px 0 2px;}
-  .day-head{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--ink);padding-bottom:9px;margin-bottom:6px;flex-wrap:wrap;}
-  .day-num{font-family:'Fraunces',serif;font-weight:700;font-size:30px;color:var(--gold);line-height:1;}
-  .day-title{font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--deep);}
-  .day-tot{font-size:12.5px;color:var(--steel);margin-left:auto;align-self:center;}
-
-  .getin{display:flex;gap:10px;align-items:flex-start;background:#eaf2f0;border:1px solid #cfe4de;border-radius:9px;padding:11px 15px;margin:14px 0 6px;font-size:13.5px;color:#1f4a41;}
-  .getin .gi-text.editable{cursor:pointer;border-radius:5px;}
-  .getin .gi-text.editable:hover{background:#e0efe9;box-shadow:0 0 0 4px #e0efe9,0 0 0 5px #b9e2d4;}
-
-  ul.stops{list-style:none;margin:0;padding:0;}
-  li.stop{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:13px 16px;margin-top:10px;}
-  li.stop.match{border-color:#e6c2ce;box-shadow:0 0 0 1px #e6c2ce;}
-  li.stop.locked{border-color:#b9e2d4;box-shadow:0 0 0 1px #b9e2d4;}
-  li.stop.opt{border-style:dashed;background:#fafbfc;}
-  li.free{background:#f2f7fb;border:1px dashed #9fc0dc;border-left:3px solid #3a6ea5;border-radius:10px;padding:13px 16px;margin-top:10px;}
-  li.free .stop-name::before{content:"🎈 ";}
-  li.eat{background:#fbf7ef;border:1px solid #f0e2cf;border-left:3px solid var(--gold);border-radius:10px;padding:11px 15px;margin-top:10px;font-size:13.5px;color:#4a3a1c;}
-  li.eat .lbl{font-weight:700;color:#7a5510;}
-  li.eat .lbl::before{content:"🍴 ";}
-  li.eat .hood{margin-left:4px;}
-  .stop-top{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap;}
-  .stop-name{font-family:'Fraunces',serif;font-weight:600;font-size:16.5px;color:var(--ink);}
-  .stop-name .opttag{font-family:'Inter';font-size:11px;font-weight:600;color:var(--steel);text-transform:uppercase;letter-spacing:.05em;margin-left:6px;}
-  .dur{font-size:12.5px;font-weight:700;color:var(--deep);white-space:nowrap;}
-  .stop-tr{display:flex;flex-direction:column;align-items:flex-end;gap:3px;margin-left:auto;text-align:right;}
-  .cost{font-size:11.5px;font-weight:700;white-space:nowrap;}
-  .cost.free{color:#7d8ea0;}
-  .cost.inc{color:#1d7a5f;}
-  .cost.no{color:#a23350;}
-  .dur::before{content:"⏱ ";}
-  .stop-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px;font-size:12.5px;color:#3d5163;}
-  .stop-note{font-size:13px;color:#3d5163;margin-top:8px;}
-  .stop-note.editable{border-radius:5px;}
-  .stop-note.editable:hover{background:#fffdf7;box-shadow:0 0 0 4px #fffdf7,0 0 0 5px #f0dcc0;}
-  .eat-desc.editable{border-radius:5px;cursor:pointer;}
-  .eat-desc.editable:hover{background:#fff6e8;box-shadow:0 0 0 4px #fff6e8,0 0 0 5px #e8d5b5;}
-  .add-desc{margin-top:8px;font:600 11.5px/1 'Inter',sans-serif;color:#6b8299;background:transparent;
-            border:1px dashed #c3cfdc;border-radius:20px;padding:5px 12px;cursor:pointer;align-self:flex-start;}
-  .add-desc:hover{color:var(--deep);border-color:var(--steel);background:#f7f9fc;}
-  @media print{.add-desc{display:none;}}
-  .rm-stop{font:600 11.5px/1 'Inter',sans-serif;color:#a23350;background:transparent;
-           border:1px dashed #f2cad3;border-radius:20px;padding:5px 12px;cursor:pointer;margin-left:auto;}
-  .rm-stop:hover{background:#fdeef0;border-color:#e8a9b8;}
-  @media print{.rm-stop{display:none;}}
-  .pin-ok{font-size:12px;opacity:.55;margin-left:2px;}
-  /* ---- Réordonnancement des étapes (glisser ou boutons monter/descendre) ---- */
-  .stop-tools{display:flex;align-items:center;gap:5px;margin-top:9px;flex-wrap:wrap;}
-  .drag-handle{cursor:grab;font-size:16px;line-height:1;color:#8fa0b0;padding:3px 5px;user-select:none;}
-  .drag-handle:hover{color:var(--deep);}
-  .drag-handle:active{cursor:grabbing;}
-  .ord-btn{font:700 12px/1 'Inter',sans-serif;color:#6b8299;background:transparent;
-           border:1px solid var(--line);border-radius:6px;padding:4px 8px;cursor:pointer;}
-  .ord-btn:hover{color:var(--deep);border-color:var(--steel);background:#f2f6fa;}
-  li.stop.dragging, li.free.dragging, li.eat.dragging{opacity:.4;}
-  li.stop.drag-over, li.free.drag-over, li.eat.drag-over{box-shadow:0 0 0 2px var(--gold) inset;}
-  @media print{.stop-tools{display:none;}}
-  .go::before{content:"🚶 ";} .metro::before{content:"🚇 ";} .path::before{content:"🚆 ";}
-  .vtc::before{content:"🚕 ";} .ferry::before{content:"⛴️ ";} .van::before{content:"🚐 ";}
-  .move{color:#3d5163;}
-
-  /* ---- Blocs transport, ajoutes entre deux etapes depuis la page (design
-     d'origine : bandeau compact, pas de photo) ---- */
-  li.trans{display:flex;align-items:flex-start;gap:11px;background:#eef4fa;border:1px solid #d3e0ec;
-           border-left:3px solid var(--steel);border-radius:9px;padding:10px 14px;margin-top:10px;
-           font-size:13px;color:#2b4257;}
-  li.trans .tr-ico{font-size:16px;line-height:1.35;flex:0 0 auto;}
-  li.trans .tr-body{flex:1 1 auto;min-width:0;}
-  li.trans .tr-top{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap;}
-  li.trans .tr-name{font-weight:600;color:var(--deep);}
-  li.trans .tr-note{margin-top:4px;font-size:12.5px;color:#4a6076;}
-  li.trans .tr-edit,li.trans .del{opacity:0;font:700 14px/1 'Inter',sans-serif;color:#8fa0b0;
-       background:none;border:0;cursor:pointer;padding:2px 4px;flex:0 0 auto;}
-  li.trans:hover .tr-edit,li.trans:hover .del{opacity:1;}
-  li.trans .tr-edit:hover{color:var(--deep);}
-  li.trans .del:hover{color:#a23350;}
-  li.trans .stop-tools{margin-top:8px;}
-  li.trans-gap{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:6px;}
-  .add-trans{font:600 11.5px/1 'Inter',sans-serif;color:#6b8299;background:transparent;
-             border:1px dashed #c3cfdc;border-radius:20px;padding:5px 13px;cursor:pointer;}
-  .add-trans:hover{color:var(--deep);border-color:var(--steel);background:#f2f6fa;}
-  .add-act:hover{color:#12604a;border-color:#9fd0bb;background:#eaf6f0;}
-  @media print{li.trans-gap{display:none;} li.trans .tr-edit,li.trans .del{display:none;}}
-
-  /* ---- Activites ajoutees depuis la page (meme gabarit qu'une etape
-     normale : photo + cbody + numero) ---- */
-  li.actv{background:var(--paper);border:1px solid var(--line);border-radius:10px;
-          margin-top:10px;position:relative;}
-  li.actv .extra-edit, li.actv .del{
-       opacity:0;position:absolute;top:10px;font:700 14px/1 'Inter',sans-serif;color:#8fa0b0;
-       background:none;border:0;cursor:pointer;padding:2px 4px;}
-  li.actv .del{right:6px;}
-  li.actv .extra-edit{right:28px;}
-  li.actv:hover .extra-edit, li.actv:hover .del{opacity:1;}
-  li.actv .extra-edit:hover{color:var(--deep);}
-  li.actv .del:hover{color:#a23350;}
-  @media print{li.actv .extra-edit, li.actv .del{display:none;}}
-  /* ---- Alternative : liseré de couleur pour signaler une option de rechange ---- */
-  li.actv.is-alt{border-left:4px solid var(--sport);}
-  .alt-tag{display:inline-block;margin-top:6px;font-size:10.5px;font-weight:700;letter-spacing:.04em;
-           text-transform:uppercase;color:var(--sport);background:#fbe9ee;border:1px solid #f2cad3;
-           border-radius:20px;padding:2px 9px;}
-  /* ---- Barre d'outils (deplacer / changer de jour / supprimer) ---- */
-  .day-move{font:600 11.5px/1 'Inter',sans-serif;color:#6b8299;background:#fff;
-            border:1px solid var(--line);border-radius:6px;padding:4px 6px;cursor:pointer;max-width:150px;}
-  .day-move:hover{border-color:var(--steel);color:var(--deep);}
-  /* ---- Suggestions d'activites ---- */
-  .sugg{margin-top:48px;padding-top:6px;border-top:3px double var(--line);}
-  .sugg-intro{font-size:13.5px;color:var(--steel);margin:10px 0 14px;}
-  .sugg-add{display:inline-flex;align-items:center;gap:8px;font:600 13.5px/1 'Inter',sans-serif;
-            color:#fff;background:var(--deep);border:1px solid var(--deep);border-radius:22px;
-            padding:11px 18px;cursor:pointer;}
-  .sugg-add:hover{background:#0f2c47;}
-  .sugg-wrap{overflow-x:auto;margin-top:16px;border:1px solid var(--line);border-radius:11px;background:var(--paper);}
-  table.sugg-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:560px;}
-  table.sugg-table th{text-align:left;font:600 11.5px/1 'Inter',sans-serif;text-transform:uppercase;
-       letter-spacing:.05em;color:var(--steel);background:#f7f9fc;padding:11px 14px;border-bottom:1px solid var(--line);}
-  table.sugg-table td{padding:12px 14px;border-top:1px solid #f0f4f8;vertical-align:top;color:var(--ink);}
-  table.sugg-table tr:hover td{background:#fafcfe;}
-  table.sugg-table .sg-t{font-weight:600;color:var(--deep);}
-  table.sugg-table .sg-by{display:flex;align-items:center;gap:7px;white-space:nowrap;}
-  table.sugg-table .sg-when{display:block;font-size:11.5px;color:#b6c2ce;margin-top:2px;}
-  table.sugg-table .sg-none{color:var(--steel);font-style:italic;text-align:center;padding:26px 14px;}
-  table.sugg-table td.sg-x{width:1%;text-align:right;}
-  table.sugg-table .del{opacity:0;font:700 15px/1 'Inter',sans-serif;color:#b6c2ce;background:none;border:0;cursor:pointer;padding:2px 5px;}
-  table.sugg-table tr:hover .del{opacity:1;}
-  table.sugg-table .del:hover{color:#a23350;}
-  .sugg-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:18px;}
-  .sugg-jump{font-size:12.5px;color:#4a6076;text-decoration:none;border-bottom:1px solid #d3deea;}
-  .sugg-jump:hover{color:var(--deep);border-bottom-color:var(--deep);}
-  table.sugg-table .sg-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
-  table.sugg-table .sg-pill{font-size:11.5px;font-weight:600;color:#3d5163;background:#eef2f7;
-       border:1px solid #d3deea;border-radius:20px;padding:2px 9px;white-space:nowrap;}
-  table.sugg-table td.sg-int{white-space:nowrap;}
-  .sg-plus{font:600 12px/1 'Inter',sans-serif;color:#4a6076;background:#f7f9fc;border:1px solid var(--line);
-           border-radius:20px;padding:6px 12px;cursor:pointer;}
-  .sg-plus:hover{background:#eef2f7;border-color:#b6c2ce;color:var(--deep);}
-  .sg-plus.on{background:var(--green);border-color:var(--green);color:#fff;}
-  .sg-cnt{display:inline-block;margin-left:9px;font-size:12px;font-weight:700;color:var(--steel);}
-  .sg-avs{display:inline-flex;gap:3px;margin-left:8px;vertical-align:middle;}
-  .sg-avs .av{width:20px;height:20px;font-size:9px;flex-basis:20px;}
-  @media print{.sugg-add,.sugg-jump,.sg-plus,table.sugg-table .del{display:none;}}
-
-  footer{max-width:860px;margin:0 auto;padding:6px 24px 50px;color:var(--steel);font-size:12.5px;}
-  @media (max-width:560px){
-    .cover{padding:38px 20px 34px;} .cover h1{font-size:34px;}
-    main{padding:0 15px 50px;} .day-tot{display:none;}
-  }
-  @media print{body{background:#fff;} .day{page-break-inside:avoid;}}
-
-  /* ---- Illustrations ---- */
-  .ph{position:relative;overflow:hidden;background:#e5eaf1;border-radius:9px;margin-top:11px;}
-  .ph img{display:block;width:100%;height:100%;object-fit:cover;}
-  .ph .ph-lbl{display:none;}
-  .ph.ph-band{height:210px;margin-top:14px;border-radius:10px;}
-  .ph.ph-cover{height:280px;margin-top:22px;border-radius:12px;}
-
-  li.stop, li.free, li.eat, li.actv{display:flex;align-items:stretch;padding:0;overflow:hidden;}
-  li.stop[hidden], li.free[hidden], li.eat[hidden]{display:none;}
-  li.stop > .ph, li.free > .ph, li.eat > .ph, li.actv > .ph{flex:0 0 196px;margin:0;border-radius:0;min-height:118px;}
-  li.stop > .ph img, li.free > .ph img, li.eat > .ph img, li.actv > .ph img{position:absolute;top:0;left:0;width:100%;height:100%;}
-  .cbody{flex:1 1 auto;min-width:0;padding:13px 16px;}
-  li.eat .cbody{padding:12px 15px;}
-  li.eat > .ph{flex-basis:150px;min-height:120px;}
-
-  .ph:not(:has(img)){border:2px dashed #c3cfdc;background:#f6f9fc;min-height:120px;}
-  .ph:not(:has(img)) .ph-lbl{display:block;font-size:12.5px;font-weight:600;color:#7d8ea0;padding:14px;text-align:center;}
-
-  .credits{max-width:860px;margin:0 auto;padding:4px 24px 30px;color:var(--steel);font-size:11px;line-height:1.45;}
-  .credits ul{margin:8px 0 0;padding-left:16px;columns:2;column-gap:26px;}
-  .credits li{margin-bottom:3px;break-inside:avoid;}
-  .credits a{color:#4a6076;}
-  @media (max-width:620px){
-    li.stop, li.free, li.eat, li.actv{flex-direction:column;}
-    li.stop > .ph, li.free > .ph, li.eat > .ph, li.actv > .ph{flex:0 0 auto;width:100%;height:168px;min-height:0;}
-    li.eat > .ph{height:132px;}
-    .credits ul{columns:1;}
-    .ph.ph-cover{height:190px;} .ph.ph-band{height:158px;}
-  }
-  @media print{.ph{break-inside:avoid;} .credits{font-size:8.5px;}}
-
-  /* ---- Cartes du jour ---- */
-  .daymap{margin:16px 0 4px;border:1px solid var(--line);border-radius:12px;background:var(--paper);overflow:hidden;}
-  .map-tabs{display:flex;align-items:center;gap:6px;padding:8px 10px;background:#f4f7fa;border-bottom:1px solid var(--line);flex-wrap:wrap;}
-  .mt-btn{font:600 12.5px/1 'Inter',sans-serif;color:#3d5163;background:transparent;border:1px solid transparent;border-radius:20px;padding:7px 13px;cursor:pointer;}
-  .mt-btn:hover{background:#e7edf4;}
-  .mt-btn.active{background:var(--deep);color:#fff;border-color:var(--deep);}
-  .mt-link{margin-left:auto;font-size:12px;font-weight:600;color:#4a6076;text-decoration:none;border-bottom:1px dotted #9fb0c2;}
-  .mt-link:hover{color:var(--deep);}
-  .map-canvas{height:340px;width:100%;background:#e5eaf1;}
-  .gmap-wrap{height:340px;}
-  .gmap-wrap iframe{display:block;width:100%;height:100%;border:0;}
-  .map-note{font-size:12px;color:var(--steel);padding:9px 14px 0;line-height:1.5;}
-  .map-legend{display:flex;flex-wrap:wrap;gap:7px 12px;padding:11px 14px 13px;font-size:12.5px;color:#33475a;}
-  .map-legend span.lg{display:inline-flex;align-items:center;gap:6px;}
-  /* la pastille est un 3e enfant de .stop-top : on garde le titre a gauche et la duree a droite */
-  .stop-top{justify-content:flex-start;}
-  .stop-top .dur{margin-left:auto;}
-  .stop-top .stop-name{flex:0 1 auto;}
-  .stop-top .pin-badge{margin-right:0;}
-  .pin-badge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;flex:0 0 20px;border-radius:50%;font:700 11px/1 'Inter',sans-serif;color:#fff;background:var(--deep);vertical-align:middle;margin-right:7px;}
-  .map-legend .pin-badge{margin-right:0;}
-  .pin-badge.eat{background:var(--gold);} .pin-badge.ev{background:var(--sport);}
-  .pin-badge.opt{background:var(--steel);} .pin-badge.free{background:#3a6ea5;}
-  .pin-badge.actv{background:#7b52a1;}
-  .pin-badge.trans{background:var(--steel);}
-  .pin-badge.off{background:#fff;color:var(--steel);border:1px dashed #9fb0c2;}
-  li.eat .pin-badge{margin-right:5px;}
-  .mk{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;font:700 12px/1 'Inter',sans-serif;color:#fff;background:var(--deep);border:2px solid #fff;box-shadow:0 1px 4px rgba(10,25,45,.45);}
-  .mk.eat{background:var(--gold);} .mk.ev{background:var(--sport);}
-  .mk.opt{background:var(--steel);} .mk.free{background:#3a6ea5;}
-  .mk.actv{background:#7b52a1;}
-  .mk-ref{width:12px;height:12px;border-radius:50%;background:#8fa3b6;border:2px solid #fff;box-shadow:0 1px 3px rgba(10,25,45,.4);}
-  .leaflet-container{font-family:'Inter',sans-serif;font-size:12px;}
-  .leaflet-popup-content{margin:9px 12px;font-size:12.5px;line-height:1.4;}
-  .leaflet-popup-content b{color:var(--deep);}
-  @media (max-width:560px){.map-canvas,.gmap-wrap{height:270px;}}
-  @media print{.map-canvas,.gmap-wrap,.map-tabs{display:none;} .daymap{break-inside:avoid;}}
-
-  /* ---- Onglets principaux ---- */
-  .tabbar{position:sticky;top:0;z-index:900;background:var(--deep);border-bottom:2px solid rgba(255,255,255,.12);
-          display:flex;gap:4px;padding:0 24px;box-shadow:0 2px 10px rgba(10,25,45,.18);}
-  .tabbar button{font:600 14px/1 'Inter',sans-serif;color:#a9bdd0;background:transparent;border:0;
-                 border-bottom:3px solid transparent;padding:15px 18px 12px;cursor:pointer;}
-  .tabbar button:hover{color:#fff;}
-  .tabbar button[aria-selected="true"]{color:#fff;border-bottom-color:var(--gold);}
-  .tabbar .tb-count{display:inline-block;margin-left:7px;font-size:11.5px;font-weight:700;color:var(--deep);
-                    background:var(--gold);border-radius:20px;padding:2px 8px;vertical-align:1px;}
-  .tabbar .tb-count.done{background:#2fa07d;color:#fff;}
-  .tabbar .tb-group{display:flex;gap:4px;}
-  .tabbar .tb-link{display:flex;align-items:center;gap:6px;text-decoration:none;
-                   font:600 14px/1 'Inter',sans-serif;color:#a9bdd0;
-                   border-bottom:3px solid transparent;padding:15px 18px 12px;}
-  .tabbar .tb-link:hover{color:#fff;border-bottom-color:rgba(255,255,255,.35);}
-  .tabbar .tb-ext{font-size:11px;opacity:.7;}
-  @media (max-width:560px){.tabbar{padding:0 10px;}
-    .tabbar button,.tabbar .tb-link{padding:13px 12px 10px;font-size:13px;}
-    .tabbar .tb-link{gap:4px;}}
-
-  /* ---- Checklist ---- */
-  .check-wrap{max-width:860px;margin:0 auto;padding:26px 24px 70px;}
-  .check-head{background:linear-gradient(150deg,#1d3a54,#16263a);color:#fff;border-radius:12px;padding:22px 24px;}
-  .check-head h2{font-family:'Fraunces',serif;font-weight:700;font-size:26px;margin:0 0 6px;}
-  .check-head p{margin:0;font-size:13.5px;color:#c8d5e0;max-width:560px;}
-  .bar{height:8px;border-radius:20px;background:rgba(255,255,255,.16);margin-top:16px;overflow:hidden;}
-  .bar i{display:block;height:100%;width:0;background:var(--gold);border-radius:20px;transition:width .25s ease;}
-  .bar-lbl{display:flex;justify-content:space-between;font-size:12.5px;color:#c8d5e0;margin-top:7px;}
-  .check-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
-  .btn{font:600 12.5px/1 'Inter',sans-serif;border-radius:20px;padding:8px 14px;cursor:pointer;
-       background:var(--paper);color:#3d5163;border:1px solid var(--line);}
-  .btn:hover{background:#eef2f7;color:var(--deep);}
-  .btn.warn:hover{background:#fdeef0;color:#a23350;border-color:#f2cad3;}
-
-  .csec{background:var(--paper);border:1px solid var(--line);border-radius:12px;margin-top:18px;overflow:hidden;}
-  .csec-head{display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line);background:#f7f9fc;}
-  .csec-head h3{font-family:'Fraunces',serif;font-weight:600;font-size:17px;color:var(--deep);margin:0;flex:1 1 auto;}
-  .csec-head .cnt{font-size:12px;font-weight:700;color:var(--steel);white-space:nowrap;}
-  .csec-head .del-sec{opacity:0;font:700 15px/1 'Inter',sans-serif;color:#b6c2ce;background:none;border:0;cursor:pointer;padding:2px 4px;}
-  .csec:hover .csec-head .del-sec{opacity:1;}
-  .csec-head .del-sec:hover{color:#a23350;}
-  ul.citems{list-style:none;margin:0;padding:6px 0;}
-  li.citem{display:flex;align-items:flex-start;gap:11px;padding:9px 18px;border-top:1px solid #f0f4f8;}
-  li.citem:first-child{border-top:0;}
-  li.citem:hover{background:#fafcfe;}
-  li.citem .box{flex:0 0 20px;width:20px;height:20px;margin-top:1px;border:2px solid #c3cfdc;border-radius:6px;
-                background:#fff;cursor:pointer;position:relative;}
-  li.citem .box:hover{border-color:var(--steel);}
-  li.citem .box::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;border:solid #fff;
-                       border-width:0 2.5px 2.5px 0;transform:rotate(42deg) scale(0);transition:transform .12s ease;}
-  li.citem.done .box{background:var(--green);border-color:var(--green);}
-  li.citem.done .box::after{transform:rotate(42deg) scale(1);}
-  li.citem .txt{flex:1 1 auto;min-width:0;font-size:14px;color:var(--ink);outline:0;}
-  li.citem .txt:focus{background:#fffbf2;box-shadow:0 0 0 2px #f0dcc0;border-radius:4px;}
-  .editable{cursor:text;}
-  .editable:hover:not(:focus){background:#fffdf7;box-shadow:0 0 0 2px #f7ecd8;border-radius:4px;}
-  .csec-head h3.editable:focus{background:#fffbf2;box-shadow:0 0 0 2px #f0dcc0;border-radius:4px;outline:0;}
-  li.citem.done .txt{color:#8fa0b0;text-decoration:line-through;}
-  li.citem .note{display:block;font-size:12.5px;color:var(--steel);margin-top:3px;outline:0;}
-  li.citem .note:focus{background:#fffbf2;box-shadow:0 0 0 2px #f0dcc0;border-radius:4px;}
-  li.citem .note:empty::before{content:attr(data-ph);color:#b6c2ce;}
-  li.citem .note:empty{opacity:0;}
-  li.citem:hover .note:empty, li.citem .note:focus{opacity:1;}
-  li.citem .del{flex:0 0 auto;opacity:0;font:700 15px/1 'Inter',sans-serif;color:#b6c2ce;background:none;border:0;cursor:pointer;padding:2px 5px;}
-  li.citem:hover .del{opacity:1;}
-  li.citem .del:hover{color:#a23350;}
-  .add-item{margin:2px 12px 10px;font:600 12.5px/1 'Inter',sans-serif;color:#4a6076;background:none;border:0;
-            border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left;}
-  .add-item:hover{background:#eef2f7;color:var(--deep);}
-  .stor-warn{background:#fdeef0;border:1px solid #f2cad3;color:#a23350;border-radius:9px;padding:11px 15px;
-             font-size:12.5px;margin-top:16px;}
-  @media print{.tabbar{display:none;} .add-item,.check-tools,li.citem .del,.csec-head .del-sec{display:none;}
-               .csec{break-inside:avoid;} .check-head{background:#16263a !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
-
-  /* ---- Check-list partagee : personnes, filtres, synchro ---- */
-  .sync-pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:#c8d5e0;
-             background:rgba(255,255,255,.10);border-radius:20px;padding:4px 11px;}
-  .sync-pill .dot{width:7px;height:7px;border-radius:50%;background:#8fa3b6;}
-  .sync-pill.on .dot{background:#3ddc97;} .sync-pill.off .dot{background:#e5735c;}
-  .check-head .topline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
-  .me-pill{display:inline-flex;align-items:center;gap:7px;font:600 12px/1 'Inter',sans-serif;color:#16263a;
-           background:#fff;border:0;border-radius:20px;padding:5px 12px 5px 5px;cursor:pointer;}
-  .me-pill:hover{background:#f0f4f8;}
-  .tabbar .me-pill{margin-left:auto;margin-right:4px;align-self:center;
-                   background:rgba(255,255,255,.13);color:#fff;padding:4px 12px 4px 4px;}
-  .tabbar .me-pill:hover{background:rgba(255,255,255,.24);}
-  @media (max-width:560px){.tabbar .me-pill{padding:4px;} .tabbar .me-pill span:last-child{display:none;}}
-  .av{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;
-      font:700 10px/1 'Inter',sans-serif;color:#fff;background:var(--steel);flex:0 0 22px;}
-  .av.lg{width:30px;height:30px;font-size:12px;flex-basis:30px;}
-
-  .people-sum{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
-  .psum{display:flex;align-items:center;gap:8px;background:var(--paper);border:1px solid var(--line);
-        border-radius:10px;padding:8px 12px;font-size:12.5px;color:#3d5163;}
-  .psum b{color:var(--deep);font-size:13px;}
-  .psum .mini{height:5px;width:52px;border-radius:20px;background:#e7edf4;overflow:hidden;}
-  .psum .mini i{display:block;height:100%;width:0;border-radius:20px;}
-
-  .filters{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px;}
-  .filters button{font:600 12.5px/1 'Inter',sans-serif;color:#3d5163;background:var(--paper);
-                  border:1px solid var(--line);border-radius:20px;padding:8px 14px;cursor:pointer;}
-  .filters button:hover{background:#eef2f7;}
-  .filters button.on{background:var(--deep);color:#fff;border-color:var(--deep);}
-
-  li.citem{flex-wrap:wrap;}
-  li.citem .body{flex:1 1 260px;min-width:0;}
-  /* pas de case a cocher sur les lignes « chacun » : on garde quand meme la
-     gouttiere pour que tous les intitules soient alignes (case 20 + gap 11) */
-  li.citem.mode-each .body{margin-left:31px;}
-  .who-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
-  .pp{display:inline-flex;align-items:center;gap:5px;font:600 11.5px/1 'Inter',sans-serif;color:#4a6076;
-      background:#f2f6fa;border:1px solid #dde5ee;border-radius:20px;padding:4px 10px 4px 4px;cursor:pointer;}
-  .pp .av{width:18px;height:18px;font-size:9px;flex-basis:18px;background:#b6c2ce;}
-  .pp:hover{border-color:#b6c2ce;}
-  .pp.on{background:#e7f5ef;border-color:#b9e2d4;color:#12604a;}
-  .pp.on .av{background:var(--green);}
-  .pp.self{box-shadow:0 0 0 2px #f0dcc0;}
-  .pp.on::after{content:"\2713";font-weight:700;}
-  .tag-each{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
-            color:#4a6076;background:#eef2f7;border:1px solid #d3deea;border-radius:20px;padding:2px 8px;margin-left:7px;vertical-align:2px;}
-  .item-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px;font-size:12px;color:var(--steel);}
-  .asg{display:inline-flex;align-items:center;gap:6px;font:600 11.5px/1 'Inter',sans-serif;border-radius:20px;
-       padding:4px 11px 4px 4px;cursor:pointer;border:1px dashed #c3cfdc;background:#fff;color:#4a6076;}
-  .asg.none{padding:5px 11px;color:#a23350;background:#fdeef0;border:1px dashed #f2cad3;}
-  .asg:hover{border-style:solid;}
-  .doneby{display:inline-flex;align-items:center;gap:6px;color:#12604a;font-weight:600;font-size:11.5px;}
-  .mini-btn{font:600 11.5px/1 'Inter',sans-serif;color:#8fa0b0;background:none;border:0;cursor:pointer;padding:3px 5px;border-radius:6px;}
-  .mini-btn:hover{background:#eef2f7;color:var(--deep);}
-
-  .modal{position:fixed;inset:0;z-index:2000;background:rgba(12,23,35,.62);display:flex;align-items:center;
-         justify-content:center;padding:20px;}
-  .modal .card{background:var(--paper);border-radius:14px;padding:26px;max-width:430px;width:100%;
-               max-height:85vh;overflow-y:auto;
-               box-shadow:0 18px 50px rgba(10,25,45,.4);}
-  .modal h3{font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:var(--deep);margin:0 0 6px;}
-  .modal p{margin:0 0 18px;font-size:13.5px;color:#3d5163;}
-  .modal .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-  .modal .grid button{display:flex;align-items:center;gap:9px;font:600 13.5px/1 'Inter',sans-serif;color:var(--ink);
-                      background:#f7f9fc;border:1px solid var(--line);border-radius:10px;padding:11px 12px;cursor:pointer;text-align:left;}
-  .modal .grid button:hover{background:#eef2f7;border-color:#b6c2ce;}
-  .modal .close{margin-top:14px;width:100%;}
-  .modal .actions{display:flex;gap:8px;margin-top:20px;}
-  .modal .actions button{flex:1 1 0;font:600 13.5px/1 'Inter',sans-serif;border-radius:10px;
-                         padding:12px 10px;cursor:pointer;border:1px solid var(--line);}
-  .modal .actions .cancel{background:#f7f9fc;color:#3d5163;}
-  .modal .actions .cancel:hover{background:#eef2f7;color:var(--deep);border-color:#b6c2ce;}
-  .modal .actions .danger{background:#c0374f;border-color:#a72f45;color:#fff;}
-  .modal .actions .danger:hover{background:#a72f45;}
-  .modal .actions button:focus-visible{outline:2px solid var(--deep);outline-offset:2px;}
-  .modal .card.ask p b{color:var(--deep);}
-  .modal .actions .ok{background:var(--deep);border-color:var(--deep);color:#fff;}
-  .modal .actions .ok:hover{background:#0f2c47;}
-  .modal .field{display:block;margin-top:15px;}
-  .modal .field span{display:block;font-size:12px;font-weight:600;color:var(--steel);margin-bottom:5px;}
-  .modal .field input,.modal .field textarea{width:100%;box-sizing:border-box;resize:vertical;
-       font:400 14px/1.45 'Inter',sans-serif;color:var(--ink);background:#fff;
-       border:1px solid var(--line);border-radius:9px;padding:10px 12px;}
-  .modal .field input:focus,.modal .field textarea:focus{outline:0;border-color:var(--steel);box-shadow:0 0 0 3px #e7eef6;}
-  .modal .field-check{display:flex;align-items:center;gap:8px;}
-  .modal .field-check input{width:auto;flex:0 0 auto;}
-  .modal .field-check span{display:inline;margin-bottom:0;}
-  .setup{background:#fbf3e6;border:1px solid #f0dcc0;border-left:4px solid var(--gold);border-radius:10px;
-         padding:14px 18px;margin-top:16px;font-size:12.5px;color:#4a3a17;line-height:1.55;}
-  .setup b{color:#3f2f0c;}
-  .setup code{background:#fff;border:1px solid #e8dcc4;border-radius:4px;padding:1px 5px;font-size:11.5px;}
-  @media print{.filters,.people-sum,.modal,.setup,.sync-pill,.me-pill,.mini-btn,.asg{display:none !important;}}
-
-</style>
+<meta name="description" content="Notre semaine à New York, du 19 au 26 octobre : programme jour par jour, cartes, check-list partagée.">
+<meta name="theme-color" content="#16263a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NYC 2026">
+<script>
+  /* theme avant le premier affichage, pour eviter un flash blanc le soir */
+  (function(){
+    var t = null;
+    try{ t = localStorage.getItem('nyc2026:theme'); }catch(e){}
+    if (t !== 'dark' && t !== 'light')
+      t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 </head>
@@ -441,16 +44,48 @@
     <button type="button" role="tab" id="tab-check" aria-controls="view-check" aria-selected="false">Check-list<span class="tb-count" data-ck-count>0/0</span></button>
   </div>
   <button type="button" class="me-pill tb-me" data-ck-me title="Changer de profil"><span class="av">?</span><span>Qui suis-je&nbsp;?</span></button>
+  <button type="button" class="tb-theme" data-theme-toggle title="Mode sombre" aria-label="Mode sombre">🌙</button>
   <!-- ===== Lien Google Drive : coller l'URL du dossier partage dans le href ci-dessous ===== -->
   <a class="tb-link" id="tab-docs" target="_blank" rel="noopener"
      title="Ouvrir le dossier Google Drive dans un nouvel onglet"
-     href="https://drive.google.com/drive/folders/15nKrZ5Hx0t2RhsyFc6wdbwoIH6BUz0pT?usp=sharing">Documents<span class="tb-ext">&#8599;</span></a>
+     href="https://drive.google.com/drive/folders/15nKrZ5Hx0t2RhsyFc6wdbwoIH6BUz0pT?usp=sharing"><span class="tb-ico" aria-hidden="true">📁</span><span class="tb-txt">Documents</span><span class="tb-ext">&#8599;</span></a>
 </nav>
 
 <div id="view-prog" class="tabview" role="tabpanel" aria-labelledby="tab-prog">
 <main>
 
-  <div class="ph ph-cover" data-photo="Couverture — New York"><img src="png/new york.jpg" alt="Couverture — New York" loading="lazy"><span class="ph-lbl">🖼️ Photo — Couverture — New York</span></div>
+  <section class="hub" aria-label="En bref">
+    <div class="hub-status" data-hub-status></div>
+    <div class="hub-grid">
+      <div class="hub-card">
+        <h3>🏠 Logement</h3>
+        <p class="hub-addr" data-hub-addr></p>
+        <div class="hub-btns">
+          <a class="hb" data-hub-maps target="_blank" rel="noopener">Itinéraire</a>
+          <a class="hb" data-hub-uber target="_blank" rel="noopener">Uber</a>
+          <button type="button" class="hb ghost" data-hub-copy>Copier</button>
+        </div>
+      </div>
+      <div class="hub-card">
+        <h3>🆘 Urgences</h3>
+        <ul class="hub-sos" data-hub-sos></ul>
+      </div>
+      <div class="hub-card hub-clock">
+        <h3>🕐 Heure</h3>
+        <div class="clocks">
+          <div><span>New York</span><b data-clock="America/New_York">--:--</b></div>
+          <div><span>Paris</span><b data-clock="Europe/Paris">--:--</b></div>
+        </div>
+        <p class="hub-sub" data-hub-offset></p>
+      </div>
+    </div>
+    <div class="hub-foot">
+      <span class="wx-src" data-wx-src hidden>Météo : prévisions <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>, mises à jour toutes les 3 h.</span>
+      <button type="button" class="hub-print" data-print>🖨️ Imprimer le programme</button>
+    </div>
+  </section>
+
+  <div class="ph ph-cover" data-photo="Couverture — New York"><img src="img/new-york.webp" alt="Couverture — New York" loading="lazy"><span class="ph-lbl">🖼️ Photo — Couverture — New York</span></div>
 
   <div class="legend">
     <b>Comment lire le programme</b>
@@ -478,10 +113,10 @@
   <!-- JOUR 1 -->
   <div class="day" data-day="1">
     <div class="day-head"><div class="day-num">01</div><div class="day-title">Lun. 19 — Arrivée</div><div class="day-tot">soirée</div></div>
-        <div class="ph ph-band" data-photo="Lun. 19 — Arrivée"><img src="png/jfk aeroport.jpg" alt="Lun. 19 — Arrivée" loading="lazy"><span class="ph-lbl">🖼️ Photo — Lun. 19 — Arrivée</span></div>
+        <div class="ph ph-band" data-photo="Lun. 19 — Arrivée"><img src="img/jfk-aeroport.webp" alt="Lun. 19 — Arrivée" loading="lazy"><span class="ph-lbl">🖼️ Photo — Lun. 19 — Arrivée</span></div>
     <div class="getin"><span>✈️</span><div><b>Vol :</b> atterrissage <b>22h40 à JFK</b>. <b>JFK → logement (Liberty Ave)</b> en <b>van / 2 UberXL</b> (~50-70 min). Au logement vers 00h30-01h.</div></div>
     <ul class="stops">
-      <li class="stop">        <div class="ph" data-photo="Transfert + nuit"><img src="png/logement.jpg" alt="Transfert + nuit" loading="lazy"><span class="ph-lbl">🖼️ Photo — Transfert + nuit</span></div>
+      <li class="stop">        <div class="ph" data-photo="Transfert + nuit"><img src="img/logement.webp" alt="Transfert + nuit" loading="lazy"><span class="ph-lbl">🖼️ Photo — Transfert + nuit</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Transfert + nuit</span><span class="stop-tr"><span class="dur">le reste de la soirée</span><span class="cost no">à part</span></span></div>
         <div class="stop-meta"><span class="hood">Jersey City</span><span class="move van">van pré-réservé (place PMR)</span></div></div>
@@ -492,7 +127,7 @@
   <!-- JOUR 2 -->
   <div class="day" data-day="2">
     <div class="day-head"><div class="day-num">02</div><div class="day-title">Mar. 20 — Midtown, Times Square &amp; Broadway 🎭</div><div class="day-tot">~8 h + spectacle</div></div>
-        <div class="ph ph-band" data-photo="Mar. 20 — Midtown, Times Square &amp; Broadway 🎭"><img src="png/midtown.jpg" alt="Grand Central Terminal" loading="lazy"><span class="ph-lbl">🖼️ Photo — Mar. 20 — Midtown, Times Square &amp; Broadway 🎭</span></div>
+        <div class="ph ph-band" data-photo="Mar. 20 — Midtown, Times Square &amp; Broadway 🎭"><img src="img/midtown.webp" alt="Grand Central Terminal" loading="lazy"><span class="ph-lbl">🖼️ Photo — Mar. 20 — Midtown, Times Square &amp; Broadway 🎭</span></div>
     <div class="getin"><span>🚆</span><div><b>Aller au 1<sup>er</sup> spot :</b> Liberty Ave → <b>Journal Square</b> (bus/VTC ~8 min) → <b>PATH ligne 33rd Street</b> (~20 min), 2 blocs à pied. Total ~40-45 min.</div></div>
     <div class="daymap" data-day="2">
       <div class="map-tabs">
@@ -505,55 +140,55 @@
       <div class="map-legend" data-legend></div>
     </div>
     <ul class="stops">
-      <li class="stop">        <div class="ph" data-photo="Empire State Building"><img src="png/ESB.jpg" alt="Empire State Building" loading="lazy"><span class="ph-lbl">🖼️ Photo — Empire State Building</span></div>
+      <li class="stop">        <div class="ph" data-photo="Empire State Building"><img src="img/esb.webp" alt="Empire State Building" loading="lazy"><span class="ph-lbl">🖼️ Photo — Empire State Building</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Empire State Building</span><span class="stop-tr"><span class="dur">1 h 30</span><span class="cost inc">inclus Go City</span></span></div>
         <div class="stop-meta"><span class="hood">Midtown</span><span class="move path">PATH 33rd St + 2 blocs</span></div></div>
       </li>
-      <li class="stop">        <div class="ph" data-photo="Bryant Park &amp; Bibliothèque"><img src="png/biblio.webp" alt="Bryant Park &amp; Bibliothèque" loading="lazy"><span class="ph-lbl">🖼️ Photo — Bryant Park &amp; Bibliothèque</span></div>
+      <li class="stop">        <div class="ph" data-photo="Bryant Park &amp; Bibliothèque"><img src="img/biblio.webp" alt="Bryant Park &amp; Bibliothèque" loading="lazy"><span class="ph-lbl">🖼️ Photo — Bryant Park &amp; Bibliothèque</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Bryant Park &amp; Bibliothèque</span><span class="stop-tr"><span class="dur">45 min</span><span class="cost free">gratuit</span></span></div>
         <div class="stop-meta"><span class="hood">Midtown</span><span class="move go">à pied (~8 min)</span></div></div>
       </li>
-      <li class="stop">        <div class="ph" data-photo="Grand Central Terminal"><img src="png/grand central terminal.jpg" alt="Grand Central Terminal" loading="lazy"><span class="ph-lbl">🖼️ Photo — Grand Central Terminal</span></div>
+      <li class="stop">        <div class="ph" data-photo="Grand Central Terminal"><img src="img/grand-central-terminal.webp" alt="Grand Central Terminal" loading="lazy"><span class="ph-lbl">🖼️ Photo — Grand Central Terminal</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Grand Central Terminal</span><span class="stop-tr"><span class="dur">30 min</span><span class="cost free">gratuit</span></span></div>
         <div class="stop-meta"><span class="hood">Midtown East</span><span class="move go">à pied (~10 min)</span></div></div>
       </li>
-      <li class="eat">        <div class="ph ph-eat" data-photo="Déjeuner — Midtown / Bryant Park"><img src="png/pecora.jfif" alt="Déjeuner — Midtown / Bryant Park" loading="lazy"><span class="ph-lbl">🖼️ Photo — Déjeuner — Midtown / Bryant Park</span></div>
+      <li class="eat">        <div class="ph ph-eat" data-photo="Déjeuner — Midtown / Bryant Park"><img src="img/pecora.webp" alt="Déjeuner — Midtown / Bryant Park" loading="lazy"><span class="ph-lbl">🖼️ Photo — Déjeuner — Midtown / Bryant Park</span></div>
         <div class="cbody">
         <span class="lbl">Déjeuner</span> <span class="hood">Midtown / Bryant Park</span><br><b>La Pecora Bianca</b> (italien, portions généreuses, sympa à plusieurs) ou <b>Olio e Più</b> (italien animé). Sinon sandwichs/kiosques autour de Bryant Park.</div>
       </li>
-      <li class="stop">        <div class="ph" data-photo="Cathédrale St Patrick"><img src="png/cathedral st patrick.avif" alt="Cathédrale St Patrick" loading="lazy"><span class="ph-lbl">🖼️ Photo — Cathédrale St Patrick</span></div>
+      <li class="stop">        <div class="ph" data-photo="Cathédrale St Patrick"><img src="img/cathedral-st-patrick.webp" alt="Cathédrale St Patrick" loading="lazy"><span class="ph-lbl">🖼️ Photo — Cathédrale St Patrick</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Cathédrale St Patrick</span><span class="stop-tr"><span class="dur">30 min</span><span class="cost free">gratuit</span></span></div>
         <div class="stop-meta"><span class="hood">Midtown / 5e Avenue</span><span class="move go">à pied (~10 min)</span> <span class="move">rampe d'accès PMR</span></div></div>
       </li>
-      <li class="stop">        <div class="ph" data-photo="5e Avenue (shopping &amp; vitrines)"><img src="png/5eavenue.jpg" alt="5e Avenue (shopping &amp; vitrines)" loading="lazy"><span class="ph-lbl">🖼️ Photo — 5e Avenue (shopping &amp; vitrines)</span></div>
+      <li class="stop">        <div class="ph" data-photo="5e Avenue (shopping &amp; vitrines)"><img src="img/5eavenue.webp" alt="5e Avenue (shopping &amp; vitrines)" loading="lazy"><span class="ph-lbl">🖼️ Photo — 5e Avenue (shopping &amp; vitrines)</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">5<sup>e</sup> Avenue (shopping &amp; vitrines)</span><span class="stop-tr"><span class="dur">45 min</span><span class="cost free">gratuit</span></span></div>
         <div class="stop-meta"><span class="hood">Midtown</span><span class="move go">à pied (sur place)</span></div></div>
       </li>
-      <li class="stop opt">        <div class="ph" data-photo="MoMA"><img src="png/moma.jpg" alt="MoMA" loading="lazy"><span class="ph-lbl">🖼️ Photo — MoMA</span></div>
+      <li class="stop opt">        <div class="ph" data-photo="MoMA"><img src="img/moma.webp" alt="MoMA" loading="lazy"><span class="ph-lbl">🖼️ Photo — MoMA</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">MoMA <span class="opttag">option</span></span><span class="stop-tr"><span class="dur">2 h</span><span class="cost inc">inclus Go City</span></span></div>
         <div class="stop-meta"><span class="hood">Midtown</span><span class="move go">à pied (~6 min)</span></div></div>
       </li>
-      <li class="stop opt">        <div class="ph" data-photo="Top of the Rock"><img src="png/topoftherock.jpg" alt="Top of the Rock" loading="lazy"><span class="ph-lbl">🖼️ Photo — Top of the Rock</span></div>
+      <li class="stop opt">        <div class="ph" data-photo="Top of the Rock"><img src="img/topoftherock.webp" alt="Top of the Rock" loading="lazy"><span class="ph-lbl">🖼️ Photo — Top of the Rock</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Top of the Rock <span class="opttag">1 observatoire</span></span><span class="stop-tr"><span class="dur">1 h 30</span><span class="cost inc">inclus Go City</span></span></div>
         <div class="stop-meta"><span class="hood">Rockefeller Center</span><span class="move go">à pied (~5 min)</span></div></div>
       </li>
-      <li class="stop">        <div class="ph" data-photo="Times Square"><img src="png/times square.jpg" alt="Times Square" loading="lazy"><span class="ph-lbl">🖼️ Photo — Times Square</span></div>
+      <li class="stop">        <div class="ph" data-photo="Times Square"><img src="img/times-square.webp" alt="Times Square" loading="lazy"><span class="ph-lbl">🖼️ Photo — Times Square</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Times Square</span><span class="stop-tr"><span class="dur">30 min</span><span class="cost free">gratuit</span></span></div>
         <div class="stop-meta"><span class="hood">Theater District</span><span class="move go">à pied (~10 min)</span></div></div>
       </li>
-      <li class="eat">        <div class="ph ph-eat" data-photo="Dîner rapide avant le show — Theater District"><img src="png/foodhall.jpg" alt="Dîner rapide avant le show — Theater District" loading="lazy"><span class="ph-lbl">🖼️ Photo — Dîner rapide avant le show — Theater District</span></div>
+      <li class="eat">        <div class="ph ph-eat" data-photo="Dîner rapide avant le show — Theater District"><img src="img/foodhall.webp" alt="Dîner rapide avant le show — Theater District" loading="lazy"><span class="ph-lbl">🖼️ Photo — Dîner rapide avant le show — Theater District</span></div>
         <div class="cbody">
         <span class="lbl">Dîner rapide avant le show</span> <span class="hood">Theater District</span><br>Bien des spots pré-théâtre autour de la 46<sup>e</sup> (Ellen's Stardust, Junior's cheesecake, food halls). Prévoyez de manger tôt (spectacle ~19h/20h).</div>
       </li>
-      <li class="stop match">        <div class="ph" data-photo="🎭 Spectacle de Broadway"><img src="png/broadway.jpg" alt="🎭 Spectacle de Broadway" loading="lazy"><span class="ph-lbl">🖼️ Photo — 🎭 Spectacle de Broadway</span></div>
+      <li class="stop match">        <div class="ph" data-photo="🎭 Spectacle de Broadway"><img src="img/broadway.webp" alt="🎭 Spectacle de Broadway" loading="lazy"><span class="ph-lbl">🖼️ Photo — 🎭 Spectacle de Broadway</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">🎭 Spectacle de Broadway</span><span class="stop-tr"><span class="dur">soirée (~2 h 30)</span><span class="cost no">billet à part</span></span></div>
         <div class="stop-meta"><span class="hood">Theater District</span><span class="move go">à pied (sur place)</span></div>
@@ -565,7 +200,7 @@
   <!-- JOUR 3 -->
   <div class="day" data-day="3">
     <div class="day-head"><div class="day-num">03</div><div class="day-title">Mer. 21 — Brooklyn Bridge &amp; Nets 🏀</div><div class="day-tot">~6 h + match</div></div>
-        <div class="ph ph-band" data-photo="Mer. 21 — Brooklyn Bridge &amp; Nets 🏀"><img src="png/pont-de-brooklyn.webp" alt="Mer. 21 — Brooklyn Bridge &amp; Nets 🏀" loading="lazy"><span class="ph-lbl">🖼️ Photo — Mer. 21 — Brooklyn Bridge &amp; Nets 🏀</span></div>
+        <div class="ph ph-band" data-photo="Mer. 21 — Brooklyn Bridge &amp; Nets 🏀"><img src="img/pont-de-brooklyn.webp" alt="Mer. 21 — Brooklyn Bridge &amp; Nets 🏀" loading="lazy"><span class="ph-lbl">🖼️ Photo — Mer. 21 — Brooklyn Bridge &amp; Nets 🏀</span></div>
     <div class="getin"><span>🚆</span><div><b>Aller au 1<sup>er</sup> spot :</b> Journal Square → <b>PATH ligne World Trade Center</b> (~13 min), puis ~10 min à pied vers l'entrée du pont (City Hall). Total ~40 min.</div></div>
     <div class="daymap" data-day="3">
       <div class="map-tabs">
@@ -578,26 +213,26 @@
       <div class="map-legend" data-legend></div>
     </div>
     <ul class="stops">
-      <li class="stop">        <div class="ph" data-photo="Traversée du pont de Brooklyn"><img src="png/brooklyn bridge.jpg" alt="Traversée du pont de Brooklyn" loading="lazy"><span class="ph-lbl">🖼️ Photo — Traversée du pont de Brooklyn</span></div>
+      <li class="stop">        <div class="ph" data-photo="Traversée du pont de Brooklyn"><img src="img/brooklyn-bridge.webp" alt="Traversée du pont de Brooklyn" loading="lazy"><span class="ph-lbl">🖼️ Photo — Traversée du pont de Brooklyn</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Traversée du pont de Brooklyn</span><span class="stop-tr"><span class="dur">1 h</span><span class="cost free">gratuit</span></span></div>
         <div class="stop-meta"><span class="hood">Civic Center → Brooklyn</span><span class="move path">PATH WTC + à pied</span> <span class="move">accès PMR limité</span></div></div>
       </li>
-      <li class="stop">        <div class="ph" data-photo="DUMBO (Washington Street)"><img src="png/dumbo.jpg" alt="DUMBO (Washington Street)" loading="lazy"><span class="ph-lbl">🖼️ Photo — DUMBO (Washington Street)</span></div>
+      <li class="stop">        <div class="ph" data-photo="DUMBO (Washington Street)"><img src="img/dumbo.webp" alt="DUMBO (Washington Street)" loading="lazy"><span class="ph-lbl">🖼️ Photo — DUMBO (Washington Street)</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">DUMBO (Washington Street)</span><span class="stop-tr"><span class="dur">1 h</span><span class="cost free">gratuit</span></span></div>
         <div class="stop-meta"><span class="hood">DUMBO</span><span class="move go">à pied (~12 min)</span> <span class="move">pavés</span></div></div>
       </li>
-      <li class="stop">        <div class="ph" data-photo="Brooklyn Bridge Park"><img src="png/bridgepark.jpg" alt="Brooklyn Bridge Park" loading="lazy"><span class="ph-lbl">🖼️ Photo — Brooklyn Bridge Park</span></div>
+      <li class="stop">        <div class="ph" data-photo="Brooklyn Bridge Park"><img src="img/bridgepark.webp" alt="Brooklyn Bridge Park" loading="lazy"><span class="ph-lbl">🖼️ Photo — Brooklyn Bridge Park</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Brooklyn Bridge Park</span><span class="stop-tr"><span class="dur">1 h</span><span class="cost free">gratuit</span></span></div>
         <div class="stop-meta"><span class="hood">DUMBO</span><span class="move go">à pied (~5 min)</span></div></div>
       </li>
-      <li class="eat">        <div class="ph ph-eat" data-photo="Déjeuner — DUMBO"><img src="png/timeoutmarket.jpg" alt="Déjeuner — DUMBO" loading="lazy"><span class="ph-lbl">🖼️ Photo — Déjeuner — DUMBO</span></div>
+      <li class="eat">        <div class="ph ph-eat" data-photo="Déjeuner — DUMBO"><img src="img/timeoutmarket.webp" alt="Déjeuner — DUMBO" loading="lazy"><span class="ph-lbl">🖼️ Photo — Déjeuner — DUMBO</span></div>
         <div class="cbody">
         <span class="lbl">Déjeuner</span> <span class="hood">DUMBO</span><br><b>Time Out Market New York</b> (halle avec plein de stands + terrasse vue sur le pont — parfait à 7). Ou les pizzas cultes : <b>Juliana's</b> / <b>Grimaldi's</b>.</div>
       </li>
-      <li class="stop match">        <div class="ph" data-photo="🏀 Nets vs Hornets — Barclays Center"><img src="png/barclays.jpg" alt="🏀 Nets vs Hornets — Barclays Center" loading="lazy"><span class="ph-lbl">🖼️ Photo — 🏀 Nets vs Hornets — Barclays Center</span></div>
+      <li class="stop match">        <div class="ph" data-photo="🏀 Nets vs Hornets — Barclays Center"><img src="img/barclays.webp" alt="🏀 Nets vs Hornets — Barclays Center" loading="lazy"><span class="ph-lbl">🖼️ Photo — 🏀 Nets vs Hornets — Barclays Center</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">🏀 Nets vs Hornets — Barclays Center</span><span class="stop-tr"><span class="dur">~3 h (19h30)</span><span class="cost no">billet à part</span></span></div>
         <div class="stop-meta"><span class="hood">Prospect Heights</span><span class="move metro">métro ~15 min → Atlantic Av-Barclays</span></div>
@@ -609,7 +244,7 @@
   <!-- JOUR 4 -->
   <div class="day" data-day="4">
     <div class="day-head"><div class="day-num">04</div><div class="day-title">Jeu. 22 — Central Park, The Met &amp; temps libre</div><div class="day-tot">~5-6 h + libre</div></div>
-        <div class="ph ph-band" data-photo="Jeu. 22 — Central Park, The Met &amp; temps libre"><img src="png/Central_Park_during_Autumn,_NYC.jpg" alt="Jeu. 22 — Central Park, The Met &amp; temps libre" loading="lazy"><span class="ph-lbl">🖼️ Photo — Jeu. 22 — Central Park, The Met &amp; temps libre</span></div>
+        <div class="ph ph-band" data-photo="Jeu. 22 — Central Park, The Met &amp; temps libre"><img src="img/central-park-during-autumn-nyc.webp" alt="Jeu. 22 — Central Park, The Met &amp; temps libre" loading="lazy"><span class="ph-lbl">🖼️ Photo — Jeu. 22 — Central Park, The Met &amp; temps libre</span></div>
     <div class="getin"><span>🚆</span><div><b>Aller au 1<sup>er</sup> spot :</b> Journal Square → <b>PATH ligne 33rd St</b> (~20 min), puis <b>métro</b> vers le nord (C jusqu'à la 72<sup>e</sup>, ou 6 jusqu'à la 86<sup>e</sup>). Total ~55 min.</div></div>
     <div class="daymap" data-day="4">
       <div class="map-tabs">
@@ -622,26 +257,26 @@
       <div class="map-legend" data-legend></div>
     </div>
     <ul class="stops">
-      <li class="stop">        <div class="ph" data-photo="Central Park (couleurs d'automne)"><img src="png/centralpark.jpg" alt="Central Park (couleurs d'automne)" loading="lazy"><span class="ph-lbl">🖼️ Photo — Central Park (couleurs d'automne)</span></div>
+      <li class="stop">        <div class="ph" data-photo="Central Park (couleurs d'automne)"><img src="img/centralpark.webp" alt="Central Park (couleurs d'automne)" loading="lazy"><span class="ph-lbl">🖼️ Photo — Central Park (couleurs d'automne)</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Central Park (couleurs d'automne)</span><span class="stop-tr"><span class="dur">2 h 30</span><span class="cost free">gratuit</span></span></div>
         <div class="stop-meta"><span class="hood">Central Park</span><span class="move path">PATH + métro</span> <span class="move">vélo/pédicab en option (Go City)</span></div></div>
       </li>
-      <li class="eat">        <div class="ph ph-eat" data-photo="Déjeuner — Central Park / Upper East Side"><img src="png/hotdog.jpg" alt="Déjeuner — Central Park / Upper East Side" loading="lazy"><span class="ph-lbl">🖼️ Photo — Déjeuner — Central Park / Upper East Side</span></div>
+      <li class="eat">        <div class="ph ph-eat" data-photo="Déjeuner — Central Park / Upper East Side"><img src="img/hotdog.webp" alt="Déjeuner — Central Park / Upper East Side" loading="lazy"><span class="ph-lbl">🖼️ Photo — Déjeuner — Central Park / Upper East Side</span></div>
         <div class="cbody">
         <span class="lbl">Déjeuner</span> <span class="hood">Central Park / Upper East Side</span><br>Dans le parc : stands hot-dogs &amp; pretzels, ou pause au <b>Loeb Boathouse</b> (au bord du lac). Vers le Met (Madison Ave) : <b>Le Pain Quotidien</b> ou le diner <b>Nectar</b>.</div>
       </li>
-      <li class="stop">        <div class="ph" data-photo="The Metropolitan Museum (Met)"><img src="png/themet.jpg" alt="The Metropolitan Museum (Met)" loading="lazy"><span class="ph-lbl">🖼️ Photo — The Metropolitan Museum (Met)</span></div>
+      <li class="stop">        <div class="ph" data-photo="The Metropolitan Museum (Met)"><img src="img/themet.webp" alt="The Metropolitan Museum (Met)" loading="lazy"><span class="ph-lbl">🖼️ Photo — The Metropolitan Museum (Met)</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">The Metropolitan Museum (Met)</span><span class="stop-tr"><span class="dur">2 h 30</span><span class="cost no">≈ 30 $</span></span></div>
         <div class="stop-meta"><span class="hood">Upper East Side (Museum Mile)</span><span class="move go">à pied à travers le parc (~15 min)</span></div></div>
       </li>
-      <li class="stop opt">        <div class="ph" data-photo="Alt. : Muséum d'Histoire naturelle"><img src="png/USA-NYC-American_Museum_of_Natural_History.JPG" alt="Alt. : Muséum d&#x27;Histoire naturelle" loading="lazy"><span class="ph-lbl">🖼️ Photo — Alt. : Muséum d'Histoire naturelle</span></div>
+      <li class="stop opt">        <div class="ph" data-photo="Alt. : Muséum d'Histoire naturelle"><img src="img/usa-nyc-american-museum-of-natural-history.webp" alt="Alt. : Muséum d&#x27;Histoire naturelle" loading="lazy"><span class="ph-lbl">🖼️ Photo — Alt. : Muséum d'Histoire naturelle</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Alt. : Muséum d'Histoire naturelle <span class="opttag">côté ouest</span></span><span class="stop-tr"><span class="dur">2-3 h</span><span class="cost inc">inclus Go City</span></span></div>
         <div class="stop-meta"><span class="hood">Upper West Side</span><span class="move go">bord ouest du parc</span></div></div>
       </li>
-      <li class="free">        <div class="ph" data-photo="Temps libre / au choix — le groupe se sépare"><img src="png/Helicopter_over_Manhattan_seen_from_Brooklyn_Heights_01_(9423307348).jpg" alt="Temps libre / au choix — le groupe se sépare" loading="lazy"><span class="ph-lbl">🖼️ Photo — Temps libre / au choix — le groupe se sépare</span></div>
+      <li class="free">        <div class="ph" data-photo="Temps libre / au choix — le groupe se sépare"><img src="img/helicopter-over-manhattan-seen-from-brooklyn-heights-01-9423307348.webp" alt="Temps libre / au choix — le groupe se sépare" loading="lazy"><span class="ph-lbl">🖼️ Photo — Temps libre / au choix — le groupe se sépare</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Temps libre / au choix — le groupe se sépare</span><span class="stop-tr"><span class="dur">fin d'aprèm → soir</span><span class="cost no">à part</span></span></div>
         <div class="stop-meta"><span class="hood">au choix</span><span class="move vtc">selon l'activité (VTC/métro)</span></div>
@@ -657,7 +292,7 @@
   <!-- JOUR 5 -->
   <div class="day" data-day="5">
     <div class="day-head"><div class="day-num">05</div><div class="day-title">Ven. 23 — Statue de la Liberté &amp; Downtown</div><div class="day-tot">~7-8 h</div></div>
-        <div class="ph ph-band" data-photo="Ven. 23 — Statue de la Liberté &amp; Downtown"><img src="png/Central_Railroad_of_New_Jersey_Terminal_-_22_Sept._2012.jpg" alt="Ven. 23 — Statue de la Liberté &amp; Downtown" loading="lazy"><span class="ph-lbl">🖼️ Photo — Ven. 23 — Statue de la Liberté &amp; Downtown</span></div>
+        <div class="ph ph-band" data-photo="Ven. 23 — Statue de la Liberté &amp; Downtown"><img src="img/central-railroad-of-new-jersey-terminal-22-sept-2012.webp" alt="Ven. 23 — Statue de la Liberté &amp; Downtown" loading="lazy"><span class="ph-lbl">🖼️ Photo — Ven. 23 — Statue de la Liberté &amp; Downtown</span></div>
     <div class="getin"><span>🚕</span><div><b>Aller au 1<sup>er</sup> spot :</b> Liberty Ave → <b>embarcadère de Liberty State Park</b> en <b>VTC ~10 min</b> (ou Light Rail). Ferry côté Jersey City = moins de queue.</div></div>
     <div class="daymap" data-day="5">
       <div class="map-tabs">
@@ -670,32 +305,32 @@
       <div class="map-legend" data-legend></div>
     </div>
     <ul class="stops">
-      <li class="stop">        <div class="ph" data-photo="Statue de la Liberté (Liberty Island)"><img src="png/Front_view_of_Statue_of_Liberty_(cropped).jpg" alt="Statue de la Liberté (Liberty Island)" loading="lazy"><span class="ph-lbl">🖼️ Photo — Statue de la Liberté (Liberty Island)</span></div>
+      <li class="stop">        <div class="ph" data-photo="Statue de la Liberté (Liberty Island)"><img src="img/front-view-of-statue-of-liberty-cropped.webp" alt="Statue de la Liberté (Liberty Island)" loading="lazy"><span class="ph-lbl">🖼️ Photo — Statue de la Liberté (Liberty Island)</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Statue de la Liberté (Liberty Island)</span><span class="stop-tr"><span class="dur">1 h 30</span><span class="cost inc">inclus Go City (ferry)</span></span></div>
         <div class="stop-meta"><span class="hood">Liberty Island</span><span class="move ferry">ferry depuis Liberty State Park</span></div></div>
       </li>
-      <li class="stop">        <div class="ph" data-photo="Ellis Island"><img src="png/Aerial_view_of_Ellis_Island,_Jersey_City,_New_Jersey_LCCN2011635626_-_cropped_balance.jpg" alt="Ellis Island" loading="lazy"><span class="ph-lbl">🖼️ Photo — Ellis Island</span></div>
+      <li class="stop">        <div class="ph" data-photo="Ellis Island"><img src="img/aerial-view-of-ellis-island-jersey-city-new-jersey-lccn2011635626-cropped-balance.webp" alt="Ellis Island" loading="lazy"><span class="ph-lbl">🖼️ Photo — Ellis Island</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Ellis Island</span><span class="stop-tr"><span class="dur">2 h</span><span class="cost inc">inclus Go City (ferry)</span></span></div>
         <div class="stop-meta"><span class="hood">Ellis Island</span><span class="move ferry">ferry (arrêt suivant)</span></div></div>
       </li>
-      <li class="eat">        <div class="ph ph-eat" data-photo="Déjeuner — Financial District / World Trade Center"><img src="png/Smorgasburg_in_Dumbo.jpg" alt="Déjeuner — Financial District / World Trade Center" loading="lazy"><span class="ph-lbl">🖼️ Photo — Déjeuner — Financial District / World Trade Center</span></div>
+      <li class="eat">        <div class="ph ph-eat" data-photo="Déjeuner — Financial District / World Trade Center"><img src="img/smorgasburg-in-dumbo.webp" alt="Déjeuner — Financial District / World Trade Center" loading="lazy"><span class="ph-lbl">🖼️ Photo — Déjeuner — Financial District / World Trade Center</span></div>
         <div class="cbody">
         <span class="lbl">Déjeuner</span> <span class="hood">Financial District / World Trade Center</span><br>De retour à Manhattan : <b>Hudson Eats</b> (halle à Brookfield Place, vue Hudson) ou <b>Liberty Market</b> dans l'Oculus. <b>Bonus vendredi :</b> <b>Smorgasburg WTC</b>, le marché de food trucks — uniquement le vendredi, juste à côté !</div>
       </li>
-      <li class="stop">        <div class="ph" data-photo="9/11 Mémorial &amp; Musée + Oculus"><img src="png/9-11_Memorial_South_Pool.jpg" alt="9/11 Mémorial &amp; Musée + Oculus" loading="lazy"><span class="ph-lbl">🖼️ Photo — 9/11 Mémorial &amp; Musée + Oculus</span></div>
+      <li class="stop">        <div class="ph" data-photo="9/11 Mémorial &amp; Musée + Oculus"><img src="img/9-11-memorial-south-pool.webp" alt="9/11 Mémorial &amp; Musée + Oculus" loading="lazy"><span class="ph-lbl">🖼️ Photo — 9/11 Mémorial &amp; Musée + Oculus</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">9/11 Mémorial &amp; Musée + Oculus</span><span class="stop-tr"><span class="dur">2 h 30</span><span class="cost inc">inclus Go City</span></span></div>
         <div class="stop-meta"><span class="hood">World Trade Center</span><span class="move go">ferry → Battery, puis à pied (~12 min)</span></div></div>
       </li>
-      <li class="stop opt">        <div class="ph" data-photo="One World Observatory"><img src="png/Luchtfoto_van_Lower_Manhattan.jpg" alt="One World Observatory" loading="lazy"><span class="ph-lbl">🖼️ Photo — One World Observatory</span></div>
+      <li class="stop opt">        <div class="ph" data-photo="One World Observatory"><img src="img/luchtfoto-van-lower-manhattan.webp" alt="One World Observatory" loading="lazy"><span class="ph-lbl">🖼️ Photo — One World Observatory</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">One World Observatory <span class="opttag">1 observatoire</span></span><span class="stop-tr"><span class="dur">1 h 30</span><span class="cost inc">inclus Go City</span></span></div>
         <div class="stop-meta"><span class="hood">World Trade Center</span><span class="move go">à pied (même complexe)</span></div>
         <div class="stop-note">💡 L'<b>héliport de Downtown</b> est juste à côté d'ici : si l'hélico vous tente plutôt aujourd'hui que jeudi, ce quartier s'y prête bien.</div></div>
       </li>
-      <li class="stop match opt">        <div class="ph" data-photo="Soir : Knicks vs Celtics (MSG)"><img src="png/Madison_Square_Garden_(MSG)_-_Full_(48124330357).jpg" alt="Soir : Knicks vs Celtics (MSG)" loading="lazy"><span class="ph-lbl">🖼️ Photo — Soir : Knicks vs Celtics (MSG)</span></div>
+      <li class="stop match opt">        <div class="ph" data-photo="Soir : Knicks vs Celtics (MSG)"><img src="img/madison-square-garden-msg-full-48124330357.webp" alt="Soir : Knicks vs Celtics (MSG)" loading="lazy"><span class="ph-lbl">🖼️ Photo — Soir : Knicks vs Celtics (MSG)</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Soir : Knicks vs Celtics (MSG) <span class="opttag">en plus, option</span></span><span class="stop-tr"><span class="dur">soirée</span><span class="cost no">billet à part</span></span></div>
         <div class="stop-meta"><span class="hood">Midtown</span><span class="move metro">métro/PATH ~20 min → 33rd St</span></div>
@@ -707,7 +342,7 @@
   <!-- JOUR 6 -->
   <div class="day" data-day="6">
     <div class="day-head"><div class="day-num">06</div><div class="day-title">Sam. 24 — High Line, Village &amp; SoHo</div><div class="day-tot">~6-7 h</div></div>
-        <div class="ph ph-band" data-photo="Sam. 24 — High Line, Village &amp; SoHo"><img src="png/Greenwich_Village_(27483343909).jpg" alt="Sam. 24 — High Line, Village &amp; SoHo" loading="lazy"><span class="ph-lbl">🖼️ Photo — Sam. 24 — High Line, Village &amp; SoHo</span></div>
+        <div class="ph ph-band" data-photo="Sam. 24 — High Line, Village &amp; SoHo"><img src="img/greenwich-village-27483343909.webp" alt="Sam. 24 — High Line, Village &amp; SoHo" loading="lazy"><span class="ph-lbl">🖼️ Photo — Sam. 24 — High Line, Village &amp; SoHo</span></div>
     <div class="getin"><span>🚆</span><div><b>Aller au 1<sup>er</sup> spot :</b> Journal Square → <b>PATH ligne 33rd St</b>, puis ~12 min à pied (ou 1 station ligne 7) jusqu'à Hudson Yards / entrée nord de la High Line.</div></div>
     <div class="daymap" data-day="6">
       <div class="map-tabs">
@@ -720,36 +355,36 @@
       <div class="map-legend" data-legend></div>
     </div>
     <ul class="stops">
-      <li class="stop opt">        <div class="ph" data-photo="The Edge / Hudson Yards"><img src="png/30_Hudson_Yards_April_2022_002.jpg" alt="The Edge / Hudson Yards" loading="lazy"><span class="ph-lbl">🖼️ Photo — The Edge / Hudson Yards</span></div>
+      <li class="stop opt">        <div class="ph" data-photo="The Edge / Hudson Yards"><img src="img/30-hudson-yards-april-2022-002.webp" alt="The Edge / Hudson Yards" loading="lazy"><span class="ph-lbl">🖼️ Photo — The Edge / Hudson Yards</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">The Edge / Hudson Yards <span class="opttag">1 observatoire</span></span><span class="stop-tr"><span class="dur">1 h 30</span><span class="cost inc">inclus Go City</span></span></div>
         <div class="stop-meta"><span class="hood">Hudson Yards</span><span class="move path">PATH 33rd + à pied (~12 min)</span></div></div>
       </li>
-      <li class="stop">        <div class="ph" data-photo="The High Line"><img src="png/High_Line_Park,_Section_1a.jpg" alt="The High Line" loading="lazy"><span class="ph-lbl">🖼️ Photo — The High Line</span></div>
+      <li class="stop">        <div class="ph" data-photo="The High Line"><img src="img/high-line-park-section-1a.webp" alt="The High Line" loading="lazy"><span class="ph-lbl">🖼️ Photo — The High Line</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">The High Line</span><span class="stop-tr"><span class="dur">1 h</span><span class="cost free">gratuit</span></span></div>
         <div class="stop-meta"><span class="hood">Chelsea</span><span class="move go">à pied (accès à côté)</span></div></div>
       </li>
-      <li class="eat">        <div class="ph ph-eat" data-photo="Déjeuner — Chelsea"><img src="png/Chelsea_Market_(49052085186).jpg" alt="Déjeuner — Chelsea" loading="lazy"><span class="ph-lbl">🖼️ Photo — Déjeuner — Chelsea</span></div>
+      <li class="eat">        <div class="ph ph-eat" data-photo="Déjeuner — Chelsea"><img src="img/chelsea-market-49052085186.webp" alt="Déjeuner — Chelsea" loading="lazy"><span class="ph-lbl">🖼️ Photo — Déjeuner — Chelsea</span></div>
         <div class="cbody">
         <span class="lbl">Déjeuner</span> <span class="hood">Chelsea</span><br><b>Chelsea Market</b> — la halle gourmande au pied de la High Line (tacos Los Tacos No.1, lobster rolls, ramen, pâtisseries…). Idéal à 7.</div>
       </li>
-      <li class="stop opt">        <div class="ph" data-photo="Little Island"><img src="png/Little_Island_at_Pier_55,_New_York_City,_20231001_1017_0809.jpg" alt="Little Island" loading="lazy"><span class="ph-lbl">🖼️ Photo — Little Island</span></div>
+      <li class="stop opt">        <div class="ph" data-photo="Little Island"><img src="img/little-island-at-pier-55-new-york-city-20231001-1017-0809.webp" alt="Little Island" loading="lazy"><span class="ph-lbl">🖼️ Photo — Little Island</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Little Island <span class="opttag">crochet</span></span><span class="stop-tr"><span class="dur">30 min</span><span class="cost free">gratuit</span></span></div>
         <div class="stop-meta"><span class="hood">Meatpacking</span><span class="move go">à pied (~10 min)</span></div></div>
       </li>
-      <li class="stop">        <div class="ph" data-photo="Washington Square &amp; Greenwich Village"><img src="png/Washington_Square_Arch-Isabella.jpg" alt="Washington Square &amp; Greenwich Village" loading="lazy"><span class="ph-lbl">🖼️ Photo — Washington Square &amp; Greenwich Village</span></div>
+      <li class="stop">        <div class="ph" data-photo="Washington Square &amp; Greenwich Village"><img src="img/washington-square-arch-isabella.webp" alt="Washington Square &amp; Greenwich Village" loading="lazy"><span class="ph-lbl">🖼️ Photo — Washington Square &amp; Greenwich Village</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Washington Square &amp; Greenwich Village</span><span class="stop-tr"><span class="dur">45 min</span><span class="cost free">gratuit</span></span></div>
         <div class="stop-meta"><span class="hood">Greenwich Village</span><span class="move metro">métro ~10 min (ou ~20 min à pied)</span></div></div>
       </li>
-      <li class="stop">        <div class="ph" data-photo="SoHo → Chinatown / Little Italy"><img src="png/Cast_Iron_Grand_Crosby_jeh_crop.jpg" alt="SoHo → Chinatown / Little Italy" loading="lazy"><span class="ph-lbl">🖼️ Photo — SoHo → Chinatown / Little Italy</span></div>
+      <li class="stop">        <div class="ph" data-photo="SoHo → Chinatown / Little Italy"><img src="img/cast-iron-grand-crosby-jeh-crop.webp" alt="SoHo → Chinatown / Little Italy" loading="lazy"><span class="ph-lbl">🖼️ Photo — SoHo → Chinatown / Little Italy</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">SoHo → Chinatown / Little Italy</span><span class="stop-tr"><span class="dur">1 h 30</span><span class="cost free">gratuit</span></span></div>
         <div class="stop-meta"><span class="hood">SoHo → Chinatown</span><span class="move go">à pied (bloc en bloc)</span></div></div>
       </li>
-      <li class="eat">        <div class="ph ph-eat" data-photo="Dîner — Village / Chinatown"><img src="png/A_Xiaolongbao_from_The_Modern_Shanghai.jpg" alt="Dîner — Village / Chinatown" loading="lazy"><span class="ph-lbl">🖼️ Photo — Dîner — Village / Chinatown</span></div>
+      <li class="eat">        <div class="ph ph-eat" data-photo="Dîner — Village / Chinatown"><img src="img/a-xiaolongbao-from-the-modern-shanghai.webp" alt="Dîner — Village / Chinatown" loading="lazy"><span class="ph-lbl">🖼️ Photo — Dîner — Village / Chinatown</span></div>
         <div class="cbody">
         <span class="lbl">Dîner</span> <span class="hood">Village / Chinatown</span><br>Pizza légendaire chez <b>John's of Bleecker Street</b> (Village). Ou dumplings à Chinatown : <b>Shanghai 21</b> (soup dumplings) ou <b>Jiang Nan</b>.</div>
       </li>
@@ -759,7 +394,7 @@
   <!-- JOUR 7 -->
   <div class="day" data-day="7">
     <div class="day-head"><div class="day-num">07</div><div class="day-title">Dim. 25 — Football : Jets vs Dolphins 🏈</div><div class="day-tot">demi-journée</div></div>
-        <div class="ph ph-band" data-photo="Dim. 25 — Football : Jets vs Dolphins 🏈"><img src="png/Metlife_stadium_(Aerial_view).jpg" alt="Dim. 25 — Football : Jets vs Dolphins 🏈" loading="lazy"><span class="ph-lbl">🖼️ Photo — Dim. 25 — Football : Jets vs Dolphins 🏈</span></div>
+        <div class="ph ph-band" data-photo="Dim. 25 — Football : Jets vs Dolphins 🏈"><img src="img/metlife-stadium-aerial-view.webp" alt="Dim. 25 — Football : Jets vs Dolphins 🏈" loading="lazy"><span class="ph-lbl">🖼️ Photo — Dim. 25 — Football : Jets vs Dolphins 🏈</span></div>
     <div class="getin"><span>🚐</span><div><b>Aller au stade :</b> Liberty Ave → <b>MetLife Stadium</b> en <b>van / 2 UberXL</b> (~20-30 min). Coup d'envoi 13h → partez vers 11h-11h30 pour l'avant-match.</div></div>
     <div class="daymap" data-day="7">
       <div class="map-tabs">
@@ -772,17 +407,17 @@
       <div class="map-legend" data-legend></div>
     </div>
     <ul class="stops">
-      <li class="stop match">        <div class="ph" data-photo="🏈 Jets vs Dolphins — MetLife Stadium"><img src="png/Military_Appreciation_Day_at_MetLife_Stadium.jpg" alt="🏈 Jets vs Dolphins — MetLife Stadium" loading="lazy"><span class="ph-lbl">🖼️ Photo — 🏈 Jets vs Dolphins — MetLife Stadium</span></div>
+      <li class="stop match">        <div class="ph" data-photo="🏈 Jets vs Dolphins — MetLife Stadium"><img src="img/military-appreciation-day-at-metlife-stadium.webp" alt="🏈 Jets vs Dolphins — MetLife Stadium" loading="lazy"><span class="ph-lbl">🖼️ Photo — 🏈 Jets vs Dolphins — MetLife Stadium</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">🏈 Jets vs Dolphins — MetLife Stadium</span><span class="stop-tr"><span class="dur">~4 h (avant-match + jeu)</span><span class="cost no">billet à part</span></span></div>
         <div class="stop-meta"><span class="hood">East Rutherford, NJ</span><span class="move van">van ~20-30 min</span></div>
         <div class="stop-note">C'est le match de foot US qu'on vise. Stade accessible (dépose &amp; <b>places PMR</b>, à réserver tôt). Vêtements chauds : stade à ciel ouvert.</div></div>
       </li>
-      <li class="eat">        <div class="ph ph-eat" data-photo="Sur place — MetLife"><img src="png/Benstailgate.JPG" alt="Sur place — MetLife" loading="lazy"><span class="ph-lbl">🖼️ Photo — Sur place — MetLife</span></div>
+      <li class="eat">        <div class="ph ph-eat" data-photo="Sur place — MetLife"><img src="img/benstailgate.webp" alt="Sur place — MetLife" loading="lazy"><span class="ph-lbl">🖼️ Photo — Sur place — MetLife</span></div>
         <div class="cbody">
         <span class="lbl">Sur place</span> <span class="hood">MetLife</span><br>Stands du stade (hot-dogs, burgers, bretzels géants…) et <b>tailgate</b> sur le parking. Prévoir carte/cash.</div>
       </li>
-      <li class="stop">        <div class="ph" data-photo="Matinée / soirée libre"><img src="png/Lower_Manhattan_from_Jersey_City_November_2016_002.jpg" alt="Matinée / soirée libre" loading="lazy"><span class="ph-lbl">🖼️ Photo — Matinée / soirée libre</span></div>
+      <li class="stop">        <div class="ph" data-photo="Matinée / soirée libre"><img src="img/lower-manhattan-from-jersey-city-november-2016-002.webp" alt="Matinée / soirée libre" loading="lazy"><span class="ph-lbl">🖼️ Photo — Matinée / soirée libre</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Matinée / soirée libre</span><span class="stop-tr"><span class="dur">au ralenti</span><span class="cost free">gratuit</span></span></div>
         <div class="stop-meta"><span class="hood">Jersey City</span><span class="move go">près du logement</span> <span class="move">on récupère : départ demain</span></div></div>
@@ -793,7 +428,7 @@
   <!-- JOUR 8 -->
   <div class="day" data-day="8">
     <div class="day-head"><div class="day-num">08</div><div class="day-title">Lun. 26 — Dernière journée &amp; départ</div><div class="day-tot">journée libre</div></div>
-        <div class="ph ph-band" data-photo="Lun. 26 — Dernière journée &amp; départ"><img src="png/Lower_Manhattan_from_Jersey_City_November_2014_panorama_2.jpg" alt="Lun. 26 — Dernière journée &amp; départ" loading="lazy"><span class="ph-lbl">🖼️ Photo — Lun. 26 — Dernière journée &amp; départ</span></div>
+        <div class="ph ph-band" data-photo="Lun. 26 — Dernière journée &amp; départ"><img src="img/lower-manhattan-from-jersey-city-november-2014-panorama-2.webp" alt="Lun. 26 — Dernière journée &amp; départ" loading="lazy"><span class="ph-lbl">🖼️ Photo — Lun. 26 — Dernière journée &amp; départ</span></div>
     <div class="getin"><span>✈️</span><div><b>Vol :</b> départ <b>23h55 de JFK</b> → à l'aéroport vers 20h30-21h, donc <b>départ du logement ~19h30-20h</b> en van. Checkout ~11h : laissez les bagages en consigne.</div></div>
     <div class="daymap" data-day="8">
       <div class="map-tabs">
@@ -806,13 +441,13 @@
       <div class="map-legend" data-legend></div>
     </div>
     <ul class="stops">
-      <li class="free">        <div class="ph" data-photo="Grande fenêtre libre (2e créneau hélico / stand de tir possible)"><img src="png/Composite_Indoor_Shooting_Range_(CISR)_at_INS_Karna.jpg" alt="Grande fenêtre libre (2e créneau hélico / stand de tir possible)" loading="lazy"><span class="ph-lbl">🖼️ Photo — Grande fenêtre libre (2e créneau hélico / stand de tir possible)</span></div>
+      <li class="free">        <div class="ph" data-photo="Grande fenêtre libre (2e créneau hélico / stand de tir possible)"><img src="img/composite-indoor-shooting-range-cisr-at-ins-karna.webp" alt="Grande fenêtre libre (2e créneau hélico / stand de tir possible)" loading="lazy"><span class="ph-lbl">🖼️ Photo — Grande fenêtre libre (2e créneau hélico / stand de tir possible)</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Grande fenêtre libre (2<sup>e</sup> créneau hélico / stand de tir possible)</span><span class="stop-tr"><span class="dur">la journée</span><span class="cost no">à part</span></span></div>
         <div class="stop-meta"><span class="hood">au choix</span><span class="move vtc">selon l'activité</span></div>
         <div class="stop-note">Journée ouverte : parfait comme <b>rattrapage</b> pour l'<b>hélico</b> ou le <b>stand de tir</b> si ça n'a pas pu se faire jeudi, ou pour un dernier lieu (Flatiron, shopping, brunch). Pensez à la consigne à bagages.</div></div>
       </li>
-      <li class="stop">        <div class="ph" data-photo="Récupération bagages → JFK"><img src="png/JFK_Terminal_4_NY1.jpg" alt="Récupération bagages → JFK" loading="lazy"><span class="ph-lbl">🖼️ Photo — Récupération bagages → JFK</span></div>
+      <li class="stop">        <div class="ph" data-photo="Récupération bagages → JFK"><img src="img/jfk-terminal-4-ny1.webp" alt="Récupération bagages → JFK" loading="lazy"><span class="ph-lbl">🖼️ Photo — Récupération bagages → JFK</span></div>
         <div class="cbody">
         <div class="stop-top"><span class="stop-name">Récupération bagages → JFK</span><span class="stop-tr"><span class="dur">~1 h de route</span><span class="cost no">à part</span></span></div>
         <div class="stop-meta"><span class="hood">Jersey City → JFK</span><span class="move van">van (réservé la veille)</span></div></div>
@@ -886,1906 +521,9 @@
 </div>
 
 
-<script>
-(function(){
-  var DATA  = {"2": {"pins": [[1, 40.74844, -73.98566], [2, 40.75366, -73.98325], [3, 40.75273, -73.97715], [4, 40.7545, -73.9843], [5, 40.75855, -73.97625], [6, 40.7605, -73.974], [7, 40.76144, -73.97768], [8, 40.75915, -73.97925], [9, 40.758, -73.9855], [10, 40.7596, -73.9877], [11, 40.7588, -73.988]], "refs": []}, "3": {"pins": [[1, 40.70614, -73.99688], [2, 40.7033, -73.9866], [3, 40.7004, -73.9967], [4, 40.70265, -73.9931], [5, 40.68264, -73.97562]], "refs": []}, "4": {"pins": [[1, 40.77398, -73.97088], [2, 40.77565, -73.96795], [3, 40.77943, -73.96324], [4, 40.78132, -73.97397]], "refs": []}, "5": {"pins": [[1, 40.68925, -74.0445], [2, 40.6993, -74.0396], [3, 40.7127, -74.0162], [4, 40.71155, -74.0125], [5, 40.713, -74.0133], [6, 40.75052, -73.99357]], "refs": [[40.705, -74.0555, "Départ ferry — Liberty State Park"]]}, "6": {"pins": [[1, 40.75395, -74.00195], [2, 40.7479, -74.0048], [3, 40.74245, -74.0061], [4, 40.7414, -74.0105], [5, 40.7308, -73.9973], [6, 40.7233, -74.0003], [7, 40.73145, -74.00335]], "refs": []}, "7": {"pins": [[1, 40.81355, -74.07425], [2, 40.811, -74.07], [3, 40.7328, -74.0634]], "refs": []}, "8": {"pins": [[2, 40.6413, -73.7781]], "refs": [[40.7328, -74.0634, "Base — Jersey City (Liberty Ave)"]]}};
-  var UNLOC = {"4": {"5": "le groupe se sépare — hélico → héliport de Downtown (Pier 6), stand de tir → New Jersey."}, "8": {"1": "journée ouverte, au choix (rattrapage hélico / stand de tir, brunch, shopping…)."}};
-
-  function kind(li){
-    var c = li.className;
-    if (/locked|match/.test(c)) return 'ev';
-    if (/\beat\b/.test(c))     return 'eat';
-    if (/\bfree\b/.test(c))    return 'free';
-    if (/\bopt\b/.test(c))     return 'opt';
-    return 'stop';
-  }
-  function label(li){
-    var n = li.querySelector('.stop-name');
-    if (n){
-      var c = n.cloneNode(true), t = c.querySelector('.opttag');
-      if (t) t.parentNode.removeChild(t);
-      return c.textContent.replace(/\s+/g, ' ').trim();
-    }
-    var l = li.querySelector('.lbl'), hd = li.querySelector('.hood');
-    return l ? (l.textContent.trim() + (hd ? ' \u2014 ' + hd.textContent.trim() : '')) : '';
-  }
-  function badge(num, k, off){
-    var s = document.createElement('span');
-    s.className = 'pin-badge ' + k + (off ? ' off' : '');
-    s.textContent = num;
-    return s;
-  }
-
-  /* Les etapes supprimees et les activites ajoutees avec une adresse ne sont
-     connues que du DEUXIEME script (celui qui gere la synchro). On les lit
-     ici via ce pont global, mis a jour apres chaque rendu de la check-list. */
-  function curDel(){ return (window.__nycDB && window.__nycDB.del) || {}; }
-
-  /* Recalcule le numero de chaque etape a partir de l'ORDRE ACTUEL du DOM
-     (donc apres un glisser-deposer ou un clic sur monter/descendre, deja
-     applique a ce stade par le script de la check-list) plutot que depuis
-     l'ordre d'origine du HTML. Met aussi a jour le petit numero affiche sur
-     la carte-etape elle-meme, pour que les deux restent identiques. */
-  function liveRows(m){
-    var del = curDel();
-    var out = [], n = 0;
-    Array.prototype.forEach.call(
-      m.day.querySelectorAll('ul.stops > li:not(.trans):not(.trans-gap):not(.actv)'),
-      function(li){
-        /* table GLOBALE (toutes les journées) : une étape déplacée d'un jour
-           à l'autre garde ses coordonnées et se fait quand même numéroter ici */
-        var r = GLOBAL_ROWS[li.getAttribute('data-sid')];
-        if (!r || del[r.skey]) return;
-        n++;
-        var b = li.querySelector('.pin-badge');
-        if (b) b.textContent = n;
-        out.push({n: n, k: r.k, name: r.name, has: r.has, ll: r.ll});
-      }
-    );
-    return out;
-  }
-
-  function paintMap(m){
-    var rows = liveRows(m);
-
-    m.legendEl.innerHTML = '';
-    rows.forEach(function(r){
-      var lg = document.createElement('span');
-      lg.className = 'lg';
-      lg.appendChild(badge(r.n, r.k, !r.has));
-      lg.appendChild(document.createTextNode(' ' + r.name));
-      m.legendEl.appendChild(lg);
-    });
-    (m.extra || []).forEach(function(e, idx){
-      var lg = document.createElement('span');
-      lg.className = 'lg';
-      lg.appendChild(badge(String.fromCharCode(65 + idx), 'actv', false));
-      lg.appendChild(document.createTextNode(' ' + e.name));
-      m.legendEl.appendChild(lg);
-    });
-
-    if (!m.map) return;
-    if (m.layer) m.layer.clearLayers(); else m.layer = L.layerGroup().addTo(m.map);
-
-    var pts = rows.filter(function(r){ return r.has; })
-                  .map(function(r){ return {n: r.n, k: r.k, name: r.name, ll: r.ll}; });
-    (m.extra || []).forEach(function(e, idx){
-      pts.push({n: String.fromCharCode(65 + idx), k: 'actv', name: e.name, ll: e.ll});
-    });
-
-    var all = [];
-    if (pts.length > 1){
-      L.polyline(pts.map(function(p){ return p.ll; }),
-        {color: '#4a6076', weight: 2, opacity: .65, dashArray: '5,7'}).addTo(m.layer);
-    }
-    pts.forEach(function(p){
-      all.push(p.ll);
-      L.marker(p.ll, {icon: L.divIcon({className: '', iconSize: [26, 26], iconAnchor: [13, 13], popupAnchor: [0, -14],
-        html: '<div class="mk ' + p.k + '">' + p.n + '</div>'})})
-       .addTo(m.layer)
-       .bindPopup('<b>' + p.n + '. ' + p.name + '</b><br><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=' + p.ll[0] + ',' + p.ll[1] + '">Ouvrir dans Google Maps &#8599;</a>');
-    });
-    m.refs.forEach(function(r){
-      all.push([r[0], r[1]]);
-      L.marker([r[0], r[1]], {icon: L.divIcon({className: '', iconSize: [12, 12], iconAnchor: [6, 6], popupAnchor: [0, -8],
-        html: '<div class="mk-ref"></div>'})}).addTo(m.layer).bindPopup(r[2]);
-    });
-    if (all.length > 1) m.map.fitBounds(L.latLngBounds(all).pad(0.18));
-    else if (all.length === 1) m.map.setView(all[0], 15);
-    else m.map.setView([40.75, -73.99], 12);
-  }
-
-  var maps = [];
-  var GLOBAL_ROWS = {};   /* skey -> {k, name, has, ll}, toutes journées confondues */
-
-  Array.prototype.forEach.call(document.querySelectorAll('.day'), function(day){
-    var box = day.querySelector('.daymap');
-    if (!box) return;
-    var id = box.getAttribute('data-day');
-    var d  = DATA[id] || {pins: [], refs: []};
-    var coords = {};
-    d.pins.forEach(function(p){ coords[p[0]] = [p[1], p[2]]; });
-
-    var legend = box.querySelector('[data-legend]');
-    var rows = [];
-
-    /* :not(.trans):not(.actv) — les blocs transport et les activités ajoutés
-       depuis la page ne doivent pas décaler la numérotation des étapes
-       d'origine ni les points de la carte */
-    Array.prototype.forEach.call(day.querySelectorAll('ul.stops > li:not(.trans):not(.trans-gap):not(.actv)'), function(li, i){
-      var num = i + 1, k = kind(li), name = label(li), has = !!coords[num];
-      var anchor = li.querySelector('.stop-name') || li.querySelector('.lbl');
-      if (anchor) anchor.parentNode.insertBefore(badge(num, k, !has), anchor);
-      li.setAttribute('data-sid', id + '-' + num);
-      var row = {n: num, k: k, name: name, has: has, ll: has ? coords[num] : null, skey: id + '-' + num};
-      rows.push(row);
-      GLOBAL_ROWS[row.skey] = row;
-    });
-
-    var extra = UNLOC[id];
-    if (extra){
-      var note = document.createElement('div');
-      note.className = 'map-note';
-      Object.keys(extra).forEach(function(i){
-        note.innerHTML += '<b>' + i + '</b> \u2014 pas de point sur la carte : ' + extra[i] + '<br>';
-      });
-      box.insertBefore(note, legend);
-    }
-
-    var m = {box: box, day: day, id: id, rows: rows, refs: d.refs || [], extra: [], legendEl: legend};
-    paintMap(m);
-    box.__m = m;
-    maps.push(m);
-  });
-
-  function buildMap(m){
-    if (m.done || typeof L === 'undefined') return;
-    m.done = true;
-    var map = L.map('map-d' + m.id, {scrollWheelZoom: false});
-    /* CARTO exige desormais une cle : ses tuiles reviennent barrees de
-       « API KEY REQUIRED ». On passe sur les tuiles OpenStreetMap, libres. */
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
-    m.map = map;
-    paintMap(m);
-    setTimeout(function(){ map.invalidateSize(); }, 60);
-  }
-
-  function start(){
-    if (typeof L === 'undefined'){
-      maps.forEach(function(m){
-        m.box.querySelector('.map-canvas').innerHTML =
-          '<div style="padding:18px;font-size:13px;color:#4a6076">Carte indisponible (pas de connexion) \u2014 utilisez l\'onglet Google Maps ou le lien \u00ab Itin\u00e9raire \u00bb.</div>';
-      });
-      return;
-    }
-    if ('IntersectionObserver' in window){
-      var io = new IntersectionObserver(function(es){
-        es.forEach(function(e){ if (e.isIntersecting){ buildMap(e.target.__m); io.unobserve(e.target); } });
-      }, {rootMargin: '350px'});
-      maps.forEach(function(m){ io.observe(m.box); });
-    } else maps.forEach(buildMap);
-  }
-  window.__nycRefreshMaps = function(){
-    maps.forEach(function(m){ if (!m.done) buildMap(m); else if (m.map) m.map.invalidateSize(); });
-  };
-  window.__nycRepaintMaps = function(){
-    maps.forEach(function(m){ paintMap(m); });
-  };
-  if (document.readyState === 'complete') start(); else window.addEventListener('load', start);
-
-  document.addEventListener('click', function(e){
-    var b = e.target.closest ? e.target.closest('.mt-btn') : null;
-    if (!b) return;
-    var box = b.closest('.daymap'), want = b.getAttribute('data-pane');
-    Array.prototype.forEach.call(box.querySelectorAll('.mt-btn'), function(x){
-      if (x === b) x.classList.add('active'); else x.classList.remove('active');
-    });
-    var pn = box.querySelector('.pane-num'), pg = box.querySelector('.pane-g');
-    pn.hidden = (want !== 'num');
-    pg.hidden = (want !== 'g');
-    if (want === 'g'){
-      var f = pg.querySelector('iframe');
-      if (!f.getAttribute('src')) f.setAttribute('src', f.getAttribute('data-src'));
-    } else if (box.__m && box.__m.map){
-      box.__m.map.invalidateSize();
-    }
-  });
-})();
-</script>
-
-<script>
-/* ---------------------------------------------------------------------------
-   Synchronisation partagee.  Laissez databaseURL vide pour rester en local
-   (chacun sa liste dans son navigateur).  Renseignez-le pour que les 7
-   voient la meme liste en temps reel.  Voir HEBERGEMENT.md.
---------------------------------------------------------------------------- */
-window.TRIP_SYNC = {
-  databaseURL: "https://new-york-937a7-default-rtdb.europe-west1.firebasedatabase.app/",
-  path: "ny-a7f3k9m2"
-};
-</script>
-<script>
-(function(){
-  var CFG    = window.TRIP_SYNC || {};
-  var PEOPLE = [{"k": "megan", "n": "Mégan", "i": "Mé", "c": "#b23b5b"}, {"k": "theo", "n": "Théo", "i": "Th", "c": "#1d7a5f"}, {"k": "shirley", "n": "Shirley", "i": "Sh", "c": "#d99125"}, {"k": "david", "n": "David", "i": "Da", "c": "#3a6ea5"}, {"k": "camille", "n": "Camille", "i": "Ca", "c": "#7b52a1"}, {"k": "philippe", "n": "Philippe", "i": "Ph", "c": "#b5651d"}, {"k": "marie", "n": "Marie", "i": "Ma", "c": "#0f8b8d"}];
-  var DEF_S  = [{"id": "s1", "t": "Formalités & documents", "o": 10}, {"id": "s2", "t": "Réservations à boucler", "o": 20}, {"id": "s3", "t": "Argent, téléphone & applis", "o": 30}, {"id": "s4", "t": "Valise — à ne pas oublier", "o": 40}, {"id": "s5", "t": "Juste avant de partir", "o": 50}, {"id": "s6", "t": "À ajouter", "o": 60}];
-  var DEF_I  = [{"id": "i01", "s": "s1", "o": 10, "t": "Faire son ESTA", "n": "≈ 21 $/personne, uniquement sur esta.cbp.dhs.gov (les autres sites surfacturent). Au moins 72 h avant le vol.", "m": "each"}, {"id": "i02", "s": "s1", "o": 20, "t": "Vérifier la validité de son passeport", "n": "Valide pendant tout le séjour, et biométrique pour l'ESTA.", "m": "each"}, {"id": "i03", "s": "s1", "o": 30, "t": "Souscrire une assurance voyage / santé", "n": "Les soins aux États-Unis coûtent très cher, la carte européenne n'y sert à rien.", "m": "each"}, {"id": "i04", "s": "s1", "o": 40, "t": "Prévenir la compagnie aérienne pour la PMR", "n": "Assistance aéroport, fauteuil, place adaptée — à demander bien avant le départ.", "m": "once"}, {"id": "i05", "s": "s1", "o": 50, "t": "Scanner son passeport + ESTA (téléphone et mail)", "n": "Une copie papier dans un autre sac ne coûte rien.", "m": "each"}, {"id": "i06", "s": "s1", "o": 60, "t": "Faire son enregistrement en ligne", "n": "Ouvre généralement 24 h avant le vol.", "m": "each"}, {"id": "i07", "s": "s2", "o": 10, "t": "Acheter le Go City (New York Explorer) pour les 7", "n": "Vérifier dans l'appli que l'Empire State, le MoMA, le 9/11, One World, The Edge et le ferry sont bien inclus.", "m": "once"}, {"id": "i08", "s": "s2", "o": 20, "t": "Billets du spectacle de Broadway — mar. 20", "n": "Places PMR à réserver tôt. Sinon TKTS à Times Square le jour même, mais pas garanti à 7.", "m": "once"}, {"id": "i09", "s": "s2", "o": 30, "t": "Billets Nets vs Hornets — mer. 21, Barclays Center", "n": "19h30. Places PMR à réserver tôt.", "m": "once"}, {"id": "i10", "s": "s2", "o": 40, "t": "Billets Jets vs Dolphins — dim. 25, MetLife", "n": "Coup d'envoi 13h. Places PMR à réserver tôt.", "m": "once"}, {"id": "i11", "s": "s2", "o": 50, "t": "Billets du Met — jeu. 22", "n": "≈ 30 $/personne, non inclus dans le Go City.", "m": "once"}, {"id": "i12", "s": "s2", "o": 60, "t": "Van ou 2 UberXL : JFK → Jersey City, lun. 19", "n": "Atterrissage 22h40, prévoir l'attente bagages. Place devant pour la PMR.", "m": "once"}, {"id": "i13", "s": "s2", "o": 70, "t": "Van : Jersey City → MetLife, dim. 25", "n": "Départ vers 11h-11h30 pour l'avant-match, et le retour.", "m": "once"}, {"id": "i14", "s": "s2", "o": 80, "t": "Van : Jersey City → JFK, lun. 26", "n": "Vol à 23h55, départ du logement vers 19h30-20h.", "m": "once"}, {"id": "i15", "s": "s2", "o": 90, "t": "Créneau Empire State Building — mar. 20", "n": "Réserver l'horaire à l'avance même avec le pass.", "m": "once"}, {"id": "i16", "s": "s2", "o": 100, "t": "Choisir et réserver l'observatoire", "n": "Top of the Rock (mar.), One World (ven.) ou The Edge (sam.) — un seul suffit.", "m": "once"}, {"id": "i17", "s": "s2", "o": 110, "t": "Créneau ferry Statue de la Liberté — ven. 23", "n": "Au départ de Liberty State Park côté Jersey City : moins de queue.", "m": "once"}, {"id": "i18", "s": "s2", "o": 120, "t": "Réserver l'hélicoptère", "n": "Jeu. 22 ou ven. 23, héliport de Downtown (Pier 6). Avant le coucher du soleil, ~18 h en octobre.", "m": "once"}, {"id": "i19", "s": "s2", "o": 130, "t": "Réserver le stand de tir (New Jersey)", "n": "Pièce d'identité demandée sur place.", "m": "once"}, {"id": "i20", "s": "s2", "o": 140, "t": "Réserver les restos pour 7", "n": "La Pecora Bianca (mar.), John's of Bleecker (sam.) : les grandes tablées se réservent.", "m": "once"}, {"id": "i21", "s": "s2", "o": 150, "t": "Confirmer le logement de Jersey City", "n": "Adresse exacte, code d'accès, arrivée tardive (~00h30), checkout ~11h le lundi et consigne à bagages.", "m": "once"}, {"id": "i22", "s": "s3", "o": 10, "t": "Prévenir sa banque + vérifier ses plafonds", "n": "Sinon la carte peut être bloquée au premier paiement.", "m": "each"}, {"id": "i23", "s": "s3", "o": 20, "t": "Prévoir une carte sans frais à l'étranger", "n": "Et une deuxième carte de secours, rangée ailleurs.", "m": "each"}, {"id": "i24", "s": "s3", "o": 30, "t": "Prendre un peu de cash en dollars", "n": "Tailgate MetLife, pourboires, petits stands. Le reste se paie par carte partout.", "m": "each"}, {"id": "i25", "s": "s3", "o": 40, "t": "Activer une eSIM ou un forfait data US", "n": "À faire avant de partir.", "m": "each"}, {"id": "i26", "s": "s3", "o": 50, "t": "Installer Uber, Go City, Citymapper", "n": "Et télécharger la carte de New York hors ligne dans Google Maps.", "m": "each"}, {"id": "i27", "s": "s3", "o": 60, "t": "Vérifier que sa carte passe en sans-contact", "n": "Le métro et le PATH fonctionnent à l'OMNY : pas besoin de MetroCard.", "m": "each"}, {"id": "i28", "s": "s4", "o": 10, "t": "Adaptateurs de prise US (type A/B)", "n": "Deux ou trois suffisent pour le groupe, ou une multiprise française + un seul adaptateur. À se répartir.", "m": "once"}, {"id": "i29", "s": "s4", "o": 20, "t": "Batterie externe", "n": "Obligatoirement en bagage cabine, jamais en soute.", "m": "each"}, {"id": "i30", "s": "s4", "o": 30, "t": "Chargeurs (téléphone, appareil photo)", "n": "", "m": "each"}, {"id": "i31", "s": "s4", "o": 40, "t": "Chaussures de marche déjà faites", "n": "Les journées font 6 à 8 h de marche.", "m": "each"}, {"id": "i32", "s": "s4", "o": 50, "t": "Vêtements chauds + bonnet et écharpe", "n": "MetLife est un stade à ciel ouvert et il fait froid fin octobre.", "m": "each"}, {"id": "i33", "s": "s4", "o": 60, "t": "Coupe-vent et petit parapluie", "n": "", "m": "each"}, {"id": "i34", "s": "s4", "o": 70, "t": "Tenue un peu habillée pour Broadway", "n": "Facultatif, mais l'ambiance s'y prête.", "m": "each"}, {"id": "i35", "s": "s4", "o": 80, "t": "Médicaments + ordonnances", "n": "En cabine, dans leur boîte d'origine.", "m": "each"}, {"id": "i36", "s": "s4", "o": 90, "t": "Trousse de toilette", "n": "Liquides de moins de 100 ml en cabine.", "m": "each"}, {"id": "i37", "s": "s4", "o": 100, "t": "Petit sac à dos pour la journée", "n": "Sacs souvent contrôlés à l'entrée des salles et des musées.", "m": "each"}, {"id": "i38", "s": "s5", "o": 10, "t": "Peser ses bagages, vérifier les dimensions cabine", "n": "", "m": "each"}, {"id": "i39", "s": "s5", "o": 20, "t": "Télécharger billets d'avion, matchs, spectacle, Go City, ESTA, adresse du logement", "n": "Dans le téléphone ET imprimé : le réseau à JFK est capricieux.", "m": "each"}, {"id": "i40", "s": "s5", "o": 30, "t": "Régler sa montre : New York a 6 h de moins", "n": "", "m": "each"}, {"id": "i41", "s": "s5", "o": 40, "t": "Aucune nourriture fraîche dans les bagages", "n": "La douane américaine est stricte : pas de fromage, charcuterie, fruits.", "m": "each"}, {"id": "i42", "s": "s5", "o": 50, "t": "Laisser l'itinéraire à un proche resté en France", "n": "", "m": "once"}, {"id": "i43", "s": "s5", "o": 60, "t": "Regarder la météo à New York la veille", "n": "", "m": "once"}];
-  var MEKEY  = 'nyc2026:me', LKEY = 'nyc2026:checklist:v2';
-  var ADMIN  = 'megan';   /* seul ce profil peut corriger un texte déjà écrit */
-
-  var $ = function(s){ return document.querySelector(s); };
-  var listEl  = $('[data-ck-list]'),  barEl  = $('[data-ck-bar]'),   lblEl  = $('[data-ck-lbl]');
-  var cntEl   = $('[data-ck-count]'), lastEl = $('[data-ck-last]'),  warnEl = $('[data-ck-warn]');
-  var meEls   = document.querySelectorAll('[data-ck-me]');
-  var syncEl  = $('[data-ck-sync]'),  sumEl  = $('[data-ck-people]');
-  var sgBody   = $('[data-sg-body]');
-  var sgCounts = document.querySelectorAll('[data-sg-count]');   /* en haut ET en bas */
-  var sgAdds   = document.querySelectorAll('[data-sg-add]');
-  var sgJump   = $('[data-sg-jump]');
-
-  /* ---------------------------------------------------------------- outils */
-  function ls(k, v){
-    try{ if (v === undefined) return localStorage.getItem(k);
-         if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v);
-         return true; }catch(e){ return null; }
-  }
-  function P(k){ for (var i = 0; i < PEOPLE.length; i++) if (PEOPLE[i].k === k) return PEOPLE[i]; return null; }
-  function avatar(k, big){
-    var p = P(k), s = document.createElement('span');
-    s.className = 'av' + (big ? ' lg' : '');
-    if (p){ s.style.background = p.c; s.textContent = p.i; s.title = p.n; }
-    else { s.textContent = '?'; }
-    return s;
-  }
-  function ago(ts){
-    if (!ts) return '';
-    var d = Math.round((Date.now() - ts) / 1000);
-    if (d < 60) return "à l'instant";
-    if (d < 3600) return 'il y a ' + Math.round(d / 60) + ' min';
-    if (d < 86400) return 'il y a ' + Math.round(d / 3600) + ' h';
-    return 'il y a ' + Math.round(d / 86400) + ' j';
-  }
-  function esc(s){ var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
-  /* on prefixe les valeurs par un tilde : on retire celui que l'auteur aurait deja tape */
-  function approx(v){ return String(v == null ? '' : v).replace(/^\s*(?:~|≈|environ)\s*/i, ''); }
-
-  /* ------------------------------------------------------------ identite */
-  var ME = ls(MEKEY);
-  if (ME && !P(ME)) ME = null;
-  function paintMe(){
-    for (var i = 0; i < meEls.length; i++){
-      var e = meEls[i];
-      e.innerHTML = '';
-      e.appendChild(avatar(ME));
-      var t = document.createElement('span');
-      t.textContent = ME ? P(ME).n : 'Qui suis-je ?';
-      e.appendChild(t);
-    }
-  }
-  var meOpen = false;
-  function askMe(force, cb){
-    if (meOpen) return;              /* jamais deux fois la même fenêtre */
-    meOpen = true;
-    var ov = document.createElement('div');
-    ov.className = 'modal';
-    var card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = '<h3>Qui êtes-vous ?</h3><p>Pour savoir qui a fait quoi : les coches de la check-list, les +1 sur les suggestions. Vous pourrez en changer à tout moment avec le bouton en haut à droite.</p>';
-    var g = document.createElement('div');
-    g.className = 'grid';
-    PEOPLE.forEach(function(p){
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.appendChild(avatar(p.k));
-      var s = document.createElement('span'); s.textContent = p.n; b.appendChild(s);
-      b.addEventListener('click', function(){
-        ME = p.k; ls(MEKEY, p.k); paintMe(); closeMe(); render();
-        if (typeof cb === 'function') cb();
-      });
-      g.appendChild(b);
-    });
-    card.appendChild(g);
-    function closeMe(){
-      if (ov.parentNode) ov.parentNode.removeChild(ov);
-      meOpen = false;
-    }
-    if (force !== true){
-      var c = document.createElement('button');
-      c.type = 'button'; c.className = 'btn close';
-      c.textContent = ME ? 'Annuler' : 'Je regarde juste';
-      c.addEventListener('click', closeMe);
-      card.appendChild(c);
-    }
-    ov.appendChild(card);
-    ov.addEventListener('click', function(e){ if (e.target === ov && force !== true) closeMe(); });
-    document.body.appendChild(ov);
-  }
-  for (var mi = 0; mi < meEls.length; mi++) meEls[mi].addEventListener('click', function(){ askMe(); });
-  paintMe();
-
-  /* ------------------------------------------------- base de donnees */
-  var DB = {s:{}, i:{}, g:{}, t:{}, d:{}, a:{}, del:{}, ord:{}, loc:{}}, CLOUD = false, ROOT = null, ready = false;
-
-  function defaults(){
-    var d = {s:{}, i:{}};
-    DEF_S.forEach(function(s){ d.s[s.id] = {t:s.t, o:s.o}; });
-    DEF_I.forEach(function(it){ d.i[it.id] = {s:it.s, o:it.o, t:it.t, n:it.n, m:it.m, w:{}, a:null, d:null}; });
-    return d;
-  }
-  function saveLocal(){ ls(LKEY, JSON.stringify(DB)); }
-
-  /* Rattrapage : le badge « chacun · N/7 » était affiché DANS le titre modifiable,
-     donc chaque passage en édition le recopiait dans le texte enregistré
-     (« Faire son ESTAchacun · 0/7 »). On nettoie ce qui a déjà été abîmé. */
-  var TAG_RE = /(?:\s*chacun\s*·\s*\d+\s*\/\s*\d+)+\s*$/i;
-  function repairTitles(){
-    var fixed = [];
-    Object.keys(DB.i || {}).forEach(function(k){
-      var it = DB.i[k];
-      if (!it || typeof it.t !== 'string') return;
-      var c = it.t.replace(TAG_RE, '').trim();
-      if (c && c !== it.t){ it.t = c; fixed.push(k); }
-    });
-    if (!fixed.length) return;
-    if (CLOUD){
-      var o = {};
-      fixed.forEach(function(k){ o[k + '/t'] = DB.i[k].t; });
-      ROOT.child('i').update(o);
-    } else saveLocal();
-  }
-
-  function applyPath(obj, path, val){
-    var ks = path.split('/'), cur = obj;
-    for (var i = 0; i < ks.length - 1; i++){ if (typeof cur[ks[i]] !== 'object' || !cur[ks[i]]) cur[ks[i]] = {}; cur = cur[ks[i]]; }
-    if (val === null) delete cur[ks[ks.length - 1]]; else cur[ks[ks.length - 1]] = val;
-  }
-  /* Une ecriture Firebase qui echoue levait une exception avalee par le
-     gestionnaire de clic : rien ne se passait, sans le moindre message.
-     On l'attrape et on l'affiche dans la pastille de synchro. */
-  function writeFail(e, path){
-    if (window.console) console.error('Echec ecriture', path, e);
-    setSync('off', 'Enregistrement refuse');
-    setTimeout(function(){ if (CLOUD) setSync('on', 'Partage \u2014 a jour'); }, 4000);
-  }
-  function cloud(path, fn){
-    try { fn(ROOT.child(path)); }
-    catch (e){ writeFail(e, path); }
-  }
-  function patch(base, obj){
-    if (CLOUD){ cloud(base, function(r){ r.update(obj); }); return; }
-    Object.keys(obj).forEach(function(k){ applyPath(DB, base + '/' + k, obj[k]); });
-    saveLocal(); render();
-  }
-  function drop(path){
-    if (CLOUD){ cloud(path, function(r){ r.remove(); }); return; }
-    applyPath(DB, path, null); saveLocal(); render();
-  }
-  function put(path, val){
-    if (CLOUD){ cloud(path, function(r){ r.set(val); }); return; }
-    applyPath(DB, path, val); saveLocal(); render();
-  }
-
-  /* ------------------------------------------------------------ calculs */
-  function secs(){
-    return Object.keys(DB.s).map(function(k){ var o = DB.s[k]; return {id:k, t:o.t, o:o.o || 0}; })
-                 .sort(function(a, b){ return a.o - b.o; });
-  }
-  function items(sid){
-    return Object.keys(DB.i).filter(function(k){ return DB.i[k].s === sid; })
-      .map(function(k){ var o = DB.i[k]; return {id:k, d:o}; })
-      .sort(function(a, b){ return (a.d.o || 0) - (b.d.o || 0); });
-  }
-  function isDone(it){
-    if (it.m === 'each'){
-      var w = it.w || {};
-      for (var i = 0; i < PEOPLE.length; i++) if (!w[PEOPLE[i].k]) return false;
-      return true;
-    }
-    return !!it.d;
-  }
-  function doneCount(it){
-    if (it.m !== 'each') return isDone(it) ? 1 : 0;
-    var w = it.w || {}, n = 0;
-    PEOPLE.forEach(function(p){ if (w[p.k]) n++; });
-    return n;
-  }
-  function totals(){
-    var d = 0, t = 0;
-    Object.keys(DB.i).forEach(function(k){ t++; if (isDone(DB.i[k])) d++; });
-    return [d, t];
-  }
-  function concerns(it, who){
-    if (it.m === 'each') return true;
-    return it.a === who;
-  }
-
-  /* ------------------------------------------------------------- rendu */
-  var FILTER = 'all', editing = null, pending = false;
-
-  function match(it){
-    if (FILTER === 'todo') return !isDone(it);
-    if (FILTER === 'free') return it.m === 'once' && !it.a && !it.d;
-    if (FILTER === 'mine'){
-      if (!ME) return true;
-      if (it.m === 'each') return !(it.w || {})[ME];
-      return it.a === ME && !it.d;
-    }
-    return true;
-  }
-
-  function personRow(id, it){
-    var row = document.createElement('div');
-    row.className = 'who-row';
-    var w = it.w || {};
-    PEOPLE.forEach(function(p){
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'pp' + (w[p.k] ? ' on' : '') + (p.k === ME ? ' self' : '');
-      b.title = w[p.k] ? (p.n + ' — fait ' + ago(w[p.k])) : (p.n + ' — pas encore');
-      b.appendChild(avatar(p.k));
-      var s = document.createElement('span'); s.textContent = p.n; b.appendChild(s);
-      b.addEventListener('click', function(){
-        var o = {}; o['w/' + p.k] = w[p.k] ? null : Date.now();
-        patch('i/' + id, o);
-      });
-      row.appendChild(b);
-    });
-    return row;
-  }
-
-  /* Confirmation avant une suppression : reprend le style des autres modales
-     (Echap ou clic hors de la carte = annuler ; le focus part sur Annuler). */
-  function askConfirm(title, msgHtml, okLabel, cb){
-    var ov = document.createElement('div');
-    ov.className = 'modal';
-    var card = document.createElement('div');
-    card.className = 'card ask';
-    card.innerHTML = '<h3>' + esc(title) + '</h3><p>' + msgHtml + '</p>';
-    var row = document.createElement('div'); row.className = 'actions';
-    var no = document.createElement('button');
-    no.type = 'button'; no.className = 'cancel'; no.textContent = 'Annuler';
-    var yes = document.createElement('button');
-    yes.type = 'button'; yes.className = 'danger'; yes.textContent = okLabel;
-    row.appendChild(no); row.appendChild(yes);
-    card.appendChild(row); ov.appendChild(card);
-    function close(){
-      if (ov.parentNode) ov.parentNode.removeChild(ov);
-      document.removeEventListener('keydown', onKey);
-    }
-    function onKey(e){ if (e.key === 'Escape' || e.keyCode === 27) close(); }
-    no.addEventListener('click', close);
-    yes.addEventListener('click', function(){ close(); cb(); });
-    ov.addEventListener('click', function(e){ if (e.target === ov) close(); });
-    document.addEventListener('keydown', onKey);
-    document.body.appendChild(ov);
-    no.focus();
-  }
-
-  function pickPerson(anchorText, cb){
-    var ov = document.createElement('div');
-    ov.className = 'modal';
-    var card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = '<h3>' + esc(anchorText) + '</h3><p>Choisissez la personne qui s\'en charge.</p>';
-    var g = document.createElement('div'); g.className = 'grid';
-    PEOPLE.forEach(function(p){
-      var b = document.createElement('button'); b.type = 'button';
-      b.appendChild(avatar(p.k));
-      var s = document.createElement('span'); s.textContent = p.n; b.appendChild(s);
-      b.addEventListener('click', function(){ document.body.removeChild(ov); cb(p.k); });
-      g.appendChild(b);
-    });
-    card.appendChild(g);
-    var c = document.createElement('button');
-    c.type = 'button'; c.className = 'btn close'; c.textContent = 'Personne pour l\'instant';
-    c.addEventListener('click', function(){ document.body.removeChild(ov); cb(null); });
-    card.appendChild(c);
-    ov.appendChild(card);
-    ov.addEventListener('click', function(e){ if (e.target === ov) document.body.removeChild(ov); });
-    document.body.appendChild(ov);
-  }
-
-  /* Les textes déjà écrits sont figés pour tout le monde, sauf pour le profil
-     ADMIN qui peut les corriger sur place. Attention : le badge « chacun · N/7 »
-     doit rester EN DEHORS du span modifiable, sinon il se recopie dans le titre
-     à chaque édition (voir repairTitles). */
-  function canEdit(){ return ME === ADMIN; }
-
-  function editable(e, onSave){
-    e.classList.add('editable');
-    e.contentEditable = 'true'; e.spellcheck = false;
-    e.title = 'Cliquez pour corriger';
-    e.addEventListener('focus', function(){ editing = e; });
-    e.addEventListener('blur', function(){
-      editing = null;
-      onSave(e.textContent.trim());
-      if (pending){ pending = false; render(); }
-    });
-    e.addEventListener('keydown', function(ev){ if (ev.key === 'Enter'){ ev.preventDefault(); e.blur(); } });
-    return e;
-  }
-
-  function txtEl(cls, text, ph, onSave){
-    var e = document.createElement('span');
-    e.className = cls;
-    e.textContent = text || '';
-    if (!canEdit()) return e;
-    if (ph) e.setAttribute('data-ph', ph);
-    return editable(e, onSave);
-  }
-
-  /* Saisie du texte AVANT création, puisqu'on ne peut plus le retoucher ensuite.
-     intro  : phrase d'explication facultative (null si inutile).
-     fields : [{label, ph, multi}] — le premier champ est obligatoire. */
-  function askText(title, intro, fields, okLabel, cb){
-    var ov = document.createElement('div');
-    ov.className = 'modal';
-    var card = document.createElement('div');
-    card.className = 'card ask';
-    card.innerHTML = '<h3>' + esc(title) + '</h3>' + (intro ? '<p>' + intro + '</p>' : '');
-    var inputs = [];
-    fields.forEach(function(f){
-      var wrap = document.createElement('label');
-      wrap.className = 'field';
-      var lb = document.createElement('span'); lb.textContent = f.label;
-      var el;
-      if (f.checkbox){
-        wrap.className = 'field field-check';
-        el = document.createElement('input');
-        el.type = 'checkbox';
-        el.checked = !!f.value;
-      } else if (f.options){
-        el = document.createElement('select');
-        f.options.forEach(function(o){
-          var op = document.createElement('option');
-          op.value = o; op.textContent = o; el.appendChild(op);
-        });
-        if (f.value) el.value = f.value;
-      } else {
-        el = document.createElement(f.multi ? 'textarea' : 'input');
-        if (f.multi) el.rows = 2; else el.type = 'text';
-        el.placeholder = f.ph || '';
-        if (f.value) el.value = f.value;
-      }
-      if (f.checkbox){ wrap.appendChild(el); wrap.appendChild(lb); }
-      else { wrap.appendChild(lb); wrap.appendChild(el); }
-      card.appendChild(wrap);
-      inputs.push(el);
-    });
-    var row = document.createElement('div'); row.className = 'actions';
-    var no = document.createElement('button');
-    no.type = 'button'; no.className = 'cancel'; no.textContent = 'Annuler';
-    var yes = document.createElement('button');
-    yes.type = 'button'; yes.className = 'ok'; yes.textContent = okLabel;
-    row.appendChild(no); row.appendChild(yes);
-    card.appendChild(row); ov.appendChild(card);
-    function close(){
-      if (ov.parentNode) ov.parentNode.removeChild(ov);
-      document.removeEventListener('keydown', onKey);
-    }
-    function valid(){
-      var v = inputs.map(function(el){ return el.type === 'checkbox' ? el.checked : el.value.trim(); });
-      if (!v[0] && !fields[0].allowEmpty){ inputs[0].focus(); return; }
-      close(); cb(v);
-    }
-    function onKey(e){
-      if (e.key === 'Escape' || e.keyCode === 27) close();
-      else if ((e.key === 'Enter' || e.keyCode === 13) && e.target.tagName !== 'TEXTAREA'
-               && e.target.tagName !== 'SELECT'){ e.preventDefault(); valid(); }
-    }
-    no.addEventListener('click', close);
-    yes.addEventListener('click', valid);
-    ov.addEventListener('click', function(e){ if (e.target === ov) close(); });
-    document.addEventListener('keydown', onKey);
-    document.body.appendChild(ov);
-    inputs[0].focus();
-  }
-
-  function itemEl(id, it){
-    var done = isDone(it);
-    var li = document.createElement('li');
-    li.className = 'citem mode-' + it.m + (done ? ' done' : '');
-
-    if (it.m === 'once'){
-      var box = document.createElement('span');
-      box.className = 'box'; box.setAttribute('role', 'checkbox');
-      box.setAttribute('aria-checked', done ? 'true' : 'false'); box.tabIndex = 0;
-      var tog = function(){
-        if (!ME){ askMe(true); return; }
-        patch('i/' + id, it.d ? {d:null, dby:null} : {d:Date.now(), dby:ME});
-      };
-      box.addEventListener('click', tog);
-      box.addEventListener('keydown', function(e){ if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); tog(); } });
-      li.appendChild(box);
-    }
-
-    var body = document.createElement('div');
-    body.className = 'body';
-
-    var t = txtEl('txt', it.t, null, function(v){
-      if (v === it.t) return;
-      if (!v){ render(); return; }        /* on ne vide pas un intitulé par accident */
-      patch('i/' + id, {t:v});
-    });
-    body.appendChild(t);
-    if (it.m === 'each'){
-      var tag = document.createElement('span');
-      tag.className = 'tag-each';
-      tag.textContent = 'chacun · ' + doneCount(it) + '/' + PEOPLE.length;
-      body.insertBefore(tag, t.nextSibling);
-    }
-    if (it.n || canEdit()){
-      body.appendChild(txtEl('note', it.n, 'ajouter une précision…', function(v){
-        if (v !== it.n) patch('i/' + id, {n:v});
-      }));
-    }
-
-    if (it.m === 'each'){
-      body.appendChild(personRow(id, it));
-    } else {
-      var foot = document.createElement('div');
-      foot.className = 'item-foot';
-      if (it.d && it.dby){
-        var db = document.createElement('span');
-        db.className = 'doneby';
-        db.appendChild(avatar(it.dby));
-        var sp = document.createElement('span'); sp.textContent = 'fait par ' + P(it.dby).n + ' ' + ago(it.d);
-        db.appendChild(sp);
-        foot.appendChild(db);
-      } else {
-        var a = document.createElement('button');
-        a.type = 'button';
-        a.className = 'asg' + (it.a ? '' : ' none');
-        if (it.a){ a.appendChild(avatar(it.a)); var s2 = document.createElement('span'); s2.textContent = P(it.a).n + " s'en occupe"; a.appendChild(s2); }
-        else a.textContent = "Qui s'en occupe ?";
-        a.addEventListener('click', function(){
-          pickPerson(it.t || 'Cette tâche', function(k){ patch('i/' + id, {a:k}); });
-        });
-        foot.appendChild(a);
-        if (!it.a && ME){
-          var mine = document.createElement('button');
-          mine.type = 'button'; mine.className = 'mini-btn'; mine.textContent = "je m'en occupe";
-          mine.addEventListener('click', function(){ patch('i/' + id, {a:ME}); });
-          foot.appendChild(mine);
-        }
-      }
-      var md = document.createElement('button');
-      md.type = 'button'; md.className = 'mini-btn'; md.textContent = 'chacun doit le faire';
-      md.title = 'Transformer en tâche que les 7 doivent faire chacun de leur côté';
-      md.addEventListener('click', function(){ patch('i/' + id, {m:'each', a:null, d:null, dby:null}); });
-      foot.appendChild(md);
-      body.appendChild(foot);
-    }
-
-    if (it.m === 'each'){
-      var f2 = document.createElement('div');
-      f2.className = 'item-foot';
-      var md2 = document.createElement('button');
-      md2.type = 'button'; md2.className = 'mini-btn'; md2.textContent = 'une seule fois pour le groupe';
-      md2.addEventListener('click', function(){ patch('i/' + id, {m:'once', w:null}); });
-      f2.appendChild(md2);
-      body.appendChild(f2);
-    }
-
-    li.appendChild(body);
-
-    var del = document.createElement('button');
-    del.type = 'button'; del.className = 'del'; del.title = 'Supprimer'; del.textContent = '×';
-    del.addEventListener('click', function(){
-      askConfirm('Supprimer cette ligne ?',
-        'Vous allez supprimer <b>« ' + esc(it.t || 'cette ligne') + ' »</b>'
-        + (CLOUD ? ' pour <b>tout le monde</b>.' : '.') + " C'est définitif.",
-        'Supprimer', function(){ drop('i/' + id); });
-    });
-    li.appendChild(del);
-    return li;
-  }
-
-  function render(){
-    if (editing){ pending = true; return; }   /* ne pas rafraîchir sous les doigts */
-    window.__nycDB = DB;   /* pont lu par le script des cartes (étapes supprimées, activités localisées) */
-    listEl.innerHTML = '';
-    secs().forEach(function(s){
-      var its = items(s.id), shown = its.filter(function(x){ return match(x.d); });
-      if (!shown.length && FILTER !== 'all') return;
-
-      var sec = document.createElement('section');
-      sec.className = 'csec';
-      var head = document.createElement('div');
-      head.className = 'csec-head';
-      var h3 = document.createElement('h3');
-      h3.textContent = s.t;
-      if (canEdit()) editable(h3, function(v){
-        if (v && v !== s.t) put('s/' + s.id + '/t', v); else if (!v) render();
-      });
-      var cnt = document.createElement('span');
-      cnt.className = 'cnt';
-      var d = its.filter(function(x){ return isDone(x.d); }).length;
-      cnt.textContent = its.length ? d + '/' + its.length : '—';
-      var dsec = document.createElement('button');
-      dsec.type = 'button'; dsec.className = 'del-sec'; dsec.title = 'Supprimer la catégorie'; dsec.textContent = '×';
-      dsec.addEventListener('click', function(){
-        askConfirm('Supprimer cette catégorie ?',
-          'Vous allez supprimer <b>« ' + esc(s.t) + ' »</b> et ses <b>' + its.length
-          + ' ligne' + (its.length > 1 ? 's' : '') + '</b>'
-          + (CLOUD ? ', pour <b>tout le monde</b>.' : '.') + " C'est définitif.",
-          'Tout supprimer', function(){
-            its.forEach(function(x){ drop('i/' + x.id); });
-            drop('s/' + s.id);
-          });
-      });
-      head.appendChild(h3); head.appendChild(cnt); head.appendChild(dsec);
-
-      var ul = document.createElement('ul');
-      ul.className = 'citems';
-      shown.forEach(function(x){ ul.appendChild(itemEl(x.id, x.d)); });
-
-      var add = document.createElement('button');
-      add.type = 'button'; add.className = 'add-item'; add.textContent = '＋ Ajouter une ligne';
-      add.addEventListener('click', function(){
-        askText('Ajouter une ligne à « ' + s.t + ' »', null, [
-          {label:'Intitulé', ph:'Ex. Réserver le van pour JFK'},
-          {label:'Précision (facultatif)', ph:'Détail, lien, montant…', multi:true}
-        ], 'Ajouter', function(v){
-          var id = 'x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-          var mo = its.length ? (its[its.length - 1].d.o || 0) + 10 : 10;
-          put('i/' + id, {s:s.id, o:mo, t:v[0], n:v[1], m:'once', a:(ME || null), d:null});
-        });
-      });
-
-      sec.appendChild(head); sec.appendChild(ul); sec.appendChild(add);
-      listEl.appendChild(sec);
-    });
-    paintTotals();
-    renderSugg();
-    ensureSids();
-    applyDayMoves();
-    applyOrder();
-    renderExtras();
-    renderDescs();
-    renderGetins();
-    renderStopTools();
-    syncMapExtras();
-    if (window.__nycRepaintMaps) window.__nycRepaintMaps();
-  }
-
-  /* Donne au script des cartes les activités ajoutées qui ont une adresse
-     déjà localisée (branche DB.a, champs lat/lng posés par geocode()). */
-  function syncMapExtras(){
-    Array.prototype.forEach.call(document.querySelectorAll('.daymap'), function(box){
-      var m = box.__m;
-      if (!m) return;
-      var prefix = m.id + ':';
-      var list = [];
-      Object.keys(DB.a || {}).forEach(function(k){
-        var act = DB.a[k];
-        if (act && typeof act.a === 'string' && act.a.indexOf(prefix) === 0
-            && typeof act.lat === 'number' && typeof act.lng === 'number'){
-          list.push({name: act.t || 'Activité', ll: [act.lat, act.lng]});
-        }
-      });
-      m.extra = list;
-    });
-  }
-
-  /* ------------------------------------------- suggestions d'activités
-     Stockées dans la branche « g » de la même base que la check-list :
-     elles sont donc partagées en direct entre les 7. */
-  function suggs(){
-    return Object.keys(DB.g || {}).map(function(k){ return {id:k, d:DB.g[k]}; })
-                 .sort(function(a, b){
-                   /* les plus demandées en haut, puis les plus récentes */
-                   return votes(b.d).length - votes(a.d).length || (b.d.at || 0) - (a.d.at || 0);
-                 });
-  }
-
-  function votes(g){
-    var w = g.w || {}, out = [];
-    PEOPLE.forEach(function(p){ if (w[p.k]) out.push(p); });
-    return out;
-  }
-
-  function renderSugg(){
-    var list = suggs();
-    var lbl = list.length
-      ? list.length + (list.length > 1 ? ' propositions' : ' proposition')
-      : "aucune pour l'instant";
-    for (var c = 0; c < sgCounts.length; c++) sgCounts[c].textContent = lbl;
-    if (sgJump){
-      sgJump.textContent = list.length
-        ? 'Voir les ' + lbl
-        : 'Voir les suggestions';
-    }
-
-    sgBody.innerHTML = '';
-    if (!list.length){
-      var tr0 = document.createElement('tr');
-      var td0 = document.createElement('td');
-      td0.className = 'sg-none'; td0.colSpan = 4;
-      td0.textContent = "Rien de proposé pour l'instant — lancez-vous.";
-      tr0.appendChild(td0); sgBody.appendChild(tr0);
-      return;
-    }
-
-    list.forEach(function(x){
-      var g = x.d, tr = document.createElement('tr');
-
-      var c1 = document.createElement('td');
-      var t = document.createElement('span'); t.className = 'sg-t'; t.textContent = g.t || '';
-      c1.appendChild(t);
-      if (g.p || g.h){
-        var meta = document.createElement('span'); meta.className = 'sg-meta';
-        if (g.p){
-          var pp = document.createElement('span'); pp.className = 'sg-pill';
-          pp.textContent = '💵 ≈ ' + approx(g.p); pp.title = 'Prix approximatif par personne';
-          meta.appendChild(pp);
-        }
-        if (g.h){
-          var hh = document.createElement('span'); hh.className = 'sg-pill';
-          hh.textContent = '⏱ ≈ ' + approx(g.h); hh.title = 'Durée approximative';
-          meta.appendChild(hh);
-        }
-        c1.appendChild(meta);
-      }
-      tr.appendChild(c1);
-
-      /* « ça m'intéresse » : un +1 par personne, comme les coches de la check-list */
-      var c2 = document.createElement('td'); c2.className = 'sg-int';
-      var v = votes(g), mine = !!(ME && (g.w || {})[ME]);
-      var plus = document.createElement('button');
-      plus.type = 'button';
-      plus.className = 'sg-plus' + (mine ? ' on' : '');
-      plus.textContent = mine ? '✓ ça m’intéresse' : '+1';
-      plus.title = mine ? 'Retirer mon +1' : "Dire que ça m'intéresse";
-      plus.addEventListener('click', function(){
-        if (!ME){ askMe(true, function(){ vote(x.id, g); }); return; }
-        vote(x.id, g);
-      });
-      c2.appendChild(plus);
-      var cnt = document.createElement('span');
-      cnt.className = 'sg-cnt'; cnt.textContent = v.length + '/' + PEOPLE.length;
-      c2.appendChild(cnt);
-      if (v.length){
-        var avs = document.createElement('span'); avs.className = 'sg-avs';
-        avs.title = v.map(function(p){ return p.n; }).join(', ');
-        v.forEach(function(p){ avs.appendChild(avatar(p.k)); });
-        c2.appendChild(avs);
-      }
-      tr.appendChild(c2);
-
-      var c3 = document.createElement('td');
-      var by = document.createElement('span'); by.className = 'sg-by';
-      by.appendChild(avatar(g.by));
-      var nm = document.createElement('span'); nm.textContent = P(g.by) ? P(g.by).n : '?';
-      by.appendChild(nm);
-      c3.appendChild(by);
-      if (g.at){
-        var w = document.createElement('span'); w.className = 'sg-when'; w.textContent = ago(g.at);
-        c3.appendChild(w);
-      }
-      tr.appendChild(c3);
-
-      var c4 = document.createElement('td'); c4.className = 'sg-x';
-      var del = document.createElement('button');
-      del.type = 'button'; del.className = 'del'; del.title = 'Retirer cette suggestion'; del.textContent = '×';
-      del.addEventListener('click', function(){
-        askConfirm('Retirer cette suggestion ?',
-          'Vous allez retirer <b>« ' + esc(g.t || 'cette suggestion') + ' »</b>'
-          + (CLOUD ? ' pour <b>tout le monde</b>.' : '.') + " C'est définitif.",
-          'Retirer', function(){ drop('g/' + x.id); });
-      });
-      c4.appendChild(del); tr.appendChild(c4);
-
-      sgBody.appendChild(tr);
-    });
-  }
-
-  function vote(id, g){
-    var w = g.w || {}, o = {};
-    o['w/' + ME] = w[ME] ? null : Date.now();
-    patch('g/' + id, o);
-  }
-  function suggestBox(){
-    askText('Suggérer une activité',
-      "Le prix et la durée sont <b>approximatifs</b>, une estimation à la louche suffit. Si vous n'avez pas l'info, laissez vide — ce n'est pas grave, on complétera plus tard.",
-      [
-        {label:'Activité', ph:'Ex. Match des Rangers au Madison Square Garden'},
-        {label:'Prix à peu près, par personne (facultatif)', ph:'Ex. 30 $, gratuit, entre 20 et 40 $…'},
-        {label:'Temps que ça prend, à peu près (facultatif)', ph:'Ex. 2 h, une demi-journée, la soirée…'}
-      ],
-      'Proposer', function(v){
-        var id = 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-        put('g/' + id, {t:v[0], p:v[1], h:v[2], by:ME, at:Date.now(), w:{}});
-      });
-  }
-  for (var sa = 0; sa < sgAdds.length; sa++){
-    sgAdds[sa].addEventListener('click', function(){
-      if (!ME) askMe(true, suggestBox); else suggestBox();
-    });
-  }
-
-  /* ------------------------------------------------ blocs « transport »
-     Ajoutés entre deux étapes du programme, depuis la page, par le profil ADMIN.
-     Chaque bloc retient son point d'ancrage « jour:position » : position 0 =
-     avant la 1re étape du jour, n = après la n-ième. */
-  var MOYENS = ['🚶 À pied', '🚇 Métro', '🚆 PATH', '🚌 Bus',
-                '🚕 Uber / VTC', '🚐 Van privé', '🚗 Voiture de location',
-                '⛴️ Ferry', '🚈 Train', '🚡 Téléphérique', '🧭 Autre'];
-
-  /* ------------------------------------------------ blocs « activité »
-     Ajoutées entre deux étapes du programme, comme les transports ci-dessus,
-     par le profil ADMIN. Même ancrage « jour:position ». */
-  var COSTS = ['Gratuit', 'Inclus Go City', 'À part / prix'];
-  function costLabel(c){ return c === 'inc' ? 'Inclus Go City' : c === 'free' ? 'Gratuit' : 'À part / prix'; }
-  function costCode(l){ return l === 'Inclus Go City' ? 'inc' : l === 'Gratuit' ? 'free' : 'no'; }
-
-  /* --------------------------------- barre d'outils commune aux blocs
-     transport / activité ajoutés depuis la page (monter/descendre d'un cran,
-     changer de jour). Le glisser-déposer sert pour les étapes d'origine ;
-     ici, plus simple : ces blocs sont ancrés « jour:position », donc on
-     déplace juste l'ancre. */
-  /* L'ancre d'un bloc ajouté est « jour:repère », où repère vaut soit "0"
-     (tout au début du jour) soit le data-sid d'une étape (« juste après elle »).
-     On utilise l'identifiant stable des étapes plutôt qu'une position
-     numérique : sinon, réordonner les étapes d'origine faisait « sauter »
-     les blocs ajoutés vers un autre voisinage sans que ce soit voulu. */
-  function extraDayId(anchor){ return anchor.split(':')[0]; }
-  function extraAfterKey(anchor){ return anchor.slice(anchor.indexOf(':') + 1); }
-
-  function extraToolbar(kind, id, anchor){
-    var tools = document.createElement('div'); tools.className = 'stop-tools';
-
-    var up = document.createElement('button');
-    up.type = 'button'; up.className = 'ord-btn'; up.title = 'Monter (avant l’étape précédente)'; up.textContent = '↑';
-    up.addEventListener('click', function(){ shiftExtraAnchor(kind, id, anchor, -1); });
-    tools.appendChild(up);
-
-    var down = document.createElement('button');
-    down.type = 'button'; down.className = 'ord-btn'; down.title = 'Descendre (après l’étape suivante)'; down.textContent = '↓';
-    down.addEventListener('click', function(){ shiftExtraAnchor(kind, id, anchor, 1); });
-    tools.appendChild(down);
-
-    var sel = document.createElement('select');
-    sel.className = 'day-move'; sel.title = 'Déplacer vers un autre jour';
-    dayOptions().forEach(function(d){
-      var op = document.createElement('option'); op.value = d.id; op.textContent = d.label;
-      sel.appendChild(op);
-    });
-    sel.value = extraDayId(anchor);
-    sel.addEventListener('change', function(){ moveExtraToDay(kind, id, anchor, sel.value); });
-    tools.appendChild(sel);
-
-    return tools;
-  }
-
-  /* Ordre visuel complet d'un jour : étapes d'origine ET blocs ajoutés
-     (transport/activité), dans l'ordre exact où renderExtras() les affiche.
-     Sert de base à shiftExtraAnchor ci-dessous : sans ça, monter/descendre
-     ne « voyait » que les étapes d'origine et sautait par-dessus tous les
-     blocs ajoutés voisins d'un coup, au lieu d'échanger avec le voisin
-     immédiat (visuellement, ça ne bougeait presque jamais comme attendu). */
-  function fullSlots(day, dayId){
-    var del = DB.del || {};
-    var stops = stopsOf(day).filter(function(li){ return !del[li.getAttribute('data-sid')]; });
-    var out = [];
-    for (var i = 0; i <= stops.length; i++){
-      var afterKey = (i === 0) ? '0' : stops[i - 1].getAttribute('data-sid');
-      extrasAt(dayId + ':' + afterKey).forEach(function(x){ out.push({kind: x.kind, id: x.id}); });
-      if (i < stops.length) out.push({sid: stops[i].getAttribute('data-sid')});
-    }
-    return out;
-  }
-
-  /* Réaffecte repère + ordre de tous les blocs ajoutés du jour d'après une
-     liste de slots (étapes + blocs) déjà dans l'ordre visuel voulu. */
-  function commitSlotOrder(dayId, slots){
-    var updT = {}, updA = {}, counters = {}, afterKey = '0';
-    slots.forEach(function(s){
-      if (s.sid){ afterKey = s.sid; return; }
-      var anchor = dayId + ':' + afterKey;
-      var o = (counters[anchor] = (counters[anchor] || 0) + 10);
-      (s.kind === 't' ? updT : updA)[s.id + '/a'] = anchor;
-      (s.kind === 't' ? updT : updA)[s.id + '/o'] = o;
-    });
-    if (Object.keys(updT).length) patch('t', updT);
-    if (Object.keys(updA).length) patch('a', updA);
-  }
-
-  function shiftExtraAnchor(kind, id, curAnchor, dir){
-    var dayId = extraDayId(curAnchor);
-    var day = document.querySelector('.day[data-day="' + dayId + '"]');
-    if (!day) return;
-    var slots = fullSlots(day, dayId);
-    var idx = -1;
-    for (var k = 0; k < slots.length; k++){
-      if (slots[k].kind === kind && slots[k].id === id){ idx = k; break; }
-    }
-    if (idx < 0) return;
-    var newIdx = idx + dir;
-    if (newIdx < 0 || newIdx >= slots.length) return;
-    var tmp = slots[idx]; slots[idx] = slots[newIdx]; slots[newIdx] = tmp;
-    commitSlotOrder(dayId, slots);
-  }
-
-  function moveExtraToDay(kind, id, curAnchor, targetDayId){
-    var srcDayId = extraDayId(curAnchor);
-    if (srcDayId === targetDayId) return;
-    var day = document.querySelector('.day[data-day="' + targetDayId + '"]');
-    var stops = day ? stopsOf(day) : [];
-    var afterKey = stops.length ? stops[stops.length - 1].getAttribute('data-sid') : '0';
-    put((kind === 't' ? 't/' : 'a/') + id + '/a', targetDayId + ':' + afterKey);
-  }
-
-  function activityBlock(id, act){
-    var li = document.createElement('li');
-    li.className = 'actv' + (act.alt ? ' is-alt' : '');
-
-    var ph = document.createElement('div'); ph.className = 'ph';
-    if (act.img){
-      var img = document.createElement('img'); img.src = act.img; img.alt = act.t || ''; img.loading = 'lazy';
-      ph.appendChild(img);
-    } else {
-      var lbl = document.createElement('span'); lbl.className = 'ph-lbl'; lbl.textContent = '🖼️ Pas de photo';
-      ph.appendChild(lbl);
-    }
-    li.appendChild(ph);
-
-    var cbody = document.createElement('div'); cbody.className = 'cbody';
-
-    var top = document.createElement('div'); top.className = 'stop-top';
-    var bnum = document.createElement('span'); bnum.className = 'pin-badge actv';
-    top.appendChild(bnum);
-    var nm = document.createElement('span'); nm.className = 'stop-name'; nm.textContent = act.t || '';
-    top.appendChild(nm);
-
-    var right = document.createElement('span'); right.className = 'stop-tr';
-    if (act.d){
-      var du = document.createElement('span'); du.className = 'dur'; du.textContent = act.d;
-      right.appendChild(du);
-    }
-    var co = document.createElement('span'); co.className = 'cost ' + (act.c || 'no');
-    co.textContent = act.c === 'inc' ? 'inclus Go City' : act.c === 'free' ? 'gratuit' : (act.cp || 'à part');
-    right.appendChild(co);
-    if (act.addr){
-      var pin = document.createElement('span'); pin.className = 'pin-ok';
-      pin.textContent = '📍';
-      pin.title = (typeof act.lat === 'number')
-        ? 'Repérée sur la carte du jour (' + act.addr + ')'
-        : 'Adresse enregistrée, recherche de la position en cours…';
-      right.appendChild(pin);
-    }
-    top.appendChild(right);
-    cbody.appendChild(top);
-
-    if (act.alt){
-      var altTag = document.createElement('span'); altTag.className = 'alt-tag'; altTag.textContent = 'Alternative';
-      cbody.appendChild(altTag);
-    }
-
-    if (act.h || act.mv){
-      var meta = document.createElement('div'); meta.className = 'stop-meta';
-      if (act.h){ var hd = document.createElement('span'); hd.className = 'hood'; hd.textContent = act.h; meta.appendChild(hd); }
-      if (act.mv){ var mv = document.createElement('span'); mv.className = 'move'; mv.textContent = act.mv; meta.appendChild(mv); }
-      cbody.appendChild(meta);
-    }
-    if (act.n){
-      var note = document.createElement('div'); note.className = 'stop-note'; note.textContent = act.n;
-      cbody.appendChild(note);
-    }
-
-    if (canEdit()) cbody.appendChild(extraToolbar('a', id, act.a));
-    li.appendChild(cbody);
-
-    if (canEdit()){
-      var mod = document.createElement('button');
-      mod.type = 'button'; mod.className = 'extra-edit'; mod.title = 'Modifier cette activité';
-      mod.textContent = '✎';
-      mod.addEventListener('click', function(){ activityForm(act.a, id, act); });
-      li.appendChild(mod);
-
-      var del = document.createElement('button');
-      del.type = 'button'; del.className = 'del'; del.title = 'Supprimer cette activité';
-      del.textContent = '×';
-      del.addEventListener('click', function(){
-        askConfirm('Supprimer cette activité ?',
-          'Vous allez supprimer <b>« ' + esc(act.t || 'cette activité') + ' »</b>'
-          + (CLOUD ? ' pour <b>tout le monde</b>.' : '.') + " C'est définitif.",
-          'Supprimer', function(){ drop('a/' + id); });
-      });
-      li.appendChild(del);
-    }
-    return li;
-  }
-
-  /* Geolocalisation par adresse (API Nominatim/OpenStreetMap, gratuite, sans
-     clé). Utilisée pour poser automatiquement un point sur la carte du jour
-     quand on ajoute une activité avec son adresse. */
-  function geocode(q, cb){
-    try{
-      fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(q))
-        .then(function(r){ return r.json(); })
-        .then(function(arr){
-          cb((arr && arr.length) ? {lat: parseFloat(arr[0].lat), lng: parseFloat(arr[0].lon)} : null);
-        })
-        .catch(function(){ cb(null); });
-    }catch(e){ cb(null); }
-  }
-
-  function activityForm(anchor, id, cur){
-    cur = cur || {};
-    askText(id ? 'Modifier l’activité' : 'Ajouter une activité',
-      'Durée et prix sont <b>approximatifs</b>. L’adresse est utilisée pour placer'
-      + ' automatiquement un point sur la carte du jour — soyez aussi précis·e que possible'
-      + ' (numéro, rue, ville). Laissez vide ce que vous ne savez pas encore.',
-      [
-        {label:'Nom de l’activité', ph:'Ex. Balade à Central Park', value:cur.t},
-        {label:'Adresse (facultatif, pour la carte)', ph:'Ex. 20 W 34th St, New York, NY 10001', value:cur.addr},
-        {label:'Quartier (facultatif)', ph:'Ex. Upper West Side', value:cur.h},
-        {label:'Durée à peu près (facultatif)', ph:'Ex. 1 h 30', value:cur.d},
-        {label:'Coût', options:COSTS, value:costLabel(cur.c)},
-        {label:'Prix ou précision sur le coût (facultatif)', ph:'Ex. 25 $, réservation conseillée…', value:cur.cp},
-        {label:'Comment y aller (facultatif)', ph:'Ex. à pied (~10 min), métro ligne 6…', value:cur.mv},
-        {label:'URL d’une photo (facultatif)', ph:'https://…', value:cur.img},
-        {label:'Remarque (facultatif)', ph:'Ce qu’il faut savoir…', multi:true, value:cur.n, allowEmpty:true},
-        {label:'Alternative (option de rechange, pas le plan principal)', checkbox:true, value:cur.alt}
-      ],
-      id ? 'Enregistrer' : 'Ajouter', function(v){
-        var addr = (v[1] || '').trim();
-        var o = {a:anchor, t:v[0], addr:addr, h:v[2], d:v[3], c:costCode(v[4]), cp:v[5], mv:v[6], img:v[7], n:v[8], alt:v[9]};
-        o.o = id ? (cur.o || 0) : Date.now();
-        var pid = id || ('x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5));
-
-        if (!addr){ o.lat = null; o.lng = null; put('a/' + pid, o); return; }
-        if (addr === cur.addr && typeof cur.lat === 'number'){
-          o.lat = cur.lat; o.lng = cur.lng; put('a/' + pid, o); return;
-        }
-        /* adresse neuve, changée, ou jamais localisée : on enregistre tout de
-           suite, puis on complète les coordonnées dès qu'on les a */
-        put('a/' + pid, o);
-        geocode(addr, function(loc){ if (loc) patch('a/' + pid, {lat: loc.lat, lng: loc.lng}); });
-      });
-  }
-
-  function extrasAt(anchor){
-    var out = [];
-    Object.keys(DB.t || {}).forEach(function(k){
-      if (DB.t[k] && DB.t[k].a === anchor) out.push({id:k, d:DB.t[k], kind:'t'});
-    });
-    Object.keys(DB.a || {}).forEach(function(k){
-      if (DB.a[k] && DB.a[k].a === anchor) out.push({id:k, d:DB.a[k], kind:'a'});
-    });
-    return out.sort(function(x, y){ return (x.d.o || 0) - (y.d.o || 0); });
-  }
-
-  function transBlock(id, tr){
-    var li = document.createElement('li');
-    li.className = 'trans';
-
-    var ico = document.createElement('span');
-    ico.className = 'tr-ico';
-    ico.textContent = (tr.m || '🧭').split(' ')[0];
-    li.appendChild(ico);
-
-    var body = document.createElement('div'); body.className = 'tr-body';
-    var top  = document.createElement('div'); top.className = 'tr-top';
-    var nm   = document.createElement('span'); nm.className = 'tr-name';
-    nm.textContent = (tr.m || '').replace(/^\S+\s*/, '') + (tr.l ? ' — ' + tr.l : '');
-    top.appendChild(nm);
-
-    if (tr.d || tr.p){
-      var right = document.createElement('span'); right.className = 'stop-tr';
-      if (tr.d){
-        var du = document.createElement('span'); du.className = 'dur'; du.textContent = tr.d;
-        right.appendChild(du);
-      }
-      if (tr.p){
-        var co = document.createElement('span'); co.className = 'cost no';
-        co.textContent = '≈ ' + approx(tr.p);
-        right.appendChild(co);
-      }
-      top.appendChild(right);
-    }
-    body.appendChild(top);
-
-    if (tr.n){
-      var nt = document.createElement('div'); nt.className = 'tr-note'; nt.textContent = tr.n;
-      body.appendChild(nt);
-    }
-
-    if (canEdit()) body.appendChild(extraToolbar('t', id, tr.a));
-    li.appendChild(body);
-
-    if (canEdit()){
-      var mod = document.createElement('button');
-      mod.type = 'button'; mod.className = 'tr-edit'; mod.title = 'Modifier ce transport';
-      mod.textContent = '✎';
-      mod.addEventListener('click', function(){ transForm(tr.a, id, tr); });
-      li.appendChild(mod);
-
-      var del = document.createElement('button');
-      del.type = 'button'; del.className = 'del'; del.title = 'Supprimer ce transport';
-      del.textContent = '×';
-      del.addEventListener('click', function(){
-        askConfirm('Supprimer ce transport ?',
-          'Vous allez supprimer <b>« ' + esc(nm.textContent || 'ce trajet') + ' »</b>'
-          + (CLOUD ? ' pour <b>tout le monde</b>.' : '.') + " C'est définitif.",
-          'Supprimer', function(){ drop('t/' + id); });
-      });
-      li.appendChild(del);
-    }
-    return li;
-  }
-
-  function transForm(anchor, id, cur){
-    cur = cur || {};
-    askText(id ? 'Modifier le transport' : 'Ajouter un transport',
-      'Durée et prix sont <b>approximatifs</b>. Laissez vide ce que vous ne savez pas encore.',
-      [
-        {label:'Moyen de transport', options:MOYENS, value:cur.m},
-        {label:'Ligne, direction, arrêt… (facultatif)', ph:'Ex. Ligne 7 → Flushing, arrêt 42 St', value:cur.l},
-        {label:'Durée à peu près (facultatif)', ph:'Ex. 25 min', value:cur.d},
-        {label:'Prix à peu près (facultatif)', ph:'Ex. 2,90 $/pers., 45 $ le van…', value:cur.p},
-        {label:'Remarque (facultatif)', ph:'Tickets, correspondance, accès PMR…', multi:true, value:cur.n}
-      ],
-      id ? 'Enregistrer' : 'Ajouter', function(v){
-        var o = {a:anchor, m:v[0], l:v[1], d:v[2], p:v[3], n:v[4]};
-        if (id){ o.o = cur.o || 0; put('t/' + id, o); }
-        else {
-          o.o = Date.now();
-          put('t/x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), o);
-        }
-      });
-  }
-
-  function gapBtn(anchor){
-    var li = document.createElement('li');
-    li.className = 'trans-gap';
-    var b1 = document.createElement('button');
-    b1.type = 'button'; b1.className = 'add-trans';
-    b1.textContent = '＋ Transport ici';
-    b1.addEventListener('click', function(){ transForm(anchor, null, null); });
-    li.appendChild(b1);
-
-    var b2 = document.createElement('button');
-    b2.type = 'button'; b2.className = 'add-trans add-act';
-    b2.textContent = '＋ Activité ici';
-    b2.addEventListener('click', function(){ activityForm(anchor, null, null); });
-    li.appendChild(b2);
-    return li;
-  }
-
-  function renderExtras(){
-    Array.prototype.forEach.call(document.querySelectorAll('.day[data-day]'), function(day){
-      var dayId = day.getAttribute('data-day');
-      var ul = day.querySelector('ul.stops');
-      if (!ul) return;
-
-      /* on repart de la liste d'origine : on retire ce qu'on avait injecté */
-      Array.prototype.slice.call(ul.children).forEach(function(li){
-        if (li.classList.contains('trans') || li.classList.contains('actv') || li.classList.contains('trans-gap')) ul.removeChild(li);
-      });
-
-      /* les étapes supprimées ne comptent pas comme repère : sinon leur
-         emplacement (invisible, display:none) crée un « trou » avec deux
-         rangées de boutons ＋ qui se retrouvent visuellement collées */
-      var del = DB.del || {};
-      var stops = stopsOf(day).filter(function(li){ return !del[li.getAttribute('data-sid')]; });
-      var validKeys = {'0': true};
-      stops.forEach(function(li){ validKeys[li.getAttribute('data-sid')] = true; });
-
-      for (var i = stops.length; i >= 0; i--){
-        var afterKey = (i === 0) ? '0' : stops[i - 1].getAttribute('data-sid');
-        var anchor = dayId + ':' + afterKey;
-        var frag = document.createDocumentFragment();
-        extrasAt(anchor).forEach(function(x){
-          frag.appendChild(x.kind === 't' ? transBlock(x.id, x.d) : activityBlock(x.id, x.d));
-        });
-        if (canEdit()) frag.appendChild(gapBtn(anchor));
-        if (frag.childNodes.length) ul.insertBefore(frag, stops[i] || null);
-      }
-
-      /* filet de secours : un bloc dont le repère (étape) a disparu de ce
-         jour — déplacée ailleurs, jour vidé… — réapparaît en fin de journée
-         plutôt que de se perdre silencieusement. */
-      var orphans = [];
-      Object.keys(DB.t || {}).forEach(function(k){
-        var o = DB.t[k];
-        if (o && o.a && extraDayId(o.a) === dayId && !validKeys[extraAfterKey(o.a)]) orphans.push({id:k, d:o, kind:'t'});
-      });
-      Object.keys(DB.a || {}).forEach(function(k){
-        var o = DB.a[k];
-        if (o && o.a && extraDayId(o.a) === dayId && !validKeys[extraAfterKey(o.a)]) orphans.push({id:k, d:o, kind:'a'});
-      });
-      if (orphans.length){
-        orphans.sort(function(x, y){ return (x.d.o || 0) - (y.d.o || 0); });
-        var frag2 = document.createDocumentFragment();
-        orphans.forEach(function(x){ frag2.appendChild(x.kind === 't' ? transBlock(x.id, x.d) : activityBlock(x.id, x.d)); });
-        ul.appendChild(frag2);
-      }
-
-      numberExtras(day);
-    });
-  }
-
-  /* Numérote les blocs transport/activité ajoutés, dans leur ordre visuel
-     (les deux types partagent la même numérotation — badges violet/gris). */
-  function numberExtras(day){
-    var n = 0;
-    Array.prototype.forEach.call(
-      day.querySelectorAll('ul.stops > li.actv .pin-badge'),
-      function(b){ n++; b.textContent = n; }
-    );
-  }
-  /* --------------------------------- descriptions réécrites des étapes
-     Le texte d'origine est dans le HTML. Le profil ADMIN peut le remplacer :
-     la réécriture est stockée dans la branche « d », sous la clé « jour#numéro »
-     (2#1 = 1re étape du jour 2). Vider le champ restaure le texte d'origine. */
-  function stopsOf(day){
-    return Array.prototype.slice.call(
-      day.querySelectorAll('ul.stops > li:not(.trans):not(.trans-gap):not(.actv)'));
-  }
-
-  /* --------------------------------- identifiant stable de chaque étape
-     Posé une seule fois par le script des cartes (data-sid, basé sur l'ordre
-     d'origine du HTML) : on le reprend tel quel ici pour que suppression,
-     description et réordonnancement pointent tous vers la même étape, même
-     après un glisser-déposer. Filet de secours si jamais l'attribut manque
-     (jour sans carte). */
-  function sidOf(li, dayId, i){
-    return li.getAttribute('data-sid') || (dayId + '-' + (i + 1));
-  }
-  function ensureSids(){
-    Array.prototype.forEach.call(document.querySelectorAll('.day[data-day]'), function(day){
-      var dayId = day.getAttribute('data-day');
-      stopsOf(day).forEach(function(li, i){
-        if (!li.getAttribute('data-sid')) li.setAttribute('data-sid', sidOf(li, dayId, i));
-      });
-    });
-  }
-
-  /* --------------------------------- ordre personnalisé des étapes
-     DB.ord[jour] retient la liste des data-sid dans l'ordre voulu. Une étape
-     jamais déplacée, ou une étape ajoutée après coup, se retrouve simplement
-     à la fin : rien à migrer. */
-  function applyOrder(){
-    Array.prototype.forEach.call(document.querySelectorAll('.day[data-day]'), function(day){
-      var dayId = day.getAttribute('data-day');
-      var ul = day.querySelector('ul.stops');
-      if (!ul) return;
-      var bySid = {};
-      stopsOf(day).forEach(function(li){ bySid[li.getAttribute('data-sid')] = li; });
-
-      var order = [];
-      ((DB.ord || {})[dayId] || []).forEach(function(sid){
-        if (bySid[sid]){ order.push(sid); delete bySid[sid]; }
-      });
-      stopsOf(day).forEach(function(li){
-        var sid = li.getAttribute('data-sid');
-        if (bySid[sid]){ order.push(sid); delete bySid[sid]; }
-      });
-
-      order.forEach(function(sid){
-        var li = ul.querySelector('li[data-sid="' + sid + '"]');
-        if (li) ul.appendChild(li);
-      });
-    });
-  }
-
-  /* --------------------------------- déplacer une étape vers un autre jour
-     DB.loc[sid] = jour d'accueil quand il diffère du jour d'origine (celui
-     lu dans le sid, ex. "2-3" -> jour "2"). Posé au début de render(), donc
-     avant applyOrder() : l'étape est physiquement rattachée à son nouveau
-     jour avant que ce jour ne calcule son propre ordre. */
-  function applyDayMoves(){
-    var loc = DB.loc || {};
-    Object.keys(loc).forEach(function(sid){
-      var targetDayId = loc[sid];
-      if (!targetDayId) return;
-      var li = document.querySelector('li[data-sid="' + sid + '"]');
-      if (!li) return;
-      var targetDay = document.querySelector('.day[data-day="' + targetDayId + '"]');
-      if (!targetDay) return;
-      var ul = targetDay.querySelector('ul.stops');
-      if (ul && li.parentNode !== ul) ul.appendChild(li);
-    });
-  }
-
-  function commitMove(sid, srcDayId, dstDayId, srcDay, dstDay){
-    if (srcDayId && srcDayId !== dstDayId){
-      put('ord/' + srcDayId, stopsOf(srcDay).map(function(x){ return x.getAttribute('data-sid'); }));
-    }
-    var origDayId = sid.split('-')[0];
-    put('loc/' + sid, (dstDayId === origDayId) ? null : dstDayId);
-    put('ord/' + dstDayId, stopsOf(dstDay).map(function(x){ return x.getAttribute('data-sid'); }));
-  }
-
-  function moveToDay(li, targetDayId){
-    var sid = li.getAttribute('data-sid');
-    var srcDay = li.closest('.day');
-    var srcDayId = srcDay ? srcDay.getAttribute('data-day') : null;
-    if (!sid || !targetDayId || targetDayId === srcDayId) return;
-    var targetDay = document.querySelector('.day[data-day="' + targetDayId + '"]');
-    if (!targetDay) return;
-    var ul = targetDay.querySelector('ul.stops');
-    if (ul) ul.appendChild(li);
-    commitMove(sid, srcDayId, targetDayId, srcDay, targetDay);
-  }
-
-  function moveStop(li, dir){
-    var day = li.closest('.day');
-    if (!day) return;
-    var dayId = day.getAttribute('data-day');
-    var sids = stopsOf(day).map(function(x){ return x.getAttribute('data-sid'); });
-    var i = sids.indexOf(li.getAttribute('data-sid')), j = i + dir;
-    if (i < 0 || j < 0 || j >= sids.length) return;
-    var tmp = sids[i]; sids[i] = sids[j]; sids[j] = tmp;
-    put('ord/' + dayId, sids);
-  }
-
-  function wireDrag(li, handle){
-    handle.draggable = true;
-    handle.addEventListener('dragstart', function(e){
-      e.dataTransfer.setData('text/plain', li.getAttribute('data-sid'));
-      e.dataTransfer.effectAllowed = 'move';
-      li.classList.add('dragging');
-    });
-    handle.addEventListener('dragend', function(){ li.classList.remove('dragging'); });
-
-    if (li.__dragWired) return;
-    li.__dragWired = true;
-    li.addEventListener('dragover', function(e){ e.preventDefault(); li.classList.add('drag-over'); });
-    li.addEventListener('dragleave', function(){ li.classList.remove('drag-over'); });
-    li.addEventListener('drop', function(e){
-      e.preventDefault();
-      e.stopPropagation();   /* empêche le <ul> du jour de traiter le même dépôt en double */
-      li.classList.remove('drag-over');
-      var srcSid = e.dataTransfer.getData('text/plain');
-      var dstSid = li.getAttribute('data-sid');
-      if (!srcSid || srcSid === dstSid) return;
-      var srcLi = document.querySelector('li[data-sid="' + srcSid + '"]');
-      if (!srcLi) return;
-      var dstDay = li.closest('.day');
-      if (!dstDay) return;
-      var srcDay = srcLi.closest('.day');
-      var dstDayId = dstDay.getAttribute('data-day');
-      var srcDayId = srcDay ? srcDay.getAttribute('data-day') : null;
-
-      if (srcDayId !== dstDayId){
-        /* déposé sur une étape d'un AUTRE jour : on la déplace physiquement
-           juste avant, puis on enregistre le nouvel ordre des deux jours */
-        var dstUl = dstDay.querySelector('ul.stops');
-        if (dstUl) dstUl.insertBefore(srcLi, li);
-        commitMove(srcSid, srcDayId, dstDayId, srcDay, dstDay);
-        return;
-      }
-
-      var sids = stopsOf(dstDay).map(function(x){ return x.getAttribute('data-sid'); });
-      var from = sids.indexOf(srcSid);
-      if (from < 0) return;
-      sids.splice(from, 1);
-      var to = sids.indexOf(dstSid);
-      if (to < 0) return;
-      sids.splice(to, 0, srcSid);
-      put('ord/' + dstDayId, sids);
-    });
-  }
-
-  /* Déposer directement sur le <ul> (pas sur une étape précise) : sert
-     surtout pour un jour vide comme « À caler », où il n'y a encore aucune
-     carte-étape sur laquelle lâcher le glisser-déposer. */
-  function wireDayDrop(ul){
-    if (ul.__dragWired) return;
-    ul.__dragWired = true;
-    ul.addEventListener('dragover', function(e){ e.preventDefault(); });
-    ul.addEventListener('drop', function(e){
-      if (e.target !== ul) return;   /* une étape a déjà géré ce dépôt (stopPropagation) */
-      e.preventDefault();
-      var srcSid = e.dataTransfer.getData('text/plain');
-      if (!srcSid) return;
-      var srcLi = document.querySelector('li[data-sid="' + srcSid + '"]');
-      if (!srcLi) return;
-      var dstDay = ul.closest('.day');
-      if (!dstDay) return;
-      var srcDay = srcLi.closest('.day');
-      var dstDayId = dstDay.getAttribute('data-day');
-      var srcDayId = srcDay ? srcDay.getAttribute('data-day') : null;
-      if (srcDayId === dstDayId) return;
-      ul.appendChild(srcLi);
-      commitMove(srcSid, srcDayId, dstDayId, srcDay, dstDay);
-    });
-  }
-
-  /* --------------------------------- suppression des étapes d'origine
-     Chaque étape du HTML garde son texte tel quel : on la cache seulement
-     (même data-sid que ci-dessus) et on lui ajoute une petite barre d'outils
-     (glisser, monter, descendre, supprimer) pour le profil ADMIN. */
-  function stopLabel(li){
-    var n = li.querySelector('.stop-name');
-    if (n){
-      var c = n.cloneNode(true), t = c.querySelector('.opttag');
-      if (t) t.parentNode.removeChild(t);
-      return c.textContent.replace(/\s+/g, ' ').trim();
-    }
-    var l = li.querySelector('.lbl'), hd = li.querySelector('.hood');
-    return l ? (l.textContent.trim() + (hd ? ' — ' + hd.textContent.trim() : '')) : 'cette étape';
-  }
-
-  function dayOptions(){
-    return Array.prototype.map.call(document.querySelectorAll('.day[data-day]'), function(d){
-      var num = d.querySelector('.day-num'), title = d.querySelector('.day-title');
-      return {
-        id: d.getAttribute('data-day'),
-        label: (num ? num.textContent.trim() : d.getAttribute('data-day')) + ' — ' + (title ? title.textContent.trim() : '')
-      };
-    });
-  }
-
-  function renderStopTools(){
-    var days = dayOptions();
-    Array.prototype.forEach.call(document.querySelectorAll('.day[data-day]'), function(day){
-      var dayId = day.getAttribute('data-day');
-      var dayUl = day.querySelector('ul.stops');
-      if (canEdit() && dayUl) wireDayDrop(dayUl);
-      stopsOf(day).forEach(function(li, i){
-        var key = sidOf(li, dayId, i);
-        li.hidden = !!(DB.del || {})[key];
-
-        var cbody = li.querySelector('.cbody');
-        if (!cbody) return;
-        var old = cbody.querySelector('.stop-tools');
-        if (old) cbody.removeChild(old);
-        if (canEdit()){
-          var name = stopLabel(li);
-          var tools = document.createElement('div'); tools.className = 'stop-tools';
-
-          var handle = document.createElement('span');
-          handle.className = 'drag-handle'; handle.title = 'Glisser pour réordonner';
-          handle.textContent = '⠿';
-          tools.appendChild(handle);
-          wireDrag(li, handle);
-
-          var up = document.createElement('button');
-          up.type = 'button'; up.className = 'ord-btn'; up.title = 'Monter'; up.textContent = '↑';
-          up.addEventListener('click', function(){ moveStop(li, -1); });
-          tools.appendChild(up);
-
-          var down = document.createElement('button');
-          down.type = 'button'; down.className = 'ord-btn'; down.title = 'Descendre'; down.textContent = '↓';
-          down.addEventListener('click', function(){ moveStop(li, 1); });
-          tools.appendChild(down);
-
-          var sel = document.createElement('select');
-          sel.className = 'day-move'; sel.title = 'Déplacer vers un autre jour';
-          days.forEach(function(d){
-            var op = document.createElement('option'); op.value = d.id; op.textContent = d.label;
-            sel.appendChild(op);
-          });
-          sel.value = dayId;
-          sel.addEventListener('change', function(){ moveToDay(li, sel.value); });
-          tools.appendChild(sel);
-
-          var b = document.createElement('button');
-          b.type = 'button'; b.className = 'rm-stop'; b.textContent = '× Supprimer cette étape';
-          b.addEventListener('click', function(){
-            askConfirm('Supprimer cette étape ?',
-              'Vous allez supprimer <b>« ' + esc(name) + ' »</b>'
-              + (CLOUD ? ' pour <b>tout le monde</b>.' : '.') + " C'est définitif.",
-              'Supprimer', function(){ put('del/' + key, true); });
-          });
-          tools.appendChild(b);
-
-          cbody.appendChild(tools);
-        }
-      });
-    });
-  }
-
-  /* Dans un encadré repas, le texte libre suit un <br> sans balise à lui :
-     on l'enveloppe une fois pour tout dans un <span> qu'on saura remplacer. */
-  function eatDesc(cbody){
-    var d = cbody.querySelector('.eat-desc');
-    if (d) return d;
-    var br = cbody.querySelector('br');
-    if (!br) return null;
-    d = document.createElement('span');
-    d.className = 'eat-desc';
-    var n = br.nextSibling;
-    while (n){ var nx = n.nextSibling; d.appendChild(n); n = nx; }
-    cbody.appendChild(d);
-    d.setAttribute('data-orig', d.innerHTML);
-    return d;
-  }
-
-  function descForm(key, current, name){
-    askText('Description de l\u2019étape',
-      'Vous réécrivez la description de <b>« ' + esc(name) + ' »</b> pour tout le monde.'
-      + ' Videz le champ et enregistrez pour revenir au texte d\u2019origine.',
-      [{label:'Description', ph:'Ce qu\u2019il faut savoir sur cette étape…', multi:true,
-        value:current, allowEmpty:true}],
-      'Enregistrer', function(v){
-        if (v[0]) put('d/' + key, v[0]); else drop('d/' + key);
-      });
-  }
-
-  function renderDescs(){
-    Array.prototype.forEach.call(document.querySelectorAll('.day[data-day]'), function(day){
-      var dayId = day.getAttribute('data-day');
-      stopsOf(day).forEach(function(li, i){
-        var cbody = li.querySelector('.cbody');
-        if (!cbody) return;
-
-        var key  = sidOf(li, dayId, i);   /* pas de # : interdit par Firebase */
-        var over = (DB.d || {})[key];
-        var eat  = li.classList.contains('eat');
-        var note, name;
-
-        if (eat){
-          var lb = li.querySelector('.lbl'), hd = li.querySelector('.hood');
-          name = (lb ? lb.textContent.trim() : 'ce repas')
-               + (hd ? ' \u2014 ' + hd.textContent.trim() : '');
-          note = eatDesc(cbody);
-          if (!note) return;
-          if (over) note.textContent = over;
-          else note.innerHTML = note.getAttribute('data-orig') || '';
-        } else {
-          note = cbody.querySelector('.stop-note');
-          name = li.querySelector('.stop-name');
-          name = name ? name.textContent.trim() : 'cette étape';
-
-          /* on garde le texte du HTML pour pouvoir y revenir */
-          if (note && note.getAttribute('data-orig') === null){
-            note.setAttribute('data-orig', note.innerHTML);
-          }
-
-          if (over){
-            if (!note){
-              note = document.createElement('div');
-              note.className = 'stop-note';
-              note.setAttribute('data-orig', '');
-              cbody.appendChild(note);
-            }
-            note.textContent = over;
-          } else if (note){
-            var orig = note.getAttribute('data-orig');
-            if (orig) note.innerHTML = orig;
-            else { cbody.removeChild(note); note = null; }
-          }
-        }
-
-        /* bouton d'ajout laissé au tour précédent */
-        var old = cbody.querySelector('.add-desc');
-        if (old) cbody.removeChild(old);
-
-        if (note){
-          note.classList.toggle('editable', canEdit());
-          note.title = canEdit() ? 'Cliquez pour modifier la description' : '';
-          if (canEdit() && !note.__wired){
-            note.__wired = true;
-            note.addEventListener('click', function(){
-              if (!canEdit()) return;   /* l'ecouteur survit a un changement de profil */
-              descForm(key, (DB.d || {})[key] || note.textContent.trim(), name);
-            });
-          }
-        } else if (canEdit() && !eat){
-          var b = document.createElement('button');
-          b.type = 'button'; b.className = 'add-desc';
-          b.textContent = '＋ Description';
-          b.addEventListener('click', function(){ descForm(key, '', name); });
-          cbody.appendChild(b);
-        }
-      });
-    });
-  }
-
-  /* --------------------------------- texte d'intro de chaque jour (le
-     bandeau vert « Aller au 1er spot : … »). Même mécanique que les
-     descriptions d'étape : réécriture stockée dans la branche « d », sous
-     une clé qui ne peut pas entrer en collision avec celles des étapes. */
-  function getinForm(dayId, current, dayTitle){
-    var key = 'gi-' + dayId;
-    askText('Texte d’introduction du jour',
-      'Vous réécrivez le texte d’introduction de <b>« ' + esc(dayTitle) + ' »</b> pour tout le monde.'
-      + ' Videz le champ et enregistrez pour revenir au texte d’origine.',
-      [{label:'Texte', ph:'Ex. Aller au 1er spot : …', multi:true, value:current, allowEmpty:true}],
-      'Enregistrer', function(v){
-        if (v[0]) put('d/' + key, v[0]); else drop('d/' + key);
-      });
-  }
-
-  function renderGetins(){
-    Array.prototype.forEach.call(document.querySelectorAll('.day[data-day]'), function(day){
-      var dayId = day.getAttribute('data-day');
-      var box = day.querySelector('.getin');
-      if (!box) return;
-      var textEl = box.children[1];
-      if (!textEl) return;
-      if (textEl.getAttribute('data-orig') === null) textEl.setAttribute('data-orig', textEl.innerHTML);
-
-      var key = 'gi-' + dayId;
-      var over = (DB.d || {})[key];
-      if (over) textEl.textContent = over;
-      else textEl.innerHTML = textEl.getAttribute('data-orig') || '';
-
-      textEl.classList.add('gi-text');
-      textEl.classList.toggle('editable', canEdit());
-      textEl.title = canEdit() ? 'Cliquez pour modifier ce texte' : '';
-      if (canEdit() && !textEl.__wired){
-        textEl.__wired = true;
-        textEl.addEventListener('click', function(){
-          if (!canEdit()) return;
-          var titleEl = day.querySelector('.day-title');
-          var name = titleEl ? titleEl.textContent.trim() : ('jour ' + dayId);
-          getinForm(dayId, (DB.d || {})[key] || textEl.textContent.trim(), name);
-        });
-      }
-    });
-  }
-
-  function paintTotals(){
-    var x = totals(), d = x[0], t = x[1];
-    barEl.style.width = t ? (100 * d / t).toFixed(1) + '%' : '0%';
-    lblEl.textContent = d + ' sur ' + t + ' ✓';
-    cntEl.textContent = d + '/' + t;
-    cntEl.className = (t && d === t) ? 'tb-count done' : 'tb-count';
-
-    var last = 0, lastBy = null;
-    Object.keys(DB.i).forEach(function(k){
-      var it = DB.i[k], w = it.w || {};
-      Object.keys(w).forEach(function(p){ if (w[p] > last){ last = w[p]; lastBy = p; } });
-      if (it.d && it.d > last){ last = it.d; lastBy = it.dby || null; }
-    });
-    lastEl.textContent = last && lastBy
-      ? 'Dernière action : ' + P(lastBy).n + ' ' + ago(last)
-      : 'Départ le lundi 19 octobre, 22h40 à JFK';
-
-    sumEl.innerHTML = '';
-    PEOPLE.forEach(function(p){
-      var td = 0, tt = 0;
-      Object.keys(DB.i).forEach(function(k){
-        var it = DB.i[k];
-        if (it.m === 'each'){ tt++; if ((it.w || {})[p.k]) td++; }
-        else if (it.a === p.k){ tt++; if (it.d) td++; }
-      });
-      var c = document.createElement('div');
-      c.className = 'psum';
-      c.appendChild(avatar(p.k));
-      var w = document.createElement('div');
-      w.innerHTML = '<b>' + esc(p.n) + '</b> ' + td + '/' + tt;
-      var mb = document.createElement('div');
-      mb.className = 'mini';
-      var mi = document.createElement('i');
-      mi.style.width = tt ? (100 * td / tt) + '%' : '0%';
-      mi.style.background = p.c;
-      mb.appendChild(mi); w.appendChild(mb);
-      c.appendChild(w);
-      sumEl.appendChild(c);
-    });
-  }
-
-  /* --------------------------------------------------------- controles */
-  Array.prototype.forEach.call(document.querySelectorAll('[data-ck-filter]'), function(b){
-    b.addEventListener('click', function(){
-      FILTER = b.getAttribute('data-ck-filter');
-      Array.prototype.forEach.call(document.querySelectorAll('[data-ck-filter]'), function(x){
-        if (x === b) x.classList.add('on'); else x.classList.remove('on');
-      });
-      if (FILTER === 'mine' && !ME) askMe();
-      render();
-    });
-  });
-  $('[data-ck-print]').addEventListener('click', function(){ window.print(); });
-  $('[data-ck-addsec]').addEventListener('click', function(){
-    askText('Nouvelle catégorie', null, [{label:'Nom de la catégorie', ph:'Ex. Bagages'}], 'Créer', function(v){
-      var id = 's' + Date.now().toString(36);
-      var mx = 0; secs().forEach(function(s){ if (s.o > mx) mx = s.o; });
-      put('s/' + id, {t:v[0], o:mx + 10});
-    });
-  });
-  $('[data-ck-reset]').addEventListener('click', function(){
-    askConfirm("Revenir à la liste d'origine ?",
-      CLOUD
-        ? 'La liste sera remise à zéro <b>pour tout le monde</b> : les ajouts et les coches de chacun seront perdus.'
-        : 'Vos ajouts et vos coches seront perdus.',
-      'Réinitialiser', function(){
-        var d = defaults();
-        d.g = DB.g || {};     /* ni les suggestions, transports, activités */
-        d.t = DB.t || {};     /* ajoutées, descriptions réécrites ou      */
-        d.d = DB.d || {};     /* étapes supprimées ne font partie de la   */
-        d.a = DB.a || {};     /* check-list : on les conserve             */
-        d.del = DB.del || {};
-        d.ord = DB.ord || {};
-        d.loc = DB.loc || {};
-        if (CLOUD) ROOT.set(d); else { DB = d; saveLocal(); render(); }
-      });
-  });
-
-  /* ------------------------------------------------------------ synchro */
-  function setSync(cls, txt){
-    syncEl.className = 'sync-pill ' + cls;
-    syncEl.innerHTML = '<span class="dot"></span><span>' + esc(txt) + '</span>';
-  }
-  function loadScript(src, cb){
-    var s = document.createElement('script');
-    s.src = src; s.onload = function(){ cb(); }; s.onerror = function(){ cb('err'); };
-    document.head.appendChild(s);
-  }
-  function startLocal(msg){
-    CLOUD = false;
-    var raw = ls(LKEY);
-    try{ DB = raw ? JSON.parse(raw) : defaults(); }catch(e){ DB = defaults(); }
-    if (!DB.i || !Object.keys(DB.i).length) DB = defaults();
-    if (!DB.g) DB.g = {};
-    if (!DB.t) DB.t = {};
-    if (!DB.d) DB.d = {};
-    if (!DB.a) DB.a = {};
-    if (!DB.del) DB.del = {};
-    if (!DB.ord) DB.ord = {};
-    if (!DB.loc) DB.loc = {};
-    if (ls(LKEY, JSON.stringify(DB)) === null){
-      warnEl.innerHTML = '<div class="stor-warn">Ce navigateur n\'autorise pas l\'enregistrement local : vos coches dispara\u00eetront à la fermeture.</div>';
-    }
-    setSync('', msg || 'Liste locale');
-    if (!CFG.databaseURL){
-      warnEl.innerHTML += '<div class="setup"><b>Cette liste n\'est pas encore partagée.</b> Chacun a sa copie dans son navigateur. Pour que les 7 voient la même liste en direct, renseignez <code>databaseURL</code> en haut du script de cette page — la marche à suivre est dans <b>HEBERGEMENT.md</b>.</div>';
-    }
-    repairTitles();
-    ready = true; render();
-  }
-  function startCloud(){
-    setSync('', 'Connexion…');
-    var base = 'https://www.gstatic.com/firebasejs/10.12.5/';
-    loadScript(base + 'firebase-app-compat.js', function(e1){
-      if (e1) return startLocal('Hors ligne — liste locale');
-      loadScript(base + 'firebase-database-compat.js', function(e2){
-        if (e2) return startLocal('Hors ligne — liste locale');
-        try{
-          firebase.initializeApp({databaseURL: CFG.databaseURL});
-          ROOT = firebase.database().ref(CFG.path || 'voyage-ny-2026');
-          CLOUD = true;
-          firebase.database().ref('.info/connected').on('value', function(s){
-            if (s.val()) setSync('on', 'Partagé — à jour'); else setSync('off', 'Reconnexion…');
-          });
-          ROOT.on('value', function(snap){
-            var v = snap.val() || {};
-            DB = {s: v.s || {}, i: v.i || {}, g: v.g || {}, t: v.t || {}, d: v.d || {}, a: v.a || {}, del: v.del || {}, ord: v.ord || {}, loc: v.loc || {}};
-            if (!Object.keys(DB.i).length && !ready){ ROOT.set(defaults()); return; }
-            repairTitles();
-            ready = true; render();
-          }, function(){ startLocal('Accès refusé — liste locale'); });
-        }catch(err){ startLocal('Hors ligne — liste locale'); }
-      });
-    });
-  }
-  if (CFG.databaseURL) startCloud(); else startLocal();
-
-  setInterval(function(){ if (ready && !editing) paintTotals(); }, 60000);
-
-  /* ----------------------------------------------------- bascule onglets */
-  var tabs  = {prog: document.getElementById('tab-prog'),  check: document.getElementById('tab-check')};
-  var views = {prog: document.getElementById('view-prog'), check: document.getElementById('view-check')};
-  function show(which){
-    Object.keys(views).forEach(function(k){
-      views[k].hidden = (k !== which);
-      tabs[k].setAttribute('aria-selected', k === which ? 'true' : 'false');
-    });
-    ls('nyc2026:tab', which);
-    if (which === 'prog' && window.__nycRefreshMaps) window.__nycRefreshMaps();
-    if (which === 'check' && !ME) setTimeout(function(){ askMe(); }, 250);
-    window.scrollTo(0, 0);
-  }
-  tabs.prog.addEventListener('click', function(){ show('prog'); });
-  tabs.check.addEventListener('click', function(){ show('check'); });
-  if (ls('nyc2026:tab') === 'check') show('check');
-
-  /* L'identité sert maintenant partout (coches, +1 sur les suggestions, droit de
-     correction), plus seulement dans la check-list : on la demande dès l'arrivée.
-     Non bloquant — « Je regarde juste » ferme, et la question revient à la première
-     action qui a besoin de savoir qui vous êtes. */
-  if (!ME) setTimeout(function(){ if (!ME) askMe(); }, 500);
-})();
-</script>
+<script src="js/map.js"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+<script src="js/trip.js"></script>
 </body>
 </html>

@@ -1,0 +1,340 @@
+/* ---------------------------------------------------------------------------
+   En bref : compte a rebours, mode « Aujourd'hui », meteo, infos pratiques,
+   horloges, theme clair/sombre, impression et mode hors ligne.
+   Tout ce qui est ici ne touche pas a la base partagee : les coches « fait »
+   du jour restent dans le navigateur de chacun.
+--------------------------------------------------------------------------- */
+(function(){
+  var INFO = window.TRIP_INFO || {};
+  var NY = 'America/New_York', PARIS = 'Europe/Paris';
+  var DAY_MS = 86400000;
+
+  function ls(k, v){
+    try{ if (v === undefined) return localStorage.getItem(k);
+         if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v);
+         return true; }catch(e){ return null; }
+  }
+  function $(s, r){ return (r || document).querySelector(s); }
+  function $$(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function esc(s){ var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+
+  /* ------------------------------------------------------------- dates
+     « 2026-10-21 » dans le fuseau voulu.  ?date=2026-10-21 dans l'adresse
+     simule un jour (pratique pour tester le mode « Aujourd'hui »). */
+  var FORCED = (location.search.match(/[?&]date=(\d{4}-\d{2}-\d{2})/) || [])[1];
+  function isoIn(tz, d){
+    if (FORCED) return FORCED;
+    try{ return new Intl.DateTimeFormat('en-CA', {timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit'}).format(d || new Date()); }
+    catch(e){ return new Date().toISOString().slice(0, 10); }
+  }
+  function utc(iso){ var p = iso.split('-'); return Date.UTC(+p[0], +p[1] - 1, +p[2]); }
+  function diffDays(a, b){ return Math.round((utc(b) - utc(a)) / DAY_MS); }
+  function addDays(iso, n){ return new Date(utc(iso) + n * DAY_MS).toISOString().slice(0, 10); }
+
+  var START = INFO.debut || '2026-10-19', END = INFO.fin || '2026-10-26';
+  function dayIso(n){ return addDays(START, n - 1); }
+  function todayNum(){
+    var n = diffDays(START, isoIn(NY)) + 1;
+    return (n >= 1 && n <= diffDays(START, END) + 1) ? n : 0;
+  }
+  function dayEl(n){ return $('.day[data-day="' + n + '"]'); }
+  function dayTitle(n){ var t = $('.day[data-day="' + n + '"] .day-title'); return t ? t.textContent.trim() : ''; }
+
+  /* ------------------------------------------------------------- theme */
+  var root = document.documentElement;
+  var themeBtn = $('[data-theme-toggle]');
+  var metaTheme = $('meta[name="theme-color"]');
+  function paintThemeBtn(){
+    if (!themeBtn) return;
+    var dark = root.getAttribute('data-theme') === 'dark';
+    themeBtn.textContent = dark ? '☀️' : '🌙';
+    themeBtn.title = dark ? 'Passer en mode clair' : 'Passer en mode sombre';
+    themeBtn.setAttribute('aria-label', themeBtn.title);
+    if (metaTheme) metaTheme.setAttribute('content', dark ? '#0b131c' : '#16263a');
+  }
+  if (themeBtn) themeBtn.addEventListener('click', function(){
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    ls('nyc2026:theme', next);
+    paintThemeBtn();
+  });
+  if (window.matchMedia){
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    var onMq = function(e){
+      if (ls('nyc2026:theme')) return;   /* un choix manuel l'emporte */
+      root.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+      paintThemeBtn();
+    };
+    if (mq.addEventListener) mq.addEventListener('change', onMq); else if (mq.addListener) mq.addListener(onMq);
+  }
+  paintThemeBtn();
+
+  /* ------------------------------------------------------------- impression */
+  $$('[data-print]').forEach(function(b){
+    b.addEventListener('click', function(){ window.print(); });
+  });
+
+  /* ------------------------------------------------------------- infos pratiques */
+  var lg = INFO.logement || {};
+  var addrEl = $('[data-hub-addr]');
+  if (addrEl) addrEl.textContent = lg.adresse || '';
+  var dest = lg.lat != null ? lg.lat + ',' + lg.lng : encodeURIComponent(lg.adresse || '');
+  var mapsA = $('[data-hub-maps]');
+  if (mapsA) mapsA.href = 'https://www.google.com/maps/dir/?api=1&destination=' + dest;
+  var uberA = $('[data-hub-uber]');
+  if (uberA){
+    var u = 'https://m.uber.com/ul/?action=setPickup&pickup=my_location'
+          + '&dropoff%5Bformatted_address%5D=' + encodeURIComponent(lg.adresse || '');
+    if (lg.lat != null) u += '&dropoff%5Blatitude%5D=' + lg.lat + '&dropoff%5Blongitude%5D=' + lg.lng;
+    uberA.href = u;
+  }
+  var copyB = $('[data-hub-copy]');
+  if (copyB) copyB.addEventListener('click', function(){
+    var done = function(){ copyB.textContent = 'Copiée ✓'; setTimeout(function(){ copyB.textContent = 'Copier'; }, 1800); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(lg.adresse || '').then(done, function(){});
+  });
+  var sosEl = $('[data-hub-sos]');
+  if (sosEl) sosEl.innerHTML = (INFO.urgences || []).map(function(x){
+    return '<li><span>' + esc(x.nom) + '</span><a href="tel:' + esc(String(x.tel).replace(/[^\d+]/g, '')) + '">' + esc(x.tel) + '</a></li>';
+  }).join('');
+
+  /* ------------------------------------------------------------- horloges */
+  function hm(tz){
+    try{ return new Intl.DateTimeFormat('fr-FR', {timeZone: tz, hour: '2-digit', minute: '2-digit'}).format(new Date()); }
+    catch(e){ return '--:--'; }
+  }
+  /* ecart reel Paris / New York : 6 h la plupart du temps, 5 h entre le
+     passage a l'heure d'hiver en France (dim. 25 oct.) et aux Etats-Unis (1er nov.) */
+  function offsetH(){
+    try{
+      var now = new Date();
+      var f = function(tz){
+        var p = new Intl.DateTimeFormat('en-US', {timeZone: tz, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric'}).formatToParts(now);
+        var o = {}; p.forEach(function(x){ o[x.type] = +x.value; });
+        return Date.UTC(o.year, o.month - 1, o.day, o.hour, o.minute);
+      };
+      return Math.round((f(PARIS) - f(NY)) / 3600000);
+    }catch(e){ return 6; }
+  }
+  function paintClocks(){
+    $$('[data-clock]').forEach(function(el){ el.textContent = hm(el.getAttribute('data-clock')); });
+    var o = $('[data-hub-offset]');
+    if (o) o.textContent = 'Paris a ' + offsetH() + ' h d’avance sur New York.';
+  }
+  paintClocks();
+  setInterval(paintClocks, 20000);
+
+  /* ------------------------------------------------------------- meteo (Open-Meteo, gratuit, sans cle) */
+  var WX_KEY = 'nyc2026:wx', WX = null;
+  function wxIcon(c){
+    if (c === 0) return ['☀️', 'Ensoleillé'];
+    if (c === 1) return ['🌤️', 'Plutôt beau'];
+    if (c === 2) return ['⛅', 'Éclaircies'];
+    if (c === 3) return ['☁️', 'Couvert'];
+    if (c === 45 || c === 48) return ['🌫️', 'Brouillard'];
+    if (c >= 51 && c <= 57) return ['🌦️', 'Bruine'];
+    if (c >= 61 && c <= 67) return ['🌧️', 'Pluie'];
+    if (c >= 71 && c <= 77) return ['🌨️', 'Neige'];
+    if (c >= 80 && c <= 82) return ['🌦️', 'Averses'];
+    if (c === 85 || c === 86) return ['🌨️', 'Averses de neige'];
+    if (c >= 95) return ['⛈️', 'Orages'];
+    return ['🌡️', ''];
+  }
+  function wxFor(iso){
+    if (!WX || !WX.daily || !WX.daily.time) return null;
+    var i = WX.daily.time.indexOf(iso);
+    if (i < 0) return null;
+    var d = WX.daily;
+    return {code: d.weather_code[i], max: Math.round(d.temperature_2m_max[i]), min: Math.round(d.temperature_2m_min[i]),
+            rain: d.precipitation_probability_max ? d.precipitation_probability_max[i] : null};
+  }
+  function wxHtml(w, long){
+    var ic = wxIcon(w.code);
+    return '<span class="wx-ic">' + ic[0] + '</span>'
+      + (long && ic[1] ? '<span class="wx-lbl">' + ic[1] + '</span>' : '')
+      + '<span class="wx-t"><b>' + w.max + '°</b> / ' + w.min + '°</span>'
+      + (w.rain != null && w.rain >= 20 ? '<span class="wx-r">💧 ' + w.rain + ' %</span>' : '');
+  }
+  function paintWx(){
+    var any = false;
+    $$('.day[data-day]').forEach(function(day){
+      var n = +day.getAttribute('data-day');
+      var head = $('.day-head', day), chip = $('.wx', day);
+      var w = n ? wxFor(dayIso(n)) : null;
+      if (!w){ if (chip) chip.parentNode.removeChild(chip); return; }
+      any = true;
+      if (!chip){ chip = document.createElement('div'); chip.className = 'wx'; head.appendChild(chip); }
+      chip.title = 'Prévision météo — ' + wxIcon(w.code)[1];
+      chip.innerHTML = wxHtml(w, false);
+    });
+    var src = $('[data-wx-src]');
+    if (src) src.hidden = !any;
+    paintStatus();
+  }
+  function loadWx(){
+    try{ WX = JSON.parse(ls(WX_KEY) || 'null'); }catch(e){ WX = null; }
+    paintWx();
+    if (WX && Date.now() - (WX._at || 0) < 3 * 3600000) return;
+    if (diffDays(isoIn(NY), START) > 16 || diffDays(END, isoIn(NY)) > 0) return;   /* hors de portee des previsions */
+    var m = INFO.meteo || {lat: 40.7128, lng: -74.006};
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=' + m.lat + '&longitude=' + m.lng
+      + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+      + '&timezone=America%2FNew_York&forecast_days=16')
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){
+        if (!j || !j.daily) return;
+        j._at = Date.now(); WX = j;
+        ls(WX_KEY, JSON.stringify(j));
+        paintWx();
+      })['catch'](function(){});
+  }
+
+  /* ------------------------------------------------------------- mode « Aujourd'hui » */
+  var TODAY = todayNum();
+  var DONE_KEY = 'nyc2026:done:' + (TODAY ? dayIso(TODAY) : '');
+  function doneSet(){ try{ return JSON.parse(ls(DONE_KEY) || '{}') || {}; }catch(e){ return {}; } }
+  function stopKey(li){
+    return li.getAttribute('data-sid') || (li.getAttribute('data-xid') ? 'x:' + li.getAttribute('data-xid') : '');
+  }
+  function stopName(li){
+    var n = $('.stop-name', li) || $('.lbl', li);
+    if (!n) return '';
+    var c = n.cloneNode(true);
+    $$('.opttag, .pin-badge', c).forEach(function(x){ x.parentNode.removeChild(x); });
+    var t = c.textContent.replace(/\s+/g, ' ').trim();
+    var hd = !$('.stop-name', li) && $('.hood', li);
+    return hd ? t + ' — ' + hd.textContent.trim() : t;
+  }
+  function todayStops(){
+    var d = dayEl(TODAY);
+    if (!d) return [];
+    return $$('ul.stops > li', d).filter(function(li){
+      return !li.hidden && !/\b(trans|trans-gap)\b/.test(li.className) && stopKey(li);
+    });
+  }
+  var NEXT = null;
+  function paintToday(){
+    if (!TODAY) return;
+    var d = dayEl(TODAY);
+    if (!d) return;
+    d.classList.add('is-today');
+    var head = $('.day-head', d);
+    if (head && !$('.today-tag', head)){
+      var tag = document.createElement('span');
+      tag.className = 'today-tag'; tag.textContent = "Aujourd'hui";
+      head.insertBefore(tag, $('.day-tot', head));
+    }
+    var done = doneSet();
+    NEXT = null;
+    todayStops().forEach(function(li){
+      var k = stopKey(li), isDone = !!done[k];
+      li.classList.toggle('is-done', isDone);
+      li.classList.remove('is-next');
+      if (!isDone && !NEXT) NEXT = li;
+      var host = $('.cbody', li) || li;
+      var bar = $('.today-bar', host);
+      if (!bar){
+        bar = document.createElement('div'); bar.className = 'today-bar';
+        bar.innerHTML = '<span class="next-lbl">▶ Prochaine étape</span><button type="button" class="done-btn"></button>';
+        $('.done-btn', bar).addEventListener('click', function(){
+          var s = doneSet(), key = stopKey(li);
+          if (s[key]) delete s[key]; else s[key] = Date.now();
+          ls(DONE_KEY, JSON.stringify(s));
+          paintToday();
+        });
+        host.appendChild(bar);
+      }
+      $('.done-btn', bar).textContent = isDone ? '↺ Pas encore fait' : '✓ Fait';
+      $('.done-btn', bar).classList.toggle('on', isDone);
+    });
+    if (NEXT) NEXT.classList.add('is-next');
+    paintStatus();
+  }
+
+  /* ------------------------------------------------------------- bandeau d'etat */
+  function paintStatus(){
+    var el = $('[data-hub-status]');
+    if (!el) return;
+    var nyIso = isoIn(NY), parisIso = isoIn(PARIS);
+    var html = '';
+    if (TODAY){
+      var w = wxFor(dayIso(TODAY));
+      var total = diffDays(START, END) + 1;
+      html = '<div class="hs-eyebrow">Aujourd’hui · jour ' + TODAY + ' sur ' + total + '</div>'
+           + '<div class="hs-title">' + esc(dayTitle(TODAY)) + '</div>'
+           + (w ? '<div class="hs-wx">' + wxHtml(w, true) + '</div>' : '');
+      if (NEXT){
+        html += '<div class="hs-next"><span>Prochaine étape</span><b>' + esc(stopName(NEXT)) + '</b></div>'
+              + '<div class="hs-btns"><button type="button" class="hs-go" data-go="next">Voir l’étape ↓</button>'
+              + '<button type="button" class="hs-ghost" data-go="day">Toute la journée</button></div>';
+      } else {
+        html += '<div class="hs-next"><span>Programme du jour</span><b>Tout est fait 🎉</b></div>'
+              + '<div class="hs-btns"><button type="button" class="hs-ghost" data-go="day">Revoir la journée</button></div>';
+      }
+    } else {
+      var j = diffDays(parisIso, START);
+      if (j > 0){
+        html = '<div class="hs-eyebrow">Compte à rebours</div>'
+             + '<div class="hs-big">J‑' + j + '</div>'
+             + '<div class="hs-sub">' + (j === 1 ? 'Départ demain !' : 'avant le départ') + ' · lundi 19 octobre, atterrissage à JFK à 22 h 40</div>';
+      } else if (j === 0){
+        html = '<div class="hs-eyebrow">C’est aujourd’hui</div><div class="hs-big">Jour J ✈️</div>'
+             + '<div class="hs-sub">Atterrissage à JFK à 22 h 40, heure de New York.</div>';
+      } else {
+        html = '<div class="hs-eyebrow">Voyage terminé</div><div class="hs-title">Bon retour ! 🗽</div>'
+             + '<div class="hs-sub">Le programme reste consultable ci-dessous.</div>';
+      }
+      var w1 = wxFor(dayIso(1));
+      if (j > 0 && w1) html += '<div class="hs-wx"><span class="hs-wx-lbl">Prévision à l’arrivée</span>' + wxHtml(w1, true) + '</div>';
+    }
+    el.innerHTML = html;
+    el.classList.toggle('live', !!TODAY);
+  }
+  function goTo(el){
+    if (!el) return;
+    var prog = document.getElementById('tab-prog');
+    if (prog && prog.getAttribute('aria-selected') !== 'true') prog.click();
+    el.scrollIntoView({behavior: 'smooth', block: 'start'});
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('[data-go]') : null;
+    if (!b) return;
+    goTo(b.getAttribute('data-go') === 'next' ? NEXT : dayEl(TODAY));
+  });
+
+  /* ------------------------------------------------------------- demarrage */
+  var jumped = false;
+  function afterRender(){
+    paintToday();
+    paintWx();
+    /* pendant le sejour, on ouvre directement sur la journee en cours */
+    if (TODAY && !jumped && !location.hash){
+      jumped = true;
+      var prog = document.getElementById('tab-prog');
+      if (prog && prog.getAttribute('aria-selected') !== 'true') prog.click();
+      setTimeout(function(){ var d = dayEl(TODAY); if (d) d.scrollIntoView({block: 'start'}); }, 120);
+    }
+  }
+  document.addEventListener('nyc:rendered', afterRender);
+  paintStatus();
+  paintToday();
+  loadWx();
+  /* passage de minuit : on recalcule le jour courant */
+  setInterval(function(){
+    var n = todayNum();
+    if (n !== TODAY){
+      if (TODAY){ var old = dayEl(TODAY); if (old) old.classList.remove('is-today'); }
+      TODAY = n; DONE_KEY = 'nyc2026:done:' + (n ? dayIso(n) : '');
+      $$('.is-next, .is-done').forEach(function(x){ x.classList.remove('is-next', 'is-done'); });
+      $$('.today-bar, .today-tag').forEach(function(x){ x.parentNode.removeChild(x); });
+      paintToday(); loadWx();
+    }
+  }, 60000);
+
+  /* ------------------------------------------------------------- hors ligne */
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js')['catch'](function(){});
+    });
+  }
+})();

@@ -53,6 +53,12 @@
 
   <section class="hub" aria-label="En bref">
     <div class="hub-status" data-hub-status></div>
+  </section>
+
+  <nav class="cal" data-cal aria-label="Jours du voyage"></nav>
+
+  <section class="pane-infos" data-pane-infos>
+    <div class="day-head"><div class="day-num">ℹ︎</div><div class="day-title">Infos pratiques</div></div>
     <div class="hub-grid">
       <div class="hub-card">
         <h3>🏠 Logement</h3>
@@ -76,37 +82,25 @@
         <p class="hub-sub" data-hub-offset></p>
       </div>
     </div>
-    <div class="hub-foot">
-      <span class="wx-src" data-wx-src hidden>Météo : prévisions <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>, mises à jour toutes les 3 h.</span>
-      <button type="button" class="hub-print" data-print>🖨️ Imprimer le programme</button>
-    </div>
-  </section>
-
-
   <details class="howto">
-    <summary><span>Comment lire le programme</span><span class="howto-hint">durées, prix, Go City, transports</span></summary>
+    <summary><span>Comment lire le programme</span><span class="howto-hint">durées, prix, Go City</span></summary>
   <div class="legend">
     <p class="lg-p">En haut à droite de chaque étape : la <b>durée</b>, et juste en dessous ce qu'elle coûte.</p>
     <div class="row">
       <span><b class="cost inc">inclus Go City</b></span>
       <span><b class="cost free">gratuit</b></span>
       <span><b class="cost no">à part</b> ou le prix</span>
-      <span><span class="hood">Quartier</span></span>
     </div>
-    <div class="row">
-      <span>🚶 à pied</span><span>🚇 métro</span><span>🚆 PATH</span><span>🚕 VTC</span><span>⛴️ ferry</span><span>🚐 van</span><span>🍴 manger</span><span>🎈 temps libre</span>
-    </div>
-    <p class="lg-p">Tout ce qui se fait <b>à pied</b> reste sous ~20 min de marche. Au-delà : métro ou PATH.</p>
   </div>
 
   <div class="tip">
     <b>Astuce Go City :</b> vos gros billets (Empire State, Top of the Rock, Edge, One World, ferry Statue + Ellis Island, 9/11, MoMA…) sont <b>inclus</b>. Le <b>Met n'est pas inclus</b> (~30 $) — sinon Muséum d'Histoire naturelle ou MoMA. Réservez un créneau dans l'appli pour Empire State, 9/11 et le ferry. <b>Hélico &amp; stand de tir ne sont pas dans le pass</b> (à réserver à part).</div>
   </details>
-
-  <div class="sugg-top">
-    <button type="button" class="sugg-add" data-sg-add>💡 Suggérer une activité</button>
-    <a class="sugg-jump" href="#suggestions"><span data-sg-jump>Voir les suggestions</span> ↓</a>
-  </div>
+    <div class="hub-foot">
+      <span class="wx-src" data-wx-src hidden>Météo : prévisions <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>, mises à jour toutes les 3 h.</span>
+      <button type="button" class="hub-print" data-print>🖨️ Imprimer le programme</button>
+    </div>
+  </section>
 
   <!-- JOUR 1 -->
   <div class="day" data-day="1">

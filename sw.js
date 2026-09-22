@@ -12,7 +12,8 @@
 var VERSION = 'v1';
 var SHELL = 'nyc-shell-' + VERSION, TILES = 'nyc-tiles-' + VERSION, CDN = 'nyc-cdn-' + VERSION;
 var CORE = ['./', 'index.html', 'css/style.css', 'js/map.js', 'js/config.js', 'js/app.js', 'js/trip.js',
-            'manifest.webmanifest', 'icons/icon-192.png', 'icons/favicon-32.png'];
+            'manifest.webmanifest', 'icons/icon-192.png', 'icons/favicon-32.png',
+            'img/new-york.webp'];
 var CDN_HOSTS = ['unpkg.com', 'fonts.googleapis.com', 'fonts.gstatic.com', 'www.gstatic.com'];
 
 self.addEventListener('install', function(e){

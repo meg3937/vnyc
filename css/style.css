@@ -644,3 +644,100 @@ ul.stops > li.is-done .stop-name{text-decoration:line-through;text-decoration-th
   .tabbar .tb-ico{display:inline;font-size:16px;}
   .tabbar .tb-count{margin-left:5px;}
 }
+
+/* ======================================================================
+   Mise en page plus compacte : plus de grand bandeau en tete, la photo de
+   New York passe en fond du compte a rebours, blocs et photos resserres.
+   ====================================================================== */
+.print-title{display:none;}
+
+/* marque discrete a gauche des onglets */
+.tb-brand{align-self:center;font-family:'Fraunces',serif;font-weight:700;font-size:17px;color:#fff;
+          margin-right:14px;white-space:nowrap;letter-spacing:.01em;}
+.tb-brand::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gold);
+                  margin-right:8px;vertical-align:3px;}
+@media (max-width:720px){.tb-brand{display:none;}}
+
+/* hero = compte a rebours / aujourd'hui, sur la photo de Manhattan */
+.hub{margin-top:20px;}
+.hub-status, [data-theme="dark"] .hub-status{
+  position:relative;overflow:hidden;border-radius:14px;padding:26px 26px 22px;min-height:190px;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  background:linear-gradient(100deg,rgba(12,23,35,.92) 0%,rgba(12,23,35,.72) 45%,rgba(12,23,35,.15) 100%),
+             url(../img/new-york.webp) center 38%/cover #16263a;
+  box-shadow:0 8px 24px rgba(10,25,45,.18);}
+.hub-status.live, [data-theme="dark"] .hub-status.live{
+  background:linear-gradient(100deg,rgba(40,24,4,.93) 0%,rgba(22,24,30,.8) 50%,rgba(12,23,35,.3) 100%),
+             url(../img/new-york.webp) center 38%/cover #16263a;}
+.hs-big{font-size:52px;}
+.hs-sub{max-width:520px;}
+@media (max-width:560px){
+  .hub-status{padding:20px 18px 18px;min-height:170px;border-radius:12px;
+    background-position:0 0, 62% 38%;}
+  .hs-big{font-size:42px;}
+}
+
+.hub-grid{gap:8px;margin-top:8px;}
+.hub-card{padding:12px 14px;border-radius:12px;}
+.hub-foot{margin-top:8px;}
+
+/* « Comment lire le programme » : replie par defaut */
+details.howto{margin-top:14px;background:var(--paper);border:1px solid var(--line);border-radius:12px;}
+details.howto > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:12px 16px;font-weight:600;font-size:13.5px;color:var(--head);}
+details.howto > summary::-webkit-details-marker{display:none;}
+details.howto > summary::before{content:"ⓘ";font-size:15px;color:var(--gold);}
+details.howto > summary::after{content:"▾";margin-left:auto;color:var(--steel);transition:transform .15s ease;}
+details.howto[open] > summary::after{transform:rotate(180deg);}
+.howto-hint{font-weight:400;font-size:12.5px;color:var(--steel);}
+details.howto .legend{margin:0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;padding:4px 16px 14px;}
+details.howto .tip{margin:0 16px 16px;}
+.sugg-top{margin-top:14px;}
+
+/* journees */
+.day{margin-top:44px;}
+.day-head{border-bottom-width:1px;border-bottom-color:var(--line);padding-bottom:10px;}
+.day-num{font-size:26px;}
+.day-title{font-size:19px;}
+.ph.ph-band{height:150px;border-radius:12px;margin-top:12px;}
+.getin{border-radius:10px;}
+
+/* etapes : vignette plus petite, cartes plus aerees */
+li.stop, li.free, li.eat, li.actv{border-radius:12px;}
+li.stop > .ph, li.free > .ph, li.eat > .ph, li.actv > .ph{flex-basis:150px;min-height:104px;}
+li.eat > .ph{flex-basis:150px;min-height:96px;}
+.cbody{padding:12px 15px;}
+.map-canvas,.gmap-wrap{height:300px;}
+.daymap{border-radius:12px;}
+
+@media (max-width:620px){
+  /* sur telephone : vignette carree a gauche au lieu d'une grande photo pleine largeur */
+  li.stop, li.free, li.eat, li.actv{flex-direction:row;}
+  li.stop > .ph, li.free > .ph, li.eat > .ph, li.actv > .ph{flex:0 0 92px;width:92px;height:auto;min-height:96px;}
+  li.eat > .ph{height:auto;}
+  .cbody{padding:10px 12px;}
+  .stop-name{font-size:15.5px;}
+  .stop-top{gap:6px 10px;}
+  .ph.ph-band{height:112px;}
+  .day{margin-top:36px;}
+  .map-canvas,.gmap-wrap{height:240px;}
+  li.actv .extra-edit, li.actv .del{opacity:1;}
+}
+
+@media print{
+  .print-title{display:block;font-family:'Fraunces',serif;font-size:22pt;margin:0 0 8px;padding-bottom:6px;border-bottom:2px solid #000;}
+  .print-title span{font-family:'Inter',sans-serif;font-size:10pt;font-weight:400;color:#444;}
+  details.howto{border-color:#bbb;}
+  details.howto > summary::after,.howto-hint{display:none;}
+  details.howto:not([open]) > .legend,details.howto:not([open]) > .tip{display:block;}
+}
+@media (max-width:620px){
+  .day-head{flex-wrap:nowrap;gap:10px;}
+  .day-title{flex:1 1 auto;min-width:0;line-height:1.25;}
+  .day-head .wx,.day-head .today-tag{flex:0 0 auto;}
+  .day.is-today .day-head,.day-head:has(.wx){flex-wrap:wrap;}
+  .stop-top .stop-tr{flex-direction:row;align-items:baseline;gap:8px;margin-left:0;width:100%;justify-content:flex-start;}
+  .stop-top .dur{margin-left:0;}
+  .howto-hint{display:none;}
+  .hub-foot{justify-content:flex-end;}
+}

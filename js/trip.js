@@ -434,9 +434,38 @@
   var start = TODAY ? 'd' + TODAY : (location.hash === '#suggestions' ? 'idees' : ls('nyc2026:pane'));
   select(paneBy(start) ? start : 'd1', false);
 
+
+  /* ------------------------------------------------------------- trajets entre les etapes
+     Le trajet ecrit dans une etape (« a pied (~10 min) », « PATH 33rd St »…)
+     s'affiche en petit ENTRE les blocs, juste avant l'etape.  S'il y a deja
+     un bloc transport ajoute a cet endroit, c'est lui qui compte : on
+     n'affiche rien de plus. */
+  var MOVE_ICO = {go: '🚶', metro: '🚇', path: '🚆', vtc: '🚕', ferry: '⛴️', van: '🚐'};
+  function paintAutoTrans(){
+    $$('li.auto-trans').forEach(function(x){ x.parentNode.removeChild(x); });
+    $$('ul.stops > li').forEach(function(li){
+      if (li.hidden || /\b(trans|trans-gap)\b/.test(li.className)) return;
+      var mv = null, k = null;
+      $$('.stop-meta .move', li).some(function(m){
+        for (var t in MOVE_ICO) if (m.classList.contains(t)){ mv = m; k = t; return true; }
+        return false;
+      });
+      if (!mv || !mv.textContent.trim() || /sur place/i.test(mv.textContent)) return;
+      var prev = li.previousElementSibling;
+      while (prev && (prev.hidden || prev.classList.contains('trans-gap'))) prev = prev.previousElementSibling;
+      if (prev && prev.classList.contains('trans')) return;
+      var a = document.createElement('li');
+      a.className = 'trans auto-trans';
+      a.innerHTML = '<span class="tr-ico">' + MOVE_ICO[k] + '</span><div class="tr-body"><div class="tr-top"><span class="tr-name">'
+                  + esc(mv.textContent.trim()) + '</span></div></div>';
+      li.parentNode.insertBefore(a, li);
+    });
+  }
+
   /* ------------------------------------------------------------- demarrage */
   var jumped = false;
   function afterRender(){
+    paintAutoTrans();
     paintToday();
     paintWx();
     paintCal();
@@ -450,6 +479,7 @@
   }
   document.addEventListener('nyc:rendered', afterRender);
   paintStatus();
+  paintAutoTrans();
   paintToday();
   loadWx();
   /* passage de minuit : on recalcule le jour courant */

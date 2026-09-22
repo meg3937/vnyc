@@ -170,6 +170,7 @@
     var src = $('[data-wx-src]');
     if (src) src.hidden = !any;
     paintStatus();
+    if (PANES && PANES.length) paintCal();
   }
   function loadWx(){
     try{ WX = JSON.parse(ls(WX_KEY) || 'null'); }catch(e){ WX = null; }
@@ -294,7 +295,9 @@
     if (!el) return;
     var prog = document.getElementById('tab-prog');
     if (prog && prog.getAttribute('aria-selected') !== 'true') prog.click();
-    el.scrollIntoView({behavior: 'smooth', block: 'start'});
+    var pane = PANES.filter(function(p){ return p.el === el || p.el.contains(el); })[0];
+    if (pane) select(pane.key, true);
+    setTimeout(function(){ el.scrollIntoView({behavior: 'smooth', block: 'start'}); }, 30);
   }
   document.addEventListener('click', function(e){
     var b = e.target.closest ? e.target.closest('[data-go]') : null;
@@ -302,17 +305,147 @@
     goTo(b.getAttribute('data-go') === 'next' ? NEXT : dayEl(TODAY));
   });
 
+
+  /* ------------------------------------------------------------- calendrier
+     Une seule journee affichee a la fois : la barre de jours en haut sert a
+     passer de l'une a l'autre (plus « A caler », les idees et les infos). */
+  var calEl = $('[data-cal]');
+  var PANES = [];
+  var moreEl = null;
+  var CUR = null;
+  $$('.day[data-day]').forEach(function(d){
+    var id = d.getAttribute('data-day');
+    if (/^\d+$/.test(id)){
+      var t = dayTitle(+id), m = t.match(/^(\S+?)\.?\s+(\d+)/);
+      PANES.push({key: 'd' + id, el: d, n: +id, w: m ? m[1] : '', d: m ? m[2] : id,
+                  title: t.replace(/^[^—]*—\s*/, '')});
+    } else if (id === 'caler'){
+      PANES.push({key: 'caler', el: d, label: '★ À caler'});
+    }
+  });
+  var sg = document.getElementById('suggestions');
+  if (sg) PANES.push({key: 'idees', el: sg, label: '💡 Idées'});
+  var inf = $('[data-pane-infos]');
+  if (inf) PANES.push({key: 'infos', el: inf, label: 'ℹ︎ Infos'});
+  function paneBy(key){ return PANES.filter(function(p){ return p.key === key; })[0]; }
+
+  function buildCal(){
+    if (!calEl) return;
+    var days = PANES.filter(function(p){ return p.n; });
+    var other = PANES.filter(function(p){ return !p.n; });
+    calEl.innerHTML = '<div class="cal-days">' + days.map(function(p){
+        return '<button type="button" class="cal-d" data-key="' + p.key + '" title="' + esc(p.title) + '">'
+             + '<span class="cal-w">' + esc(p.w) + '</span><span class="cal-n">' + esc(p.d) + '</span>'
+             + '<span class="cal-x" data-cal-wx="' + p.n + '"></span></button>';
+      }).join('') + '</div>';
+    /* « A caler », idees, infos : sur une ligne a part, qui ne reste pas
+       collee en haut de l'ecran (seuls les jours le restent) */
+    moreEl = document.createElement('div');
+    moreEl.className = 'cal-more';
+    moreEl.innerHTML = other.map(function(p){
+      return '<button type="button" class="cal-o" data-key="' + p.key + '">' + esc(p.label)
+           + (p.key === 'caler' ? '<span class="cal-c" data-cal-count></span>' : '') + '</button>';
+    }).join('');
+    calEl.parentNode.insertBefore(moreEl, calEl.nextSibling);
+    [calEl, moreEl].forEach(function(el){
+      el.addEventListener('click', function(e){
+        var b = e.target.closest('[data-key]');
+        if (b) select(b.getAttribute('data-key'), true);
+      });
+    });
+    /* bas de chaque journee : jour precedent / suivant */
+    days.forEach(function(p, i){
+      var pg = document.createElement('div');
+      pg.className = 'pager';
+      var prev = days[i - 1], next = days[i + 1];
+      pg.innerHTML = (prev ? '<button type="button" data-key="' + prev.key + '">← ' + esc(prev.w) + ' ' + esc(prev.d) + '</button>' : '<span></span>')
+                   + (next ? '<button type="button" class="nx" data-key="' + next.key + '">' + esc(next.w) + ' ' + esc(next.d) + ' · ' + esc(next.title) + ' →</button>' : '');
+      pg.addEventListener('click', function(e){
+        var b = e.target.closest('[data-key]');
+        if (b) select(b.getAttribute('data-key'), true);
+      });
+      p.el.appendChild(pg);
+    });
+  }
+  function paintCal(){
+    if (!calEl) return;
+    $$('.cal-d', calEl).forEach(function(b){
+      var n = +b.getAttribute('data-key').slice(1);
+      b.classList.toggle('is-today', n === TODAY);
+      var w = wxFor(dayIso(n)), x = $('.cal-x', b);
+      x.textContent = w ? wxIcon(w.code)[0] : '';
+    });
+    var c = moreEl && $('[data-cal-count]', moreEl), h = paneBy('caler');
+    if (c && h){
+      var k = $$('ul.stops > li', h.el).filter(function(li){ return !li.hidden && !/\btrans-gap\b/.test(li.className); }).length;
+      c.textContent = k ? ' ' + k : '';
+    }
+  }
+  function select(key, user){
+    var p = paneBy(key) || PANES[0];
+    if (!p) return;
+    CUR = p.key;
+    PANES.forEach(function(x){ x.el.classList.toggle('pane-off', x !== p); });
+    $$('.cal [data-key], .cal-more [data-key]').forEach(function(b){
+      var on = b.getAttribute('data-key') === p.key;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      if (on && b.parentNode.scrollWidth > b.parentNode.clientWidth){
+        var r = b.parentNode;
+        r.scrollLeft = b.offsetLeft - (r.clientWidth - b.offsetWidth) / 2;
+      }
+    });
+    if (user){
+      ls('nyc2026:pane', p.key);
+      /* on remonte au debut de la journee si on etait plus bas */
+      var top = p.el.getBoundingClientRect().top + window.pageYOffset - tabH() - (calEl ? calEl.offsetHeight : 0) - 8;
+      if (window.pageYOffset > top) window.scrollTo(0, Math.max(0, top));
+    }
+    $$('.daymap', p.el).forEach(function(b){ if (window.__nycShowMap) window.__nycShowMap(b); });
+  }
+  function tabH(){ var t = $('.tabbar'); return t ? t.offsetHeight : 0; }
+  function setTabH(){ root.style.setProperty('--tbh', tabH() + 'px'); }
+  setTabH();
+  window.addEventListener('resize', setTabH);
+
+  /* carte du jour repliee par defaut : un bouton pour l'ouvrir */
+  var mapsOpen = ls('nyc2026:maps') === 'open';
+  function paintMapToggles(){
+    $$('.daymap').forEach(function(box){
+      box.classList.toggle('closed', !mapsOpen);
+      var b = box.previousElementSibling;
+      if (b && b.classList.contains('map-toggle')) b.textContent = mapsOpen ? '🗺️ Masquer la carte' : '🗺️ Voir la carte du jour';
+    });
+  }
+  $$('.daymap').forEach(function(box){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'map-toggle';
+    b.addEventListener('click', function(){
+      mapsOpen = !mapsOpen;
+      ls('nyc2026:maps', mapsOpen ? 'open' : 'closed');
+      paintMapToggles();
+      if (mapsOpen && window.__nycShowMap) window.__nycShowMap(box);
+    });
+    box.parentNode.insertBefore(b, box);
+  });
+  paintMapToggles();
+
+  buildCal();
+  var start = TODAY ? 'd' + TODAY : (location.hash === '#suggestions' ? 'idees' : ls('nyc2026:pane'));
+  select(paneBy(start) ? start : 'd1', false);
+
   /* ------------------------------------------------------------- demarrage */
   var jumped = false;
   function afterRender(){
     paintToday();
     paintWx();
+    paintCal();
     /* pendant le sejour, on ouvre directement sur la journee en cours */
-    if (TODAY && !jumped && !location.hash){
+    if (TODAY && !jumped){
       jumped = true;
       var prog = document.getElementById('tab-prog');
       if (prog && prog.getAttribute('aria-selected') !== 'true') prog.click();
-      setTimeout(function(){ var d = dayEl(TODAY); if (d) d.scrollIntoView({block: 'start'}); }, 120);
+      select('d' + TODAY, false);
     }
   }
   document.addEventListener('nyc:rendered', afterRender);
@@ -327,7 +460,8 @@
       TODAY = n; DONE_KEY = 'nyc2026:done:' + (n ? dayIso(n) : '');
       $$('.is-next, .is-done').forEach(function(x){ x.classList.remove('is-next', 'is-done'); });
       $$('.today-bar, .today-tag').forEach(function(x){ x.parentNode.removeChild(x); });
-      paintToday(); loadWx();
+      paintToday(); loadWx(); paintCal();
+      if (n) select('d' + n, false);
     }
   }, 60000);
 

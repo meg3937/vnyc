@@ -174,14 +174,20 @@
     }
     if ('IntersectionObserver' in window){
       var io = new IntersectionObserver(function(es){
-        es.forEach(function(e){ if (e.isIntersecting){ buildMap(e.target.__m); io.unobserve(e.target); } });
+        es.forEach(function(e){ if (e.isIntersecting && e.target.offsetParent){ buildMap(e.target.__m); io.unobserve(e.target); } });
       }, {rootMargin: '350px'});
       maps.forEach(function(m){ io.observe(m.box); });
     } else maps.forEach(buildMap);
   }
-  window.__nycRefreshMaps = function(){
-    maps.forEach(function(m){ if (!m.done) buildMap(m); else if (m.map) m.map.invalidateSize(); });
-  };
+  /* seules les cartes visibles : une carte construite dans un bloc masqué
+     (journée non affichée, carte repliée) aurait une taille nulle */
+  function showMap(m){
+    if (!m.box.offsetParent) return;
+    if (!m.done) buildMap(m);
+    else if (m.map){ m.map.invalidateSize(); paintMap(m); }
+  }
+  window.__nycRefreshMaps = function(){ maps.forEach(showMap); };
+  window.__nycShowMap = function(box){ if (box && box.__m) showMap(box.__m); };
   window.__nycRepaintMaps = function(){
     maps.forEach(function(m){ paintMap(m); });
   };

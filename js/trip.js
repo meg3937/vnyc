@@ -274,9 +274,9 @@
     } else {
       var j = diffDays(parisIso, START);
       if (j > 0){
-        html = '<div class="hs-eyebrow">Compte à rebours</div>'
+        html = '<div class="hs-eyebrow">New York · du 19 au 26 octobre</div>'
              + '<div class="hs-big">J‑' + j + '</div>'
-             + '<div class="hs-sub">' + (j === 1 ? 'Départ demain !' : 'avant le départ') + ' · lundi 19 octobre, atterrissage à JFK à 22 h 40</div>';
+             + '<div class="hs-sub">' + (j === 1 ? 'Départ demain !' : 'avant le départ') + ' · atterrissage à JFK le lundi 19 à 22 h 40</div>';
       } else if (j === 0){
         html = '<div class="hs-eyebrow">C’est aujourd’hui</div><div class="hs-big">Jour J ✈️</div>'
              + '<div class="hs-sub">Atterrissage à JFK à 22 h 40, heure de New York.</div>';

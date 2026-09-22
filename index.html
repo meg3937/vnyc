@@ -32,13 +32,8 @@
 </head>
 <body>
 
-<div class="cover">
-  <div class="eyebrow">Programme et checklist</div>
-  <h1>New York — jour par jour</h1>
-  <p>Du lundi 19 au lundi 26 octobre. Hébergement à Jersey City (Liberty Ave). Quartier, transport, durée, inclusion Go City et adresses resto pour chaque étape. <b>Rien n'est encore réservé</b> : c'est une première trame, on cale tout ensemble.</p>
-</div>
-
 <nav class="tabbar">
+  <span class="tb-brand" aria-hidden="true">New York</span>
   <div class="tb-group" role="tablist">
     <button type="button" role="tab" id="tab-prog"  aria-controls="view-prog"  aria-selected="true">Programme</button>
     <button type="button" role="tab" id="tab-check" aria-controls="view-check" aria-selected="false">Check-list<span class="tb-count" data-ck-count>0/0</span></button>
@@ -53,6 +48,8 @@
 
 <div id="view-prog" class="tabview" role="tabpanel" aria-labelledby="tab-prog">
 <main>
+
+  <h1 class="print-title">New York — jour par jour <span>· du lundi 19 au lundi 26 octobre · Jersey City (Liberty Ave)</span></h1>
 
   <section class="hub" aria-label="En bref">
     <div class="hub-status" data-hub-status></div>
@@ -85,10 +82,10 @@
     </div>
   </section>
 
-  <div class="ph ph-cover" data-photo="Couverture — New York"><img src="img/new-york.webp" alt="Couverture — New York" loading="lazy"><span class="ph-lbl">🖼️ Photo — Couverture — New York</span></div>
 
+  <details class="howto">
+    <summary><span>Comment lire le programme</span><span class="howto-hint">durées, prix, Go City, transports</span></summary>
   <div class="legend">
-    <b>Comment lire le programme</b>
     <p class="lg-p">En haut à droite de chaque étape : la <b>durée</b>, et juste en dessous ce qu'elle coûte.</p>
     <div class="row">
       <span><b class="cost inc">inclus Go City</b></span>
@@ -104,6 +101,7 @@
 
   <div class="tip">
     <b>Astuce Go City :</b> vos gros billets (Empire State, Top of the Rock, Edge, One World, ferry Statue + Ellis Island, 9/11, MoMA…) sont <b>inclus</b>. Le <b>Met n'est pas inclus</b> (~30 $) — sinon Muséum d'Histoire naturelle ou MoMA. Réservez un créneau dans l'appli pour Empire State, 9/11 et le ferry. <b>Hélico &amp; stand de tir ne sont pas dans le pass</b> (à réserver à part).</div>
+  </details>
 
   <div class="sugg-top">
     <button type="button" class="sugg-add" data-sg-add>💡 Suggérer une activité</button>

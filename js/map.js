@@ -1,6 +1,5 @@
 (function(){
   var DATA  = {"2": {"pins": [[1, 40.74844, -73.98566], [2, 40.75366, -73.98325], [3, 40.75273, -73.97715], [4, 40.7545, -73.9843], [5, 40.75855, -73.97625], [6, 40.7605, -73.974], [7, 40.76144, -73.97768], [8, 40.75915, -73.97925], [9, 40.758, -73.9855], [10, 40.7596, -73.9877], [11, 40.7588, -73.988]], "refs": []}, "3": {"pins": [[1, 40.70614, -73.99688], [2, 40.7033, -73.9866], [3, 40.7004, -73.9967], [4, 40.70265, -73.9931], [5, 40.68264, -73.97562]], "refs": []}, "4": {"pins": [[1, 40.77398, -73.97088], [2, 40.77565, -73.96795], [3, 40.77943, -73.96324], [4, 40.78132, -73.97397]], "refs": []}, "5": {"pins": [[1, 40.68925, -74.0445], [2, 40.6993, -74.0396], [3, 40.7127, -74.0162], [4, 40.71155, -74.0125], [5, 40.713, -74.0133], [6, 40.75052, -73.99357]], "refs": [[40.705, -74.0555, "Départ ferry — Liberty State Park"]]}, "6": {"pins": [[1, 40.75395, -74.00195], [2, 40.7479, -74.0048], [3, 40.74245, -74.0061], [4, 40.7414, -74.0105], [5, 40.7308, -73.9973], [6, 40.7233, -74.0003], [7, 40.73145, -74.00335]], "refs": []}, "7": {"pins": [[1, 40.81355, -74.07425], [2, 40.811, -74.07], [3, 40.7328, -74.0634]], "refs": []}, "8": {"pins": [[2, 40.6413, -73.7781]], "refs": [[40.7328, -74.0634, "Base — Jersey City (Liberty Ave)"]]}};
-  var UNLOC = {"4": {"5": "le groupe se sépare — hélico → héliport de Downtown (Pier 6), stand de tir → New Jersey."}, "8": {"1": "journée ouverte, au choix (rattrapage hélico / stand de tir, brunch, shopping…)."}};
 
   function kind(li){
     var c = li.className;
@@ -38,19 +37,30 @@
      l'ordre d'origine du HTML. Met aussi a jour le petit numero affiche sur
      la carte-etape elle-meme, pour que les deux restent identiques. */
   function liveRows(m){
-    var del = curDel();
+    var del = curDel(), acts = (window.__nycDB && window.__nycDB.a) || {};
     var out = [], n = 0;
+    /* une seule numérotation pour toute la journée, dans l'ordre affiché :
+       étapes d'origine ET activités ajoutées depuis la page (avant, les deux
+       avaient chacune leur compteur, d'où des 2 / 3 / 4 dans le désordre) */
     Array.prototype.forEach.call(
-      m.day.querySelectorAll('ul.stops > li:not(.trans):not(.trans-gap):not(.actv)'),
+      m.day.querySelectorAll('ul.stops > li:not(.trans):not(.trans-gap)'),
       function(li){
-        /* table GLOBALE (toutes les journées) : une étape déplacée d'un jour
-           à l'autre garde ses coordonnées et se fait quand même numéroter ici */
-        var r = GLOBAL_ROWS[li.getAttribute('data-sid')];
-        if (!r || del[r.skey]) return;
+        if (li.hidden) return;
+        var b = li.querySelector('.pin-badge'), row;
+        var xid = li.getAttribute('data-xid');
+        if (xid){
+          var act = acts[xid] || {};
+          var ok = typeof act.lat === 'number' && typeof act.lng === 'number';
+          row = {k: 'actv', name: act.t || 'Activité', has: ok, ll: ok ? [act.lat, act.lng] : null};
+        } else {
+          var r = GLOBAL_ROWS[li.getAttribute('data-sid')];
+          if (!r || del[r.skey]) return;
+          row = {k: r.k, name: r.name, has: r.has, ll: r.ll};
+        }
         n++;
-        var b = li.querySelector('.pin-badge');
-        if (b) b.textContent = n;
-        out.push({n: n, k: r.k, name: r.name, has: r.has, ll: r.ll});
+        row.n = n;
+        if (b){ b.textContent = n; b.classList.toggle('off', !row.has); }
+        out.push(row);
       }
     );
     return out;
@@ -67,22 +77,12 @@
       lg.appendChild(document.createTextNode(' ' + r.name));
       m.legendEl.appendChild(lg);
     });
-    (m.extra || []).forEach(function(e, idx){
-      var lg = document.createElement('span');
-      lg.className = 'lg';
-      lg.appendChild(badge(String.fromCharCode(65 + idx), 'actv', false));
-      lg.appendChild(document.createTextNode(' ' + e.name));
-      m.legendEl.appendChild(lg);
-    });
 
     if (!m.map) return;
     if (m.layer) m.layer.clearLayers(); else m.layer = L.layerGroup().addTo(m.map);
 
     var pts = rows.filter(function(r){ return r.has; })
                   .map(function(r){ return {n: r.n, k: r.k, name: r.name, ll: r.ll}; });
-    (m.extra || []).forEach(function(e, idx){
-      pts.push({n: String.fromCharCode(65 + idx), k: 'actv', name: e.name, ll: e.ll});
-    });
 
     var all = [];
     if (pts.length > 1){
@@ -132,16 +132,6 @@
       rows.push(row);
       GLOBAL_ROWS[row.skey] = row;
     });
-
-    var extra = UNLOC[id];
-    if (extra){
-      var note = document.createElement('div');
-      note.className = 'map-note';
-      Object.keys(extra).forEach(function(i){
-        note.innerHTML += '<b>' + i + '</b> \u2014 pas de point sur la carte : ' + extra[i] + '<br>';
-      });
-      box.insertBefore(note, legend);
-    }
 
     var m = {box: box, day: day, id: id, rows: rows, refs: d.refs || [], extra: [], legendEl: legend};
     paintMap(m);

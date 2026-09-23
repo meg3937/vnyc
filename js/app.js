@@ -779,22 +779,54 @@
       extrasAt(dayId + ':' + afterKey).forEach(function(x){ out.push({kind: x.kind, id: x.id}); });
       if (i < stops.length) out.push({sid: stops[i].getAttribute('data-sid')});
     }
+    /* blocs dont l'étape de repère n'est plus dans ce jour : affichés en fin
+       de journée par renderExtras, ils doivent aussi pouvoir bouger */
+    var valid = {'0': true};
+    stops.forEach(function(li){ valid[li.getAttribute('data-sid')] = true; });
+    var orphans = [];
+    ['t', 'a'].forEach(function(kind){
+      var src = (kind === 't' ? DB.t : DB.a) || {};
+      Object.keys(src).forEach(function(k){
+        var o = src[k];
+        if (o && o.a && extraDayId(o.a) === dayId && !valid[extraAfterKey(o.a)]) orphans.push({kind: kind, id: k, o: o.o || 0});
+      });
+    });
+    orphans.sort(function(x, y){ return x.o - y.o; })
+           .forEach(function(x){ out.push({kind: x.kind, id: x.id}); });
     return out;
   }
 
   /* Réaffecte repère + ordre de tous les blocs ajoutés du jour d'après une
      liste de slots (étapes + blocs) déjà dans l'ordre visuel voulu. */
   function commitSlotOrder(dayId, slots){
-    var updT = {}, updA = {}, counters = {}, afterKey = '0';
+    /* un seul envoi pour tout : ordre des étapes du jour + repère de chaque
+       bloc ajouté (sinon on voit des états intermédiaires, et un « monter »
+       qui croise une étape d'origine n'était jamais enregistré) */
+    var upd = {}, counters = {}, afterKey = '0', sids = [];
     slots.forEach(function(s){
-      if (s.sid){ afterKey = s.sid; return; }
+      if (s.sid){ afterKey = s.sid; sids.push(s.sid); return; }
       var anchor = dayId + ':' + afterKey;
       var o = (counters[anchor] = (counters[anchor] || 0) + 10);
-      (s.kind === 't' ? updT : updA)[s.id + '/a'] = anchor;
-      (s.kind === 't' ? updT : updA)[s.id + '/o'] = o;
+      upd[(s.kind === 't' ? 't/' : 'a/') + s.id + '/a'] = anchor;
+      upd[(s.kind === 't' ? 't/' : 'a/') + s.id + '/o'] = o;
     });
-    if (Object.keys(updT).length) patch('t', updT);
-    if (Object.keys(updA).length) patch('a', updA);
+    /* les étapes supprimées (masquées) gardent leur place, en fin de liste */
+    var day = document.querySelector('.day[data-day="' + dayId + '"]');
+    if (day) stopsOf(day).forEach(function(li){
+      var sid = li.getAttribute('data-sid');
+      if (sids.indexOf(sid) < 0) sids.push(sid);
+    });
+    upd['ord/' + dayId] = sids;
+    multi(upd);
+  }
+  function multi(obj){
+    if (SNAP){ readOnly(); return; }
+    if (CLOUD){
+      try { ROOT.update(obj); } catch (e){ writeFail(e, Object.keys(obj).join(',')); }
+      return;
+    }
+    Object.keys(obj).forEach(function(k){ applyPath(DB, k, obj[k]); });
+    saveLocal(); render();
   }
 
   function shiftExtraAnchor(kind, id, curAnchor, dir){
@@ -1226,15 +1258,22 @@
     commitMove(sid, srcDayId, targetDayId, srcDay, targetDay);
   }
 
+  /* Monter / descendre une étape d'un cran PARMI CE QUI EST AFFICHÉ :
+     étapes d'origine, activités et transports ajoutés confondus.  Avant,
+     seules les étapes d'origine comptaient, y compris celles supprimées
+     (masquées) : l'étape échangeait sa place avec un bloc invisible, ou ne
+     pouvait pas passer au-dessus d'une activité ajoutée — rien ne bougeait. */
   function moveStop(li, dir){
     var day = li.closest('.day');
     if (!day) return;
     var dayId = day.getAttribute('data-day');
-    var sids = stopsOf(day).map(function(x){ return x.getAttribute('data-sid'); });
-    var i = sids.indexOf(li.getAttribute('data-sid')), j = i + dir;
-    if (i < 0 || j < 0 || j >= sids.length) return;
-    var tmp = sids[i]; sids[i] = sids[j]; sids[j] = tmp;
-    put('ord/' + dayId, sids);
+    var slots = fullSlots(day, dayId), sid = li.getAttribute('data-sid');
+    var i = -1;
+    for (var k = 0; k < slots.length; k++) if (slots[k].sid === sid){ i = k; break; }
+    var j = i + dir;
+    if (i < 0 || j < 0 || j >= slots.length) return;
+    var tmp = slots[i]; slots[i] = slots[j]; slots[j] = tmp;
+    commitSlotOrder(dayId, slots);
   }
 
   function wireDrag(li, handle){

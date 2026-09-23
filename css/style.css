@@ -988,3 +988,23 @@ li.eat{background:#fff8e6;border-color:#f3e3b8;}
 .clocks{gap:18px;flex-wrap:wrap;}
 .clocks > div{min-width:0;}
 .clocks b{font-family:var(--font);font-weight:800;font-size:22px;letter-spacing:-.02em;white-space:nowrap;font-variant-numeric:tabular-nums;}
+
+/* ======================================================================
+   Accent : bleu « métro » a la place du jaune
+   ====================================================================== */
+:root{--gold:#2f6bea;}
+@media screen{ :root[data-theme="dark"]{--gold:#6f9bff;} }
+.cal-d.on,.cal-o.on{color:#fff !important;}
+.cal-d.on .cal-n{color:#fff !important;}
+.cal-d.on.is-today::after{background:#fff;}
+[data-theme="dark"] .cal-d.on,[data-theme="dark"] .cal-o.on,[data-theme="dark"] .cal-d.on .cal-n{color:#0b1020 !important;}
+[data-theme="dark"] .cal-d.on.is-today::after{background:#0b1020;}
+[data-theme="dark"] .seg button.on{color:#0b1020;}
+.tabbar .tb-count{color:#fff;}
+.today-tag{color:#fff;}
+[data-theme="dark"] .today-tag{color:#0b1020;}
+.hs-go{color:#fff;}
+.hs-go:hover{background:#2358c9;}
+.hs-eyebrow, .hub-status .hs-eyebrow{color:#9dbbff;}
+.cal-c{color:var(--gold);}
+.tb-brand::before{background:#6f9bff;}

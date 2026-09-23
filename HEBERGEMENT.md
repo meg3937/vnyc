@@ -88,6 +88,11 @@ Pour tester le mode « Aujourd'hui » avant le départ, ajoutez `?date=2026-10-2
   Idéalement, faites aussi défiler les cartes pour garder les fonds de carte.
 - Les modifications du code (html, css, js) arrivent toutes seules dès qu'il y
   a du réseau.
+- **À chaque modification d'un fichier css/js**, changez le numéro `?v=…` des
+  lignes qui chargent `css/style.css` et `js/….js` dans `index.html` (par
+  exemple la date du jour). Sinon, un téléphone peut garder l'ancien fichier
+  en cache quelques minutes avec la nouvelle page, et le site s'affiche de
+  travers.
 - **Photos** : elles sont gardées en cache. Pour en remplacer une, donnez un
   **nouveau nom** au fichier, ou augmentez `VERSION` en haut de `sw.js`.
 - Hors ligne, la check-list affiche la dernière version reçue, en lecture

@@ -934,3 +934,5 @@ li.eat .clk{margin-left:8px;font-size:12px;}
 .go-btn::before{content:"➜ ";}
 .go-btn:hover{background:rgba(12,23,35,.9);}
 @media print{ .go-btn, .timebar{display:none !important;} }
+
+.cal-d .cal-w{max-width:100%;overflow:hidden;text-overflow:clip;white-space:nowrap;}

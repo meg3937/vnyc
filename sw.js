@@ -9,7 +9,7 @@
    Firebase et la meteo passent toujours par le reseau (la page garde sa
    propre copie de secours).
 --------------------------------------------------------------------------- */
-var VERSION = 'v1';
+var VERSION = 'v2';
 var SHELL = 'nyc-shell-' + VERSION, TILES = 'nyc-tiles-' + VERSION, CDN = 'nyc-cdn-' + VERSION;
 var CORE = ['./', 'index.html', 'css/style.css', 'js/map.js', 'js/config.js', 'js/app.js', 'js/trip.js',
             'manifest.webmanifest', 'icons/icon-192.png', 'icons/favicon-32.png',
@@ -43,7 +43,10 @@ function networkFirst(req){
       return m || (req.mode === 'navigate' ? caches.match('index.html') : undefined);
     });
   };
-  var net = fetch(req).then(function(r){
+  /* no-cache : on revalide toujours aupres de GitHub (sinon le cache HTTP du
+     navigateur peut servir un vieux fichier pendant ~10 min, melange avec
+     une page neuve -> calendrier casse, options manquantes) */
+  var net = fetch(req, {cache: 'no-cache'}).then(function(r){
     if (r && r.ok){ var cp = r.clone(); caches.open(SHELL).then(function(c){ c.put(req, cp); }); }
     return r;
   });
@@ -75,7 +78,10 @@ function cacheFirst(req, name, limit){
 function staleWhileRevalidate(req){
   return caches.open(CDN).then(function(c){
     return c.match(req).then(function(m){
-      var net = fetch(req).then(function(r){ if (r && (r.ok || r.type === 'opaque')) c.put(req, r.clone()); return r; });
+      /* no-cache : on revalide toujours aupres de GitHub (sinon le cache HTTP du
+     navigateur peut servir un vieux fichier pendant ~10 min, melange avec
+     une page neuve -> calendrier casse, options manquantes) */
+  var net = fetch(req, {cache: 'no-cache'}).then(function(r){ if (r && (r.ok || r.type === 'opaque')) c.put(req, r.clone()); return r; });
       return m || net;
     });
   });

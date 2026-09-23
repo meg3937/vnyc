@@ -858,3 +858,23 @@ li.trans .stop-tools{margin-top:4px;}
 li.trans .tr-edit, li.trans .del{padding:0 3px;}
 @media (hover:none){ li.trans .tr-edit, li.trans .del{opacity:.7;} }
 @media print{ ul.stops > li.trans{border-left:1px dotted #999;margin:2px 0 2px 20px;padding:2px 0 2px 10px;} }
+
+/* ======================================================================
+   Rien ne doit depasser en largeur sur telephone (sinon on peut dezoomer
+   et la page se decale).  Un lien ou un mot tres long colle dans une note
+   passe a la ligne au lieu d'elargir la page.
+   ====================================================================== */
+html, body{max-width:100%;overflow-x:hidden;}
+@supports (overflow-x:clip){ html, body{overflow-x:clip;} }
+.tabview, main, .check-wrap{max-width:100%;min-width:0;}
+.cbody, .tr-body, .stop-name, .stop-note, .eat-desc, li.eat, .tr-name, .tr-note, .getin,
+li.citem .body, li.citem .txt, li.citem .note, table.sugg-table td, .hub-card, .hs-next b, .modal .card{
+  overflow-wrap:anywhere;word-break:normal;min-width:0;}
+.stop-top > *, .tr-top > *{min-width:0;}
+.ph img, .cbody img{max-width:100%;}
+.daymap, .map-pane, .map-canvas, .gmap-wrap{max-width:100%;overflow:hidden;}
+.stop-tools{min-width:0;}
+.day-move{max-width:130px;}
+.map-legend span.lg{min-width:0;max-width:100%;overflow-wrap:anywhere;align-items:flex-start;}
+.map-legend span.lg .pin-badge{flex:0 0 20px;}
+.map-tabs{min-width:0;} .mt-link{max-width:100%;}

@@ -177,6 +177,17 @@
     else if (m.map){ m.map.invalidateSize(); paintMap(m); }
   }
   window.__nycRefreshMaps = function(){ maps.forEach(showMap); };
+  /* coordonnées d'une étape (pour le bouton « Y aller ») */
+  window.__nycCoords = function(li){
+    var xid = li.getAttribute('data-xid');
+    if (xid){
+      var act = ((window.__nycDB || {}).a || {})[xid] || {};
+      if (typeof act.lat === 'number' && typeof act.lng === 'number') return [act.lat, act.lng];
+      return null;
+    }
+    var r = GLOBAL_ROWS[li.getAttribute('data-sid')];
+    return r && r.has ? r.ll : null;
+  };
   window.__nycShowMap = function(box){ if (box && box.__m) showMap(box.__m); };
   window.__nycRepaintMaps = function(){
     maps.forEach(function(m){ paintMap(m); });

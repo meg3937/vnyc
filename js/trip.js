@@ -277,7 +277,7 @@
            + '<div class="hs-title">' + esc(dayTitle(TODAY)) + '</div>'
            + (w ? '<div class="hs-wx">' + wxHtml(w, true) + '</div>' : '');
       if (NEXT){
-        html += '<div class="hs-next"><span>Prochaine étape</span><b>' + esc(stopName(NEXT)) + '</b></div>'
+        html += '<div class="hs-next"><span>Prochaine étape' + (TMODE === 'clock' && NEXT.getAttribute('data-at') ? ' · ' + NEXT.getAttribute('data-at') : '') + '</span><b>' + esc(stopName(NEXT)) + '</b></div>'
               + '<div class="hs-btns"><button type="button" class="hs-go" data-go="next">Voir l’étape ↓</button>'
               + '<button type="button" class="hs-ghost" data-go="day">Toute la journée</button></div>';
       } else {
@@ -474,10 +474,127 @@
     });
   }
 
+
+  /* ------------------------------------------------------------- horaires
+     Deux affichages au choix (memorise sur le telephone) :
+     - « Durées »   : 1 h 30, 45 min… comme avant ;
+     - « Horaires » : 10:00 → 11:30, calcule a partir de l'heure de depart
+       de la journee + la duree de chaque etape + celle des transports.
+     L'heure de depart est partagee (branche « st »), modifiable par Megan. */
+  var TMODE = ls('nyc2026:time') === 'clock' ? 'clock' : 'dur';
+  root.setAttribute('data-time', TMODE);
+  var DEF_START = {'1': '23:00'};
+  function startOf(dayId){
+    var st = ((window.__nycDB || {}).st || {})[dayId];
+    return /^\d{1,2}:\d{2}$/.test(st || '') ? st : (DEF_START[dayId] || '09:00');
+  }
+  function toMin(hhmm){ var p = hhmm.split(':'); return (+p[0]) * 60 + (+p[1]); }
+  function fmt(m){ m = ((m % 1440) + 1440) % 1440; return Math.floor(m / 60) + ':' + ('0' + (m % 60)).slice(-2); }
+  /* « 1 h 30 », « 45 min », « 2-3 h », « ~3 h (19h30) », « soirée (~2 h 30) »… */
+  function parseDur(t){
+    t = (t || '').toLowerCase();
+    var out = {min: null, at: null};
+    var fixed = t.match(/\((\d{1,2})\s*h\s*(\d{2})?\)/);
+    if (fixed){ out.at = (+fixed[1]) * 60 + (+(fixed[2] || 0)); t = t.replace(fixed[0], ''); }
+    else if (/soir/.test(t)) out.at = 19 * 60;
+    var h = t.match(/(\d+)(?:\s*-\s*\d+)?\s*h(?:\s*(\d{1,2}))?/), mn = t.match(/(\d+)\s*min/);
+    if (h) out.min = (+h[1]) * 60 + (+(h[2] || 0));
+    else if (mn) out.min = +mn[1];
+    return out;
+  }
+  function blockDur(li){
+    if (li.classList.contains('trans')){
+      var d = $('.dur', li);
+      return parseDur(d ? d.textContent : $('.tr-name', li) ? $('.tr-name', li).textContent : '');
+    }
+    var du = $('.stop-tr .dur', li);
+    if (du){
+      if (!du.hasAttribute('data-d0')) du.setAttribute('data-d0', du.textContent);
+      return parseDur(du.getAttribute('data-d0'));
+    }
+    if (li.classList.contains('eat')) return {min: 60, at: null};
+    return {min: null, at: null};
+  }
+  function paintSchedule(){
+    $$('.day[data-day]').forEach(function(day){
+      var id = day.getAttribute('data-day');
+      if (!/^\d+$/.test(id)) return;
+      var clock = toMin(startOf(id));
+      $$('ul.stops > li', day).forEach(function(li){
+        if (li.hidden || li.classList.contains('trans-gap')) return;
+        var d = blockDur(li);
+        if (d.at != null && d.at > clock) clock = d.at;
+        if (li.classList.contains('trans')){ clock += d.min || 0; return; }
+        var txt = fmt(clock) + (d.min ? ' → ' + fmt(clock + d.min) : '');
+        var clk = $('.clk', li);
+        if (!clk){
+          clk = document.createElement('span');
+          clk.className = 'clk';
+          var tr = $('.stop-tr', li);
+          if (tr) tr.insertBefore(clk, tr.firstChild);
+          else { var l = $('.lbl', li); if (l) l.parentNode.insertBefore(clk, l.nextSibling); }
+        }
+        clk.textContent = txt;
+        li.setAttribute('data-at', fmt(clock));
+        clock += d.min || 0;
+      });
+      /* barre au-dessus de la journee : choix de l'affichage + heure de depart */
+      var bar = $('.timebar', day);
+      if (!bar){
+        bar = document.createElement('div');
+        bar.className = 'timebar';
+        bar.innerHTML = '<label class="tb-start">Début <input type="time" step="300"></label>'
+          + '<div class="seg" role="group" aria-label="Affichage du temps">'
+          + '<button type="button" data-tm="dur">Durées</button><button type="button" data-tm="clock">Horaires</button></div>';
+        var head = $('.day-head', day);
+        head.parentNode.insertBefore(bar, head.nextSibling);
+        $('input', bar).addEventListener('change', function(){
+          if (window.__nycSetStart && this.value) window.__nycSetStart(id, this.value);
+        });
+      }
+      var inp = $('input', bar);
+      if (document.activeElement !== inp) inp.value = ('0' + startOf(id)).slice(-5);
+      inp.disabled = !window.__nycCanEdit;
+      inp.title = window.__nycCanEdit ? 'Heure de départ de la journée' : 'Heure de départ (modifiable par Mégan)';
+      $$('[data-tm]', bar).forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-tm') === TMODE); });
+    });
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('[data-tm]') : null;
+    if (!b) return;
+    TMODE = b.getAttribute('data-tm');
+    ls('nyc2026:time', TMODE);
+    root.setAttribute('data-time', TMODE);
+    paintSchedule();
+    paintStatus();
+  });
+
+  /* ------------------------------------------------------------- « Y aller »
+     Petit bouton pose sur la photo de l'etape (rien de plus dans le texte) :
+     ouvre l'itineraire Google Maps en transports depuis la position actuelle. */
+  function paintGo(){
+    $$('ul.stops > li').forEach(function(li){
+      if (/\b(trans|trans-gap)\b/.test(li.className)) return;
+      var ll = window.__nycCoords ? window.__nycCoords(li) : null;
+      var ph = $('.ph', li), a = ph && $('.go-btn', ph);
+      if (!ll || !ph){ if (a) a.parentNode.removeChild(a); return; }
+      if (!a){
+        a = document.createElement('a');
+        a.className = 'go-btn'; a.target = '_blank'; a.rel = 'noopener';
+        a.textContent = 'Y aller';
+        ph.appendChild(a);
+      }
+      a.href = 'https://www.google.com/maps/dir/?api=1&destination=' + ll[0] + ',' + ll[1] + '&travelmode=transit';
+      a.title = 'Itinéraire depuis ma position';
+    });
+  }
+
   /* ------------------------------------------------------------- demarrage */
   var jumped = false;
   function afterRender(){
     paintAutoTrans();
+    paintSchedule();
+    paintGo();
     paintToday();
     paintWx();
     paintCal();
@@ -492,6 +609,8 @@
   document.addEventListener('nyc:rendered', afterRender);
   paintStatus();
   paintAutoTrans();
+  paintSchedule();
+  paintGo();
   paintToday();
   loadWx();
   /* passage de minuit : on recalcule le jour courant */

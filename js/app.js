@@ -97,7 +97,7 @@
   paintMe();
 
   /* ------------------------------------------------- base de donnees */
-  var DB = {s:{}, i:{}, g:{}, t:{}, d:{}, a:{}, del:{}, ord:{}, loc:{}}, CLOUD = false, ROOT = null, ready = false;
+  var DB = {s:{}, i:{}, g:{}, t:{}, d:{}, a:{}, del:{}, ord:{}, loc:{}, st:{}}, CLOUD = false, ROOT = null, ready = false;
   var SNAP = false;   /* true = on affiche la copie hors ligne, en lecture seule */
 
   function defaults(){
@@ -489,6 +489,9 @@
   function render(){
     if (editing){ pending = true; return; }   /* ne pas rafraîchir sous les doigts */
     window.__nycDB = DB;   /* pont lu par le script des cartes (étapes supprimées, activités localisées) */
+    /* pont pour trip.js : heure de départ de chaque journée (branche « st ») */
+    window.__nycSetStart = function(dayId, hhmm){ if (canEdit()) put('st/' + dayId, hhmm || null); };
+    window.__nycCanEdit = canEdit();
     listEl.innerHTML = '';
     secs().forEach(function(s){
       var its = items(s.id), shown = its.filter(function(x){ return match(x.d); });
@@ -1649,6 +1652,7 @@
         d.del = DB.del || {};
         d.ord = DB.ord || {};
         d.loc = DB.loc || {};
+        d.st = DB.st || {};
         if (CLOUD) ROOT.set(d); else { DB = d; saveLocal(); render(); }
       });
   });
@@ -1675,6 +1679,7 @@
     if (!DB.del) DB.del = {};
     if (!DB.ord) DB.ord = {};
     if (!DB.loc) DB.loc = {};
+    if (!DB.st) DB.st = {};
     if (ls(LKEY, JSON.stringify(DB)) === null){
       warnEl.innerHTML = '<div class="stor-warn">Ce navigateur n\'autorise pas l\'enregistrement local : vos coches dispara\u00eetront à la fermeture.</div>';
     }
@@ -1718,7 +1723,7 @@
           });
           ROOT.on('value', function(snap){
             var v = snap.val() || {};
-            DB = {s: v.s || {}, i: v.i || {}, g: v.g || {}, t: v.t || {}, d: v.d || {}, a: v.a || {}, del: v.del || {}, ord: v.ord || {}, loc: v.loc || {}};
+            DB = {s: v.s || {}, i: v.i || {}, g: v.g || {}, t: v.t || {}, d: v.d || {}, a: v.a || {}, del: v.del || {}, ord: v.ord || {}, loc: v.loc || {}, st: v.st || {}};
             if (!Object.keys(DB.i).length && !ready){ ROOT.set(defaults()); return; }
             ls(SKEY, JSON.stringify(DB));
             repairTitles();

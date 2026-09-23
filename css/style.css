@@ -858,3 +858,79 @@ li.trans .stop-tools{margin-top:4px;}
 li.trans .tr-edit, li.trans .del{padding:0 3px;}
 @media (hover:none){ li.trans .tr-edit, li.trans .del{opacity:.7;} }
 @media print{ ul.stops > li.trans{border-left:1px dotted #999;margin:2px 0 2px 20px;padding:2px 0 2px 10px;} }
+
+/* ======================================================================
+   Rien ne doit depasser en largeur sur telephone (sinon on peut dezoomer
+   et la page se decale).  Un lien ou un mot tres long colle dans une note
+   passe a la ligne au lieu d'elargir la page.
+   ====================================================================== */
+html, body{max-width:100%;overflow-x:hidden;}
+@supports (overflow-x:clip){ html, body{overflow-x:clip;} }
+.tabview, main, .check-wrap{max-width:100%;min-width:0;}
+.cbody, .tr-body, .stop-name, .stop-note, .eat-desc, li.eat, .tr-name, .tr-note, .getin,
+li.citem .body, li.citem .txt, li.citem .note, table.sugg-table td, .hub-card, .hs-next b, .modal .card{
+  overflow-wrap:anywhere;word-break:normal;min-width:0;}
+.stop-top > *, .tr-top > *{min-width:0;}
+.ph img, .cbody img{max-width:100%;}
+.daymap, .map-pane, .map-canvas, .gmap-wrap{max-width:100%;overflow:hidden;}
+.stop-tools{min-width:0;}
+.day-move{max-width:130px;}
+.map-legend span.lg{min-width:0;max-width:100%;overflow-wrap:anywhere;align-items:flex-start;}
+.map-legend span.lg .pin-badge{flex:0 0 20px;}
+.map-tabs{min-width:0;} .mt-link{max-width:100%;}
+
+/* en-tete de journee : la date + la meteo (plus de titre a theme) */
+.day-head .wx{margin-left:auto;font-size:13px;padding:5px 12px;}
+.day-head .wx .wx-ic{font-size:17px;}
+.day-head .wx .wx-lbl{color:var(--head);}
+.day-head .wx.wx-none{opacity:.75;}
+.day-head .wx.wx-none .wx-lbl{font-weight:500;color:var(--steel);}
+@media (max-width:620px){
+  .day-head{flex-wrap:wrap !important;row-gap:8px;}
+  .day-head .wx{font-size:12.5px;}
+}
+/* photo de bandeau de chaque journee : liee a l'ancien theme du jour,
+   elle ne correspond plus au programme reorganise -> masquee */
+.day > .ph.ph-band{display:none;}
+.day-head{align-items:center;}
+.day-head .day-num{font-size:22px;}
+@media (max-width:620px){
+  .day-head{flex-wrap:nowrap !important;}
+  .day-head .day-num{display:none;}
+  .day-title{font-size:18px;}
+  .day-head .wx{padding:4px 10px;}
+  .day-head .wx .wx-lbl{display:none;}
+  .day-head .wx.wx-none .wx-lbl{display:inline;}
+  .day.is-today .day-head{flex-wrap:wrap !important;}
+}
+
+/* ======================================================================
+   Durees / Horaires
+   ====================================================================== */
+.clk{display:none;font-size:12.5px;font-weight:700;color:var(--head);white-space:nowrap;}
+.clk::before{content:"🕐 ";}
+:root[data-time="clock"] .clk{display:inline;}
+:root[data-time="clock"] li:not(.trans) > .cbody .stop-tr > .dur, :root[data-time="clock"] li.actv .stop-tr > .dur{display:none;}
+li.eat .clk{margin-left:8px;font-size:12px;}
+
+.timebar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 2px;}
+.tb-start{display:none;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--steel);}
+:root[data-time="clock"] .tb-start{display:inline-flex;}
+.tb-start input{font:600 13px/1 'Inter',sans-serif;color:var(--head);background:var(--paper);border:1px solid var(--line);
+                border-radius:8px;padding:5px 7px;}
+.tb-start input:disabled{opacity:1;border-color:transparent;background:transparent;padding-left:0;-webkit-appearance:none;}
+.seg{display:inline-flex;margin-left:auto;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:2px;}
+.seg button{font:600 12px/1 'Inter',sans-serif;color:var(--steel);background:transparent;border:0;border-radius:20px;
+            padding:6px 11px;cursor:pointer;}
+.seg button.on{background:var(--deep);color:#fff;}
+[data-theme="dark"] .seg button.on{background:#1f3a56;}
+
+/* ======================================================================
+   « Y aller » : petit bouton sur la photo de l'etape
+   ====================================================================== */
+.go-btn{position:absolute;left:6px;bottom:6px;z-index:2;font:700 11px/1 'Inter',sans-serif;color:#fff;text-decoration:none;
+        background:rgba(12,23,35,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+        border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 9px;}
+.go-btn::before{content:"➜ ";}
+.go-btn:hover{background:rgba(12,23,35,.9);}
+@media print{ .go-btn, .timebar{display:none !important;} }

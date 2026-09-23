@@ -161,11 +161,23 @@
       var n = +day.getAttribute('data-day');
       var head = $('.day-head', day), chip = $('.wx', day);
       var w = n ? wxFor(dayIso(n)) : null;
-      if (!w){ if (chip) chip.parentNode.removeChild(chip); return; }
-      any = true;
+      if (!n) return;
       if (!chip){ chip = document.createElement('div'); chip.className = 'wx'; head.appendChild(chip); }
+      /* plus de titre de journee : la meteo prend sa place, en grand */
+      if (!w){
+        var until = diffDays(isoIn(NY), dayIso(n)) - 15;
+        chip.className = 'wx wx-none';
+        chip.title = '';
+        chip.innerHTML = until > 0
+          ? '<span class="wx-ic">🌡️</span><span class="wx-lbl">Météo dans ' + until + ' j</span>'
+          : '<span class="wx-ic">🌡️</span><span class="wx-lbl">Météo indisponible</span>';
+        if (diffDays(dayIso(n), isoIn(NY)) > 0) chip.parentNode.removeChild(chip);
+        return;
+      }
+      any = true;
+      chip.className = 'wx';
       chip.title = 'Prévision météo — ' + wxIcon(w.code)[1];
-      chip.innerHTML = wxHtml(w, false);
+      chip.innerHTML = wxHtml(w, true);
     });
     var src = $('[data-wx-src]');
     if (src) src.hidden = !any;
@@ -316,9 +328,9 @@
   $$('.day[data-day]').forEach(function(d){
     var id = d.getAttribute('data-day');
     if (/^\d+$/.test(id)){
-      var t = dayTitle(+id), m = t.match(/^(\S+?)\.?\s+(\d+)/);
-      PANES.push({key: 'd' + id, el: d, n: +id, w: m ? m[1] : '', d: m ? m[2] : id,
-                  title: t.replace(/^[^—]*—\s*/, '')});
+      var dt = new Date(utc(dayIso(+id)));
+      PANES.push({key: 'd' + id, el: d, n: +id, w: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'][dt.getUTCDay()],
+                  d: String(dt.getUTCDate()), title: dayTitle(+id)});
     } else if (id === 'caler'){
       PANES.push({key: 'caler', el: d, label: '★ À caler'});
     }
@@ -359,7 +371,7 @@
       pg.className = 'pager';
       var prev = days[i - 1], next = days[i + 1];
       pg.innerHTML = (prev ? '<button type="button" data-key="' + prev.key + '">← ' + esc(prev.w) + ' ' + esc(prev.d) + '</button>' : '<span></span>')
-                   + (next ? '<button type="button" class="nx" data-key="' + next.key + '">' + esc(next.w) + ' ' + esc(next.d) + ' · ' + esc(next.title) + ' →</button>' : '');
+                   + (next ? '<button type="button" class="nx" data-key="' + next.key + '">' + esc(next.w) + ' ' + esc(next.d) + ' →</button>' : '');
       pg.addEventListener('click', function(e){
         var b = e.target.closest('[data-key]');
         if (b) select(b.getAttribute('data-key'), true);

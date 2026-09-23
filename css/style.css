@@ -878,3 +878,28 @@ li.citem .body, li.citem .txt, li.citem .note, table.sugg-table td, .hub-card, .
 .map-legend span.lg{min-width:0;max-width:100%;overflow-wrap:anywhere;align-items:flex-start;}
 .map-legend span.lg .pin-badge{flex:0 0 20px;}
 .map-tabs{min-width:0;} .mt-link{max-width:100%;}
+
+/* en-tete de journee : la date + la meteo (plus de titre a theme) */
+.day-head .wx{margin-left:auto;font-size:13px;padding:5px 12px;}
+.day-head .wx .wx-ic{font-size:17px;}
+.day-head .wx .wx-lbl{color:var(--head);}
+.day-head .wx.wx-none{opacity:.75;}
+.day-head .wx.wx-none .wx-lbl{font-weight:500;color:var(--steel);}
+@media (max-width:620px){
+  .day-head{flex-wrap:wrap !important;row-gap:8px;}
+  .day-head .wx{font-size:12.5px;}
+}
+/* photo de bandeau de chaque journee : liee a l'ancien theme du jour,
+   elle ne correspond plus au programme reorganise -> masquee */
+.day > .ph.ph-band{display:none;}
+.day-head{align-items:center;}
+.day-head .day-num{font-size:22px;}
+@media (max-width:620px){
+  .day-head{flex-wrap:nowrap !important;}
+  .day-head .day-num{display:none;}
+  .day-title{font-size:18px;}
+  .day-head .wx{padding:4px 10px;}
+  .day-head .wx .wx-lbl{display:none;}
+  .day-head .wx.wx-none .wx-lbl{display:inline;}
+  .day.is-today .day-head{flex-wrap:wrap !important;}
+}

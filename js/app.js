@@ -1117,10 +1117,18 @@
   /* Numérote les blocs transport/activité ajoutés, dans leur ordre visuel
      (les deux types partagent la même numérotation — badges violet/gris). */
   function numberExtras(day){
-    var n = 0;
+    /* une seule numérotation par journée, étapes d'origine et activités
+       ajoutées confondues, dans l'ordre affiché (le script des cartes refait
+       la même chose pour les journées qui ont une carte) */
+    var del = DB.del || {}, n = 0;
     Array.prototype.forEach.call(
-      day.querySelectorAll('ul.stops > li.actv .pin-badge'),
-      function(b){ n++; b.textContent = n; }
+      day.querySelectorAll('ul.stops > li:not(.trans):not(.trans-gap)'),
+      function(li){
+        if (del[li.getAttribute('data-sid')]) return;
+        var b = li.querySelector('.pin-badge');
+        n++;
+        if (b) b.textContent = n;
+      }
     );
   }
   /* --------------------------------- descriptions réécrites des étapes
